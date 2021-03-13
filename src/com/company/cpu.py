@@ -351,6 +351,7 @@ class CPU(object):
 
     def opcode_4(self, data):
         """ Shift operation """
+
         x, y = int(math.floor(data / 10)), int(data % 10)
         for i in range(0, x):
             self.acc = (self.acc * 10) % 10000
