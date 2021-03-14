@@ -35,7 +35,7 @@ class Program:
         # What will our instructions look like?
         #
         # try:
-        #   #todo
+        #
         # except AttributeError:
         #   raise NotImplementedError('Instruction_List isn't valid')
 
@@ -153,6 +153,25 @@ class Machine:
                 self.active_stack = self.stack1
             else:
                 self.active_stack = self.stack0
+        if i == 5:
+            self.reg_b = self.reg_b+1
+        if i == 6:
+            self.reg_b = self.reg_b-1
+        if i == 7:
+            self.reg_b = self.reg_b + self.reg_c
+        if i == 8:
+            self.reg_b = self.reg_b - self.reg_c
+        if i == 9:
+            if self.reg_b == self.reg_c:
+                self.reg_b = False
+            else:
+                self.reg_b = True
+        if i == 10:
+            if self.reg_b < self.reg_c:
+                self.reg_b = self.reg_b+1
+            else:
+                self.reg_b = self.reg_b+2
+
 
     # This function takes no arguments, it just executes the program that's saved in the CPU's memory
     def execute_Program(self):
