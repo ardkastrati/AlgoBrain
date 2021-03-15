@@ -66,6 +66,11 @@ class Machine:
         self.memory = []
         
         # TODO: Add the three "read", "write" and "flow control" heads
+        # TODO: Add input and output buffers which the organism (machine)
+        # will use to interact with the environment
+        
+        # OPEN QUESTION: How to approach the task of the reward system?
+        # We have no restrictions on the machines at the moment.
 
     # Do we need the separate methods "read_Program" and "execute_Program"?
     # Is there any advantage to this that we could see being useful to us in the future?
