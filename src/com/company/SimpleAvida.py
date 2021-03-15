@@ -1,49 +1,39 @@
+# Keeping track of all the imports we'll need
+from queue import LifoQueue
+
+
+
+# %%
 class Program:
 
-    # A class that will need to hold anything that could count as a program
+    # AVIDA Program class.
+    
+    # An instance of this class is nothing more than a list of instructions in AVIDA.
+    # Each instruction is to be interpreted by the "Machine".
+    # The instructions are symbols in an alphabet given by the instruction set.
+    
+    # Our instruction set has 26 instructions.
+    # The only thing that needs to be checked at the construction of a new Program instance
+    # is that all of the elements of the list of instructions are integers in range(0,26)
 
-    # As a start, for the Avida-type implementation, all we need to consider as a program is a list of instructions
 
-    # We also need to consider what data type the instructions will be. I'd say integers.
-
-    # How many instructions do we have? Only around 32. short will do, int is a waste of space
-
-    # Short is not defined in Python. Int will have to do.
-
-    # For now just one instruction, indexed with 0
-
-    # How about this:
-
-    # A class attribute as a list. The list can be as long as possible. Each instruction is defined by an int
-    # and the list only permits integers up to the value of (number of instructions) - 1
-
-    # Initializing an empty program.
-
-    # How about we only start with a couple of random instructions. Let's see what those could be.
-
-    # For now I'll just work on a cpu with three registers and only one instruction
-    # This instruction (Instruction 0) exchanges the values inside the first two registers
-
+     # Will check whether the passed list is a valid list of instructions. TODO.
+    def check_Validity(self, instr_list):
+        i = 0
+        for instruction in instr_list:
+            i += 1
+            if instruction < 0 or instruction > 25:
+                raise NotImplementedError
+                print("Invalid instruction at index " + str(i))
+                
+        # We can surely do this with assertions.
+    
+    # The constructor
     def __init__(self, instr_list):
-        # Again, we need a way of checking whether what has been passed here is a valid list of instructions.
-        # Would make sense to define a separate method which does that (overkill maybe?)
+        
+        self.check_Validity(instr_list)
 
         self.instructions = instr_list
-
-    # Will check whether the passed list is a valid list of instructions. TODO.
-    def check_Validity(instr_list):
-        # What will our instructions look like?
-        #
-        # try:
-        #
-        # except AttributeError:
-        #   raise NotImplementedError('Instruction_List isn't valid')
-
-        pass
-
-    def get_Instructions(self):
-        return self.instructions
-
 
 # %%
 
@@ -52,138 +42,220 @@ class Machine:
     # An Avida machine needs the following libraries to function:
     # from queue import LifoQueue
 
-    # The state of the machine is defined by the values in its three registers
-    # Instruction pointer? Yeah probably. I'd want it to loop around to the beginning once it has reached the end of the program
-    # Or no, rather just stop (for now, we'll need to make it loop later)
-
-    # The constructor. To be expanded with an additional instruction pointer (And also those headers we saw in the paper).
-    # All of the arguments passed here should FULLY determine the state of the Machine.
-
-    # Need to add the stack too. Will have to take a closer look at the details of the implementation.
-    # Should we just copy the Avida Instruction set? (Give credits if necessary, but I mean who owns an instruction set)
-    # Should we make something simpler? But we need to then make sure that every possible permutation of any number of instructions
-    # constitutes a valid program. That's a hefty task. Rather copy.
-
-    # What's a good datatype to store stacks in Python?
-
-    # Answer: LIFO Queue, already implemented as a library
-
     def __init__(self, a, b, c):
-
-        # The libraries our machine will need will be imported
-        # whenever the first constructor is called
-        # TO CHECK: Does it work like this?
-        # It seems to but I don't know the details
-        from queue import LifoQueue
+        
+        # The three registers:
 
         self.reg_a = a
         self.reg_b = b
         self.reg_c = c
 
-        # Adding the instruction pointer. Don't need it yet but will later.
-        # Initialize it to 0
-
-        # Increase it by 1 after each executed instruction
+        # The instruction pointer. Initialize to 0.
         self.instr_pointer = 0
-
+        
+        # The two stacks. Only one is active at a time.
+        # By default it is stack0 in the beginning.
         self.stack0 = LifoQueue()
         self.stack1 = LifoQueue()
-        self.active_stack = 0
-    # Oh, this will be strictly an Avida machine. It has to keep track of what differently indexed instructions do
+        
+        # active_stack is a pointer to the currently active stack, not a copy of it.
+        # Exactly what we need.
+        self.active_stack = self.stack0
+        
+        # The memory for the instructions. Initialize to empty list
+        self.memory = []
+        
+        # TODO: Add the three "read", "write" and "flow control" heads
 
-    # How can I ensure that p is of class "Program"
-
-    # Idea for now: First read program and then execute it. This way we have the list of instructions saved here.
-    # We'll need that in order to be able to copy it later.
-
-    # Do I need the separate methods "read_Program" and "execute_Program"?
+    # Do we need the separate methods "read_Program" and "execute_Program"?
     # Is there any advantage to this that we could see being useful to us in the future?
     # Is it better to maybe just wrap it all up in one method, "execute_Program(self,p)"
     # which saves a program and executes it at the same time
 
-    # Let's keep it like this for now but it could be unoptimal
-
-    # This will just read a Program type instance and save its instructions in the memory of the CPU
+    # Read a Program type instance and save its instructions in the memory of the CPU
     def read_Program(self, p):
-
-        # A very basic way of checking whether the argument is of class Program
-
+        
+        # Check if what we're trying to read is an instance od type "Program"
         if not isinstance(p, Program):
             raise NotImplementedError
-            # Here I want an error statement, not just a print
             print("In Machine_read_Program(p), p is not an instance of Program")
 
-        self.instruction_list = p.get_Instructions()
+        self.memory = p.instructions
 
     # The method which defines which function is to be executed after reading each instruction.
     # The functions to be executed aren't defined explicitly as functions, but as a set of statements after a case check
 
     # When we get a couple more of them we can see whether it makes sense to also define seperate functions for each instr.
     def execute_Instruction(self, i):
-        self.active_stack = self.stack0
+        
+        # This here will set the active stack to stack0 every time we execute an instruction.
+        # Do we want that?
+        #self.active_stack = self.stack0
+        
+        
         # This will be a lookup table where we'll see what each instruction is supposed to do
-        #swap instruction!
+        
+        # The instruction set as given on page 49
+        
+        # nop-a. TODO: Use as template
         if i == 0:
-            # Might need to worry about deleting variables so the memory doesn't get blocked up
-            # Does temp need to be deleted explicitly?
-            # Well, let's do it just to be safe
-
-            temp = self.reg_a
-            self.reg_a = self.reg_b
-            self.reg_b = temp
-
-            del temp
-        # compare if register a == register b
-        if i == 1:
-            if(self.reg_b != self.reg_c):
-                i+=1
+            pass
+        
+        # nop-b. TODO: Use as template
+        elif i == 1:
+            pass
+        
+        # nop-c. TODO: Use as template
+        elif i == 2:
+            pass
+        
+        # if-n-equ. TODO: Expand beyond default register b with the use of templates
+        # We need to be careful how we manipulate the instruction pointer
+        # If it wasn't explicitly changed, it will increase by 1, otherwise it will follow the explicit change
+        elif i == 3:
+            if self.reg_b != self.reg_c:
+                pass # Do nothing, the next instruction will be executed
             else:
-                i+=2
-            #print("instruction here")
-        if i == 2:
+                self.instr_pointer += 2 # To skip the next instruction, increase IP by 2
+                
+        # if-less. TODO: Expand beyond default register b with the use of templates (Template matching)
+        elif i == 4:
+            if self.reg_b < self.reg_c:
+                pass
+            else:
+                self.instr_pointer += 2
+            
+        # swap. TODO: Template matching   
+        elif i == 5:
+            temp = self.reg_b
+            self.reg_b = self.reg_c
+            self.reg_c = temp
+        
+        # pop. TODO: Template matching
+        elif i == 6:
             temp = self.active_stack.get()
             self.reg_b = temp
-            del temp
-
-        if i == 3:
+            
+        # push. TODO: Template matching
+        elif i == 7:
             self.active_stack.put(self.reg_b)
-        #swap_Stacks
-        if i == 4:
+            
+        # swap-stk
+        elif i == 8:
             if self.active_stack == self.stack0:
                 self.active_stack = self.stack1
             else:
                 self.active_stack = self.stack0
-        if i == 5:
-            self.reg_b = self.reg_b+1
-        if i == 6:
-            self.reg_b = self.reg_b-1
-        if i == 7:
+            
+        # shift-r. TODO: Template matching
+        elif i == 9:
+            self.reg_b = self.reg_b >> 1 # Bitwise 1 right shift
+            
+        # shift-l. TODO: Template matching
+        elif i == 10:
+            self.reg_b = self.reg_b << 1 # Bitwise 1 left shift
+        
+        # inc. TODO: Template matching
+        elif i == 11:
+            self.reg_b = self.reg_b + 1
+            
+        # dec. TODO: Template matching
+        elif i == 12:
+            self.reg_b = self.reg_b - 1
+            
+        # add. TODO: Template matching
+        elif i == 13:
             self.reg_b = self.reg_b + self.reg_c
-        if i == 8:
+        
+        # sub. TODO: Template matching
+        elif i == 14:
             self.reg_b = self.reg_b - self.reg_c
-        if i == 9:
-            if self.reg_b == self.reg_c:
-                self.reg_b = False
-            else:
-                self.reg_b = True
-        if i == 10:
-            if self.reg_b < self.reg_c:
-                self.reg_b = self.reg_b+1
-            else:
-                self.reg_b = self.reg_b+2
+            
+        # nand. TODO: Template matching
+        elif i == 15:
+            self.reg_b = ~(self.reg_b & self.reg_c) # Bitwise NAND
+        
+        # h-alloc. TODO: All
+        elif i == 16:
+            pass
+        
+        # h-divide. TODO: All
+        elif i == 17:
+            pass
+            
+        # IO. TODO: All
+        elif i == 18:
+            pass
+        
+        # h-copy. TODO: All
+        elif i == 19:
+            pass
+        
+        # h-search. TODO: All
+        elif i == 20:
+            pass
+        
+        # mov-head. TODO: All
+        elif i == 21:
+            pass
+        
+        # jmp-head. TODO: All
+        elif i == 22:
+            pass
+        
+        # get-head. TODO: All
+        elif i == 23:
+            pass
+        
+        # set-flow. TODO: All
+        elif i == 24:
+            pass
+        
+        # if-label. TODO: All
+        elif i == 25:
+            pass
+                
 
+        # i is how we index the different instructions.
+        # Here it's the instruction pointer that we should manipulate, not i
+        
+        # compare if register a == register b
+        #if i == 1:
+        #    if(self.reg_b != self.reg_c):
+        #        i+=1
+        #    else:
+        #        i+=2
+        #    #print("instruction here")
 
-    # This function takes no arguments, it just executes the program that's saved in the CPU's memory
+        
+        # Which instructions are these exactly?
+        #if i == 9:
+        #    if self.reg_b == self.reg_c:
+        #        self.reg_b = False
+        #    else:
+        #        self.reg_b = True
+        
+        #if i == 10:
+        #    if self.reg_b < self.reg_c:
+        #        self.reg_b = self.reg_b+1
+        #    else:
+        #        self.reg_b = self.reg_b+2
+
+    # Execute the list of instruction that's stored in the CPU's memory
     def execute_Program(self):
 
-        # For now it just executes each instruction in the list one by one
-        # When the last instruction is executed we stop
+        # For now it just executes each instruction in the list one by one.
+        # When the last instruction is executed we stop.
+        # TODO: Make the Instruction Pointer loop back to the beginning of the memory
+        # This is easy to do, let's just leave it for when we have replicating organisms,
+        # otherwise we'd just have one program that repeats itself infinitely many times
 
-        while self.instr_pointer < len(self.instruction_list):
-
+        while self.instr_pointer < len(self.memory):
+            
+            # Save current instruction pointer value to later check if it was explicitly changed by an instruction
             temp = self.instr_pointer
 
-            self.execute_Instruction(self.instruction_list[self.instr_pointer])
+            self.execute_Instruction(self.memory[self.instr_pointer])
 
             # We have to allow for the possibility of the instruction changing the value of the IP
             # But we also have to ensure that if the instruction did nothing to explicitly change the IP,
@@ -195,14 +267,16 @@ class Machine:
             if self.instr_pointer == temp:
                 self.instr_pointer += 1
 
-    # Just to have a nice string representation.
-    # This should print out all of the important variables that define the state of the machine.
-    # For now it's only the three registers + IP
+    # A string representation of the state of the machine
     def __str__(self):
         string_representation = "Register A: " + str(self.reg_a) + "\nRegister B: " + str(
             self.reg_b) + "\nRegister C: " + str(self.reg_c) + "\nInstruction Pointer: " + str(self.instr_pointer)
         return string_representation
-test_program = Program([3,2,0])
+# %%
+
+# TESTS:
+    
+test_program = Program([5,5,5])
 test_program.instructions
 test_machine = Machine(4, 7, 8)
 print(test_machine)
