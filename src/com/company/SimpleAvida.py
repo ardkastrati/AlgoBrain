@@ -1,5 +1,6 @@
 # Keeping track of all the imports we'll need
 from queue import LifoQueue
+from queue import Queue
 
 
 # %%
@@ -21,11 +22,12 @@ class Program:
         i = 0
         for instruction in instr_list:
             i += 1
-            if instruction < 0 or instruction > 25:
-                raise NotImplementedError
+            if instruction < 0 or instruction > 25 or int(instruction) != instruction:
                 print("Invalid instruction at index " + str(i))
+                raise NotImplementedError
                 
-        # We can surely do this with assertions.
+                
+        # We can surely do this with assertions. Is it the optimal way to do it though?
     
     # The constructor
     def __init__(self, instr_list):
@@ -64,6 +66,13 @@ class Machine:
         # The memory for the instructions. Initialize to empty list
         self.memory = []
         
+        # The input and output buffers. Implemented as FIFO Queues
+        self.input_buffer = Queue()
+        self.output_buffer = Queue()
+        
+        # Maximum memory size of the Machine. At the moment hard-coded to 10
+        self.memory_size = 10
+        
         # TODO: Add the three "read", "write" and "flow control" heads
         # TODO: Add input and output buffers which the organism (machine)
         # will use to interact with the environment
@@ -77,12 +86,18 @@ class Machine:
     # which saves a program and executes it at the same time
 
     # Read a Program type instance and save its instructions in the memory of the CPU
-    def read_Program(self, p):
+    def read_program(self, p):
         
         # Check if what we're trying to read is an instance od type "Program"
         if not isinstance(p, Program):
             raise NotImplementedError
-            print("In Machine_read_Program(p), p is not an instance of Program")
+            print("In Machine.read_program(p), p is not an instance of Program")
+            
+        
+        # A way of putting a limit on the maximum size of memory.
+        # At the moment hard-coded to 10
+        if len(p.instructions) > self.memory_size:
+            raise Exception('Memory exceeds the maximum allowed length')
 
         self.memory = p.instructions
 
@@ -90,7 +105,7 @@ class Machine:
     # The functions to be executed aren't defined explicitly as functions, but as a set of statements after a case check
 
     # When we get a couple more of them we can see whether it makes sense to also define seperate functions for each instr.
-    def execute_Instruction(self, i):
+    def execute_instruction(self, i):
         
         # This here will set the active stack to stack0 every time we execute an instruction.
         # Do we want that?
@@ -99,7 +114,9 @@ class Machine:
         
         # This will be a lookup table where we'll see what each instruction is supposed to do
         
-        # The instruction set as given on page 49
+        # The instruction set as given on page 49 of reference paper
+        
+            
         
         # nop-a. TODO: Use as template
         if i == 0:
@@ -137,7 +154,11 @@ class Machine:
         
         # pop. TODO: Template matching
         elif i == 6:
-            temp = self.active_stack.get()
+            # NOTE: If stack is empty, pop should return 0 (see page 11 of original Avida paper)
+            if self.active_stack.empty():
+                temp = 0
+            else:
+                temp = self.active_stack.get()
             self.reg_b = temp
             
         # push. TODO: Template matching
@@ -161,7 +182,17 @@ class Machine:
         
         # inc. TODO: Template matching
         elif i == 11:
-            self.reg_b = self.reg_b + 1
+            # Checking whether the next instruction is a nop:
+            a = self.memory[self.instr_pointer + 1]
+
+            if a == 0:
+                    self.reg_a += 1
+            elif a == 1:
+                    self.reg_b += 1
+            elif a == 2:
+                    self.reg_c += 1
+            else:    
+                self.reg_b = self.reg_b + 1
             
         # dec. TODO: Template matching
         elif i == 12:
@@ -180,10 +211,23 @@ class Machine:
             self.reg_b = ~(self.reg_b & self.reg_c) # Bitwise NAND
         
         # h-alloc. TODO: All
+        # The instruction allocates new memory, necessary for self-replication
+        # Extends the memory by the maximal size the offspring is allowed to have
+        # For now let's hard-code that size to 10 instructions
+        # The newly inserted memory is initilized either to a default instruction
+        # (typically nop-A) or to random code
         elif i == 16:
             pass
         
         # h-divide. TODO: All
+        # After self-replication has been completed, h-divide splits off the instructions
+        # between the read head and the write head and uses them as the genome for the
+        # offspring organism
+        
+        # After splitting off, the state of both the parent and the offspring is cleared
+        # (registers and queues reset, all pointers reset to position 0)
+        
+        # There are conditions under which h-divide fails
         elif i == 17:
             pass
             
@@ -192,6 +236,11 @@ class Machine:
             pass
         
         # h-copy. TODO: All
+        # Copies the instruction at the position of the read head to the 
+        # position of the write head and advances both heads by 1
+        
+        # First let's implement a standard copy algorithm, but afterwards we'll need
+        # to think of mutations
         elif i == 19:
             pass
         
@@ -246,7 +295,7 @@ class Machine:
         #        self.reg_b = self.reg_b+2
 
     # Execute the list of instruction that's stored in the CPU's memory
-    def execute_Program(self):
+    def execute_program(self):
 
         # For now it just executes each instruction in the list one by one.
         # When the last instruction is executed we stop.
@@ -259,7 +308,7 @@ class Machine:
             # Save current instruction pointer value to later check if it was explicitly changed by an instruction
             temp = self.instr_pointer
 
-            self.execute_Instruction(self.memory[self.instr_pointer])
+            self.execute_instruction(self.memory[self.instr_pointer])
 
             # We have to allow for the possibility of the instruction changing the value of the IP
             # But we also have to ensure that if the instruction did nothing to explicitly change the IP,
@@ -280,10 +329,26 @@ class Machine:
 
 # TESTS:
     
-test_program = Program([5,5,5])
-test_program.instructions
-test_machine = Machine(4, 7, 8)
-print(test_machine)
-test_machine.read_Program(test_program)
-test_machine.execute_Program()
-print(test_machine)
+# Three swaps on register B and its complement
+program0 = Program([5,5,5])
+program0.instructions
+machine0 = Machine(4, 7, 8)
+print(machine0)
+machine0.read_program(program0)
+machine0.execute_program()
+print(machine0)
+
+# Two increments on default register B, one increment on modified register A,
+# three increments on modified register C
+
+program1 = Program([11, 11, 11, 0, 11, 2, 11, 2, 11, 2])
+machine1 = Machine(0,0,0)
+print(machine1)
+machine1.read_program(program1)
+machine1.execute_program()
+print(machine1)
+
+# Trying to read a program of larger length than the hard-coded Machine memory 10
+program2 = Program([0,1,2,3,4,5,6,7,8,9,10])
+machine2 = Machine(0,0,0)
+machine2.read_program(program2)
