@@ -118,25 +118,34 @@ class Machine:
         
             
         
-        # nop-a. TODO: Use as template
+        # nop-a
         if i == 0:
             pass
         
-        # nop-b. TODO: Use as template
+        # nop-b
         elif i == 1:
             pass
         
-        # nop-c. TODO: Use as template
+        # nop-c
         elif i == 2:
             pass
         
-        # if-n-equ. TODO: Expand beyond default register b with the use of templates
+        # if-n-equ
         # We need to be careful how we manipulate the instruction pointer
         # If it wasn't explicitly changed, it will increase by 1, otherwise it will follow the explicit change
         elif i == 3:
             
             # Checking whether the next instruction is a nop:
-            a = self.memory[self.instr_pointer + 1]
+                
+            # At the moment we don't have circular memory
+            # If we're at the last instruction we won't do any checking
+            # for what the next instruction is because it produces an error,
+            # instead we execute in on the defaul register.
+            # This is to be changed once we introduce circular memory
+            if self.instr_pointer == len(self.memory) - 1:
+                a = 1
+            else:
+                a = self.memory[self.instr_pointer + 1]
 
             if a == 0:
                     if self.reg_a != self.reg_b:
@@ -154,27 +163,72 @@ class Machine:
                 else:
                     self.instr_pointer += 2 # To skip the next instruction, increase IP by 2
                 
-        # if-less. TODO: Expand beyond default register b with the use of templates (Template matching)
+        # if-less
         elif i == 4:
-            if self.reg_b < self.reg_c:
-                pass
+            # Checking whether the next instruction is a nop:
+            if self.instr_pointer == len(self.memory) - 1:
+                a = 1
             else:
-                self.instr_pointer += 2
+                a = self.memory[self.instr_pointer + 1]
             
-        # swap. TODO: Template matching   
+            if a == 0:
+                if self.reg_a < self.reg_b:
+                    pass
+                else:
+                    self.instr_pointer += 2
+            if a == 2:
+                if self.reg_c < self.reg_a:
+                    pass
+                else:
+                    self.instr_pointer += 2
+            else:
+                if self.reg_b < self.reg_c:
+                    pass
+                else:
+                    self.instr_pointer += 2
+            
+        # swap
         elif i == 5:
-            temp = self.reg_b
-            self.reg_b = self.reg_c
-            self.reg_c = temp
-        
+            # Checking whether the next instruction is a nop:
+            if self.instr_pointer == len(self.memory) - 1:
+                a = 1
+            else:
+                a = self.memory[self.instr_pointer + 1]
+            
+            if a == 0:
+                temp = self.reg_a
+                self.reg_a = self.reg_b
+                self.reg_b = temp
+            elif a == 2:
+                temp = self.reg_c
+                self.reg_c = self.reg_a
+                self.reg_a = temp
+            else:
+                temp = self.reg_b
+                self.reg_b = self.reg_c
+                self.reg_c = temp
+                
         # pop. TODO: Template matching
         elif i == 6:
             # NOTE: If stack is empty, pop should return 0 (see page 11 of original Avida paper)
+            
+            # Checking whether the next instruction is a nop:
+            if self.instr_pointer == len(self.memory) - 1:
+                a = 1
+            else:
+                a = self.memory[self.instr_pointer + 1]
+                
             if self.active_stack.empty():
                 temp = 0
             else:
                 temp = self.active_stack.get()
-            self.reg_b = temp
+                
+            if a == 0:
+                self.reg_a = temp
+            elif a == 2:
+                self.reg_c = temp
+            else:
+                self.reg_b = temp
             
         # push. TODO: Template matching
         elif i == 7:
@@ -198,7 +252,10 @@ class Machine:
         # inc. TODO: Template matching
         elif i == 11:
             # Checking whether the next instruction is a nop:
-            a = self.memory[self.instr_pointer + 1]
+            if self.instr_pointer == len(self.memory) - 1:
+                a = 1
+            else:
+                a = self.memory[self.instr_pointer + 1]
 
             if a == 0:
                     self.reg_a += 1
