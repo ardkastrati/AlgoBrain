@@ -134,10 +134,25 @@ class Machine:
         # We need to be careful how we manipulate the instruction pointer
         # If it wasn't explicitly changed, it will increase by 1, otherwise it will follow the explicit change
         elif i == 3:
-            if self.reg_b != self.reg_c:
-                pass # Do nothing, the next instruction will be executed
-            else:
-                self.instr_pointer += 2 # To skip the next instruction, increase IP by 2
+            
+            # Checking whether the next instruction is a nop:
+            a = self.memory[self.instr_pointer + 1]
+
+            if a == 0:
+                    if self.reg_a != self.reg_b:
+                        pass # Do nothing, the next instruction will be executed
+                    else:
+                        self.instr_pointer += 2 # To skip the next instruction, increase IP by 2
+            elif a == 2:
+                    if self.reg_c != self.reg_a:
+                        pass # Do nothing, the next instruction will be executed
+                    else:
+                        self.instr_pointer += 2 # To skip the next instruction, increase IP by 2
+            else:    
+                if self.reg_b != self.reg_c:
+                    pass # Do nothing, the next instruction will be executed
+                else:
+                    self.instr_pointer += 2 # To skip the next instruction, increase IP by 2
                 
         # if-less. TODO: Expand beyond default register b with the use of templates (Template matching)
         elif i == 4:
@@ -323,7 +338,7 @@ class Machine:
     # A string representation of the state of the machine
     def __str__(self):
         string_representation = "Register A: " + str(self.reg_a) + "\nRegister B: " + str(
-            self.reg_b) + "\nRegister C: " + str(self.reg_c) + "\nInstruction Pointer: " + str(self.instr_pointer)
+            self.reg_b) + "\nRegister C: " + str(self.reg_c) + "\nInstruction Pointer: " + str(self.instr_pointer) +"\n"
         return string_representation
 # %%
 
