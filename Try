@@ -1,0 +1,42 @@
+#include <iostream>
+#include <string>
+#include <bits/stdc++.h>
+using namespace std;
+
+
+bool Try (qp, r0, R0, t0, P)    //Try(start in last address, first task, all tasks, starting time, probability)
+{
+    stack <float> S;       //initialize empty stack
+
+    int t = t0;
+
+    bool mark = false;      //we want mark(r) to indicate when we've made changes, s.t. we can save previous state values to undo^
+
+    while(R > 0 && t <= P*T && "instruction pointer valid" && "instruction valid") 
+    {
+        //execute token z(ip(r))(r)
+        //increase time t continually
+        //
+    }
+
+    //return boolean; when what?
+}
+
+int main()
+{
+    int T;      //initialize total time
+
+    S.push(......)    //stack starts with probablities/states, followed by tokens
+    
+   if (Try(qp, r0, R0, 0, 0.5) == true)
+   {
+
+   }
+   else
+   {
+
+   }
+    
+
+    return 0;
+}
