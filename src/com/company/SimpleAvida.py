@@ -73,8 +73,9 @@ class Memory:
     def __init__(self):
         self.content = []
     
-    # Maybe we should implement a function that checks if what we're writing to memory makes sense
-    # This only writes to the end of the memory, not at any index
+    # Write, as of now, just fully replaces the memory with the argument of this function.
+    # A slower but maybe more reasonable implementation would iterate
+    # over a list that we'd pass here as an argument and write the elements of it one by one
     def write(self,value):
         self.content = value
         
@@ -452,7 +453,6 @@ class CPUEmulator:
         return string_representation
 
 # %%
-
 
 # TESTS:
     
