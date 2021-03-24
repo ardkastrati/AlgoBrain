@@ -128,7 +128,7 @@ class CPU:
         
         # Maximum memory size of the Machine. At the moment hard-coded to 10
         self.memory_size = 10
-        
+
         # TODO: Add the three "read", "write" and "flow control" heads
         # TODO: Add input and output buffers which the organism (machine)
         # will use to interact with the environment
@@ -149,12 +149,76 @@ class InstructionSwap:
         pass
 
     # TODO: Raise exception if machine not instance of CPUEmulator
-    def run(self, machine):
+    def execute(self, machine):
         temp = machine.reg_b.read()
         machine.reg_b.write(machine.reg_c.read())
         machine.reg_c.write(temp)
 # %%
+class InstructionSwapStack:
+    def __init__(self):
+        pass
+    def execute(self,machine):
+        if machine.active_stack == machine.stack0:
+            machine.active_stack= machine.stack1
+        else:
+            machine.active_stack = machine.stack2
+class RightShift:
+     def __init__(self):
+         pass
+     def execute(self,machine):
+            machine.reg_b.write(machine.reg_b.read() >> 1)
+class LeftShift:
+    def __init__(self):
+        pass
+    def execute(self,machine):
+        machine.reg_b.write(machine.reg_b.read() << 1)
+        
+class inc:
+    def __init__(self):
+        pass
+    def execute(self,machine):
+     # Checking whether the next instruction is a nop:
+            if machine.instr_pointer.get() == machine.memory.size() - 1:
+                a = 1
+            else:
+                a = machine.memory.get(machine.instr_pointer.get() + 1)
 
+            if a == 0:
+                    machine.reg_a.increment()
+            elif a == 2:
+                    machine.reg_c.increment()
+            else:    
+                machine.reg_b.increment()
+class dec:
+    def __init__(self):
+        pass
+    def execute(self,machine):
+        machine.reg_b.decrement()
+class add:
+    def __init__(self):
+        pass
+    def execute(self,machine):
+         machine.reg_b.write(machine.reg_b.read() + machine.reg_c.read())
+class sub:
+    def __init__(self):
+        pass
+    def execute(self,machine):
+        machine.reg_b.write(machine.reg_b.read() - machine.reg_c.read())
+class nand:
+    def __init__(self):
+        pass
+    def execute(self,machine):
+        machine.reg_b.write( ~(machine.reg_b.read() & machine.reg_c.read())) 
+class h_alloc:
+    def __init__(self):
+        pass
+    def execute(self,machine):
+        machine.memory_size = machine.memory_size + machine.memory_size_child
+class h_divide:
+    def __init__(self):
+        pass
+    def execute(self,machine):
+        
 class CPUEmulator:
 
     # An Avida machine needs the following libraries to function:
@@ -189,6 +253,7 @@ class CPUEmulator:
         
         # Maximum memory size of the Machine. At the moment hard-coded to 10
         self.memory_size = 10
+        self.memory_size_child = 10
         
         # TODO: Add the three "read", "write" and "flow control" heads
         # TODO: Add input and output buffers which the organism (machine)
@@ -213,12 +278,12 @@ class CPUEmulator:
         
         # A way of putting a limit on the maximum size of memory.
         # At the moment hard-coded to 10
-        if len(p.instructions) > self.memory_size:
-            raise Exception('Memory exceeds the maximum allowed length')
+       # if len(p.instructions) > self.memory_size:
+       #     raise Exception('Memory exceeds the maximum allowed length')
         
         # What are we writing to memory again?
         # The instructions or just symbols? I'd say the instructions. Not implemented yet.
-        self.memory.write(p.instructions)
+        #   self.memory.write(p.instructions)
 
     # The method which defines which function is to be executed after reading each instruction.
     # The functions to be executed aren't defined explicitly as functions, but as a set of statements after a case check
@@ -525,7 +590,7 @@ print(Machine)
 a = InstructionSwap()
 
 # 3) Run the instruction with the run function. Pass the CPUEmulator as an attribute
-a.run(Machine)
+a.execute(Machine)
 
 # 4) Test whether it does what it should. 
 # In this case we expect the registers B and C to be swapped
