@@ -2,6 +2,7 @@
 from queue import LifoQueue
 from queue import Queue
 
+
 # %%
 class Program:
 
@@ -91,7 +92,6 @@ class Memory:
     
     def read(self):
         return self.content
-    
 # %%
 
 # Separate the hardware from the CPUEmulator
@@ -138,12 +138,21 @@ class CPU:
         
 # %%
 
-# BIG TODO: Implement a separate class for each instruction
+# TODO: Implement a separate class for each instruction
 # There are some technicalities here, like, how to have the instructions be able to access
 # the underlying hardware
 # Ard's idea: Pass the Hardware as an argument to the execute() function of the instruction instance
+# %%
 
+class InstructionSwap:
+    def __init__(self):
+        pass
 
+    # TODO: Raise exception if machine not instance of CPUEmulator
+    def execute(self, machine):
+        temp = machine.reg_b.read()
+        machine.reg_b.write(machine.reg_c.read())
+        machine.reg_c.write(temp)
 # %%
 
 class CPUEmulator:
