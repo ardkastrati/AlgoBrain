@@ -1,3 +1,6 @@
+# TODO: This is a big and general one. DOCUMENT THE CODE BETTER.
+# Write a full documentation. It will reveal itself once we have a functional system.
+# %%
 # Keeping track of all the imports we'll need
 from queue import LifoQueue
 from queue import Queue
@@ -92,6 +95,7 @@ class Memory:
     
     def read(self):
         return self.content
+    
 # %%
 
 # Separate the hardware from the CPUEmulator
@@ -142,17 +146,94 @@ class CPU:
 # There are some technicalities here, like, how to have the instructions be able to access
 # the underlying hardware
 # Ard's idea: Pass the Hardware as an argument to the execute() function of the instruction instance
-# %%
 
-class InstructionSwap:
+# TODO: Template matching and nop's as modifiers for all instructions
+# TODO: Test the instructions
+# TODO: Change the implementation to follow the Command design pattern. Right now it doesn't
+# Big difference: The execute function of the Command pattern takes no arguments.
+# All arguments it could need are passed into the construction of the Command object
+# %%
+class InstructionNopA:
+    
     def __init__(self):
         pass
+    
+    def execute(self,machine):
+        pass
+
+# %%
+class InstructionNopB:
+    
+    def __init__(self):
+        pass
+    
+    def execute(self,machine):
+        pass
+    
+# %%
+class InstructionNopC:
+    
+    def __init__(self):
+        pass
+    
+    def execute(self,machine):
+        pass
+
+#%%
+class InstructionIfNEq:
+    
+    def __init__(self):
+        pass
+    
+    def execute(self,machine):
+        if machine.reg_b.read() != machine.reg_c.read():
+            pass # Do nothing, the next instruction will be executed
+        else:
+            machine.instr_pointer.increment(2) # To skip the next instruction, increase IP by 2
+        
+# %%
+class InstructionIfLess:
+    
+    def __init__(self):
+        pass
+    
+    def execute(self,machine):
+        if machine.reg_b.get() < machine.reg_c.get():
+            pass
+        else:
+            machine.instr_pointer.increment(2)
+        
+# %%
+class InstructionPop:
+    
+    def __init__(self, cpu):
+        self.machine = cpu
+    
+    def execute(self):
+        
+        # Making sure that if the stack is empty, pop returns a 0 and not an exception
+        # as is defined in the implementation of the LifoQueue()
+        # QUESTION: Should we define a class stack instead of using
+        # a ready-made implementation?
+        if self.machine.active_stack.empty():
+            temp = 0
+        else:
+            temp = self.machine.active_stack.get()
+            
+        
+        self.machine.reg_b.write(temp)
+# %%
+class InstructionSwap:
+    
+    def __init__(self, cpu):
+        self.machine = cpu
 
     # TODO: Raise exception if machine not instance of CPUEmulator
-    def execute(self, machine):
-        temp = machine.reg_b.read()
-        machine.reg_b.write(machine.reg_c.read())
-        machine.reg_c.write(temp)
+    def execute(self):
+        temp = self.machine.reg_b.read()
+        self.machine.reg_b.write(self.machine.reg_c.read())
+        self.machine.reg_c.write(temp)
+
 # %%
 class InstructionSwapStack:
     def __init__(self):
@@ -226,6 +307,8 @@ class CPUEmulator:
 
     def __init__(self, a, b, c):
         
+        self.cpu = CPU()
+        
         # The three registers:
 
         self.reg_a = Register(a)
@@ -268,6 +351,8 @@ class CPUEmulator:
     # which saves a program and executes it at the same time
 
     # Read a Program type instance and save its instructions in the memory of the CPU
+    # TODO: Change functionality not to direct saving but to parsing.
+    # Does that make sense?
     def read_program(self, p):
         
         # Check if what we're trying to read is an instance od type "Program"
@@ -520,7 +605,7 @@ class CPUEmulator:
         elif i == 25:
             pass
                 
-
+        
         # i is how we index the different instructions.
         # Here it's the instruction pointer that we should manipulate, not i
         
@@ -532,7 +617,6 @@ class CPUEmulator:
         #        i+=2
         #    #print("instruction here")
 
-        
         # Which instructions are these exactly?
         #if i == 9:
         #    if self.reg_b == self.reg_c:
@@ -600,7 +684,7 @@ print(Machine)
 # %%
 
 
-# TESTS:
+# TESTS (NO LONGER VALID. SEE ABOVE):
     
 # Three swaps on register B and its complement
 program0 = Program([5,5,5])
