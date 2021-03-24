@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <bits/stdc++.h>
+//#include <chrono>
 using namespace std;
 
 
@@ -8,16 +9,35 @@ bool Try (qp, r0, R0, t0, P)    //Try(start in last address, first task, all tas
 {
     stack <float> S;       //initialize empty stack
 
+    //the stack is supposed to start out empty, how do we fill it up now?
+
+    int r = r0;
+
+    //set R=R0,  for the bottom while loop we need to know the length of R
+    
     int t = t0;
+
+    bool Done = false;
 
     bool mark = false;      //we want mark(r) to indicate when we've made changes, s.t. we can save previous state values to undo^
 
     while(R > 0 && t <= P*T && "instruction pointer valid" && "instruction valid") 
     {
-        //execute token z(ip(r))(r)
-        //increase time t continually
+        //execute token z(ip(r))(r)  ->  save token as integer on stack and push
+
+        //increase time t continuously, problem I see is that if we would just measure execution time we would have to measure for entire WHILE, so outside of the loop, but then we couldnt use t to compare to P*T in condition, so we have to find a way to increase t in the loop which considers computation time
         //
+
+        if (mark == false  && "changes to state occurred")
+        {
+            mark = true;
+
+        }
+
+        //set r equal to the next task in R
     }
+
+    Done = true;
 
     //return boolean; when what?
 }
@@ -37,6 +57,5 @@ int main()
 
    }
     
-
     return 0;
 }
