@@ -501,7 +501,7 @@ class CPUEmulator:
     # A string representation of the state of the machine
     def __str__(self):
         string_representation = "Register A: " + str(self.reg_a.read()) + "\nRegister B: " + str(
-            self.reg_b.read()) + "\nRegister C: " + str(self.reg_c.read()) + "\nInstruction Pointer: " + str(self.instr_pointer.get()) + "\nMemory Content: " + str(self.memory.read())
+            self.reg_b.read()) + "\nRegister C: " + str(self.reg_c.read()) + "\nInstruction Pointer: " + str(self.instr_pointer.get()) + "\nMemory Content: " + str(self.memory.read()) + "\n"
         return string_representation
 
 # %%
