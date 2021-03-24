@@ -158,7 +158,7 @@ class CPU:
 # %%
 class InstructionNopA:
     
-    def __init__(self,cpu):
+    def __init__(self,emulator):
         pass
     
     def execute(self):
@@ -167,7 +167,7 @@ class InstructionNopA:
 
 class InstructionNopB:
     
-    def __init__(self,cpu):
+    def __init__(self,emulator):
         pass
     
     def execute(self):
@@ -176,7 +176,7 @@ class InstructionNopB:
 
 class InstructionNopC:
     
-    def __init__(self,cpu):
+    def __init__(self,emulator):
         pass
     
     def execute(self):
@@ -185,8 +185,8 @@ class InstructionNopC:
 
 class InstructionIfNEq:
     
-    def __init__(self,cpu):
-        self.machine = cpu
+    def __init__(self,emulator):
+        self.machine = emulator
     
     def execute(self):
         if self.machine.reg_b.read() != self.machine.reg_c.read():
@@ -197,20 +197,20 @@ class InstructionIfNEq:
 
 class InstructionIfLess:
     
-    def __init__(self):
-        pass
+    def __init__(self, emulator):
+        self.machine = emulator.cpu
     
     def execute(self,machine):
-        if machine.reg_b.get() < machine.reg_c.get():
+        if self.machine.reg_b.get() < self.machine.reg_c.get():
             pass
         else:
-            machine.instr_pointer.increment(2)
+            self.machine.instr_pointer.increment(2)
         
 
 class InstructionPop:
     
-    def __init__(self, cpu):
-        self.machine = cpu
+    def __init__(self, emulator):
+        self.machine = emulator.cpu
     
     def execute(self):
         
@@ -314,9 +314,6 @@ class h_divide:
 # %%
 
 class CPUEmulator:
-
-    # An Avida machine needs the following libraries to function:
-    # from queue import LifoQueue
 
     def __init__(self, a, b, c):
         
@@ -631,6 +628,8 @@ class CPUEmulator:
         return string_representation
 
 # %%
+
+# Three swaps on register B and its complement
 Machine = CPUEmulator(0,1,5)
 print(Machine)
 program0 = Program([5,5,5])
