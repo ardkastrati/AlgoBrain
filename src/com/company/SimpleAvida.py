@@ -104,6 +104,9 @@ class Memory:
 
 class CPU:
     
+    # Should we define getters and setters for all of the components of the CPU
+    # or just acces them directly? For now, it's direct access
+    
     def __init__(self, a, b, c):
          # The three registers:
 
@@ -155,43 +158,43 @@ class CPU:
 # %%
 class InstructionNopA:
     
-    def __init__(self):
+    def __init__(self,cpu):
         pass
     
-    def execute(self,machine):
+    def execute(self):
         pass
 
-# %%
+
 class InstructionNopB:
     
-    def __init__(self):
+    def __init__(self,cpu):
         pass
     
-    def execute(self,machine):
+    def execute(self):
         pass
     
-# %%
+
 class InstructionNopC:
     
-    def __init__(self):
+    def __init__(self,cpu):
         pass
     
-    def execute(self,machine):
+    def execute(self):
         pass
 
-#%%
+
 class InstructionIfNEq:
     
-    def __init__(self):
-        pass
+    def __init__(self,cpu):
+        self.machine = cpu
     
-    def execute(self,machine):
-        if machine.reg_b.read() != machine.reg_c.read():
+    def execute(self):
+        if self.machine.reg_b.read() != self.machine.reg_c.read():
             pass # Do nothing, the next instruction will be executed
         else:
-            machine.instr_pointer.increment(2) # To skip the next instruction, increase IP by 2
+            self.machine.instr_pointer.increment(2) # To skip the next instruction, increase IP by 2
         
-# %%
+
 class InstructionIfLess:
     
     def __init__(self):
@@ -203,7 +206,7 @@ class InstructionIfLess:
         else:
             machine.instr_pointer.increment(2)
         
-# %%
+
 class InstructionPop:
     
     def __init__(self, cpu):
@@ -222,11 +225,11 @@ class InstructionPop:
             
         
         self.machine.reg_b.write(temp)
-# %%
+        
 class InstructionSwap:
     
-    def __init__(self, cpu):
-        self.machine = cpu
+    def __init__(self, emulator):
+        self.machine = emulator.cpu
 
     # TODO: Raise exception if machine not instance of CPUEmulator
     def execute(self):
@@ -234,7 +237,6 @@ class InstructionSwap:
         self.machine.reg_b.write(self.machine.reg_c.read())
         self.machine.reg_c.write(temp)
 
-# %%
 class InstructionSwapStack:
     def __init__(self):
         pass
@@ -243,11 +245,13 @@ class InstructionSwapStack:
             machine.active_stack= machine.stack1
         else:
             machine.active_stack = machine.stack2
+            
 class RightShift:
      def __init__(self):
          pass
      def execute(self,machine):
             machine.reg_b.write(machine.reg_b.read() >> 1)
+            
 class LeftShift:
     def __init__(self):
         pass
@@ -270,36 +274,45 @@ class inc:
                     machine.reg_c.increment()
             else:    
                 machine.reg_b.increment()
+                
 class dec:
     def __init__(self):
         pass
     def execute(self,machine):
         machine.reg_b.decrement()
+        
 class add:
     def __init__(self):
         pass
     def execute(self,machine):
          machine.reg_b.write(machine.reg_b.read() + machine.reg_c.read())
+         
 class sub:
     def __init__(self):
         pass
     def execute(self,machine):
         machine.reg_b.write(machine.reg_b.read() - machine.reg_c.read())
+        
 class nand:
     def __init__(self):
         pass
     def execute(self,machine):
-        machine.reg_b.write( ~(machine.reg_b.read() & machine.reg_c.read())) 
+        machine.reg_b.write( ~(machine.reg_b.read() & machine.reg_c.read()))
+        
 class h_alloc:
     def __init__(self):
         pass
     def execute(self,machine):
         machine.memory_size = machine.memory_size + machine.memory_size_child
+        
 class h_divide:
     def __init__(self):
         pass
     def execute(self,machine):
-        
+        pass
+    
+# %%
+
 class CPUEmulator:
 
     # An Avida machine needs the following libraries to function:
@@ -307,73 +320,28 @@ class CPUEmulator:
 
     def __init__(self, a, b, c):
         
-        self.cpu = CPU()
-        
-        # The three registers:
+        self.cpu = CPU(a,b,c)
+        self.memory = []
 
-        self.reg_a = Register(a)
-        self.reg_b = Register(b)
-        self.reg_c = Register(c)
-
-        # The instruction pointer. Initialize to 0.
-        self.instr_pointer = InstructionPointer()
-        
-        # The two stacks. Only one is active at a time.
-        # By default it is stack0 in the beginning.
-        self.stack0 = LifoQueue()
-        self.stack1 = LifoQueue()
-        
-        # active_stack is a pointer to the currently active stack, not a copy of it.
-        # Exactly what we need.
-        self.active_stack = self.stack0
-        
-        # The memory for the instructions. Initialize to empty list
-        self.memory = Memory()
-        
-        # The input and output buffers. Implemented as FIFO Queues
-        self.input_buffer = Queue()
-        self.output_buffer = Queue()
-        
-        # Maximum memory size of the Machine. At the moment hard-coded to 10
-        self.memory_size = 10
-        self.memory_size_child = 10
-        
-        # TODO: Add the three "read", "write" and "flow control" heads
-        # TODO: Add input and output buffers which the organism (machine)
-        # will use to interact with the environment
-        
-        # OPEN QUESTION: How to approach the task of the reward system?
-        # We have no restrictions on the machines at the moment.
-
-    # Do we need the separate methods "read_Program" and "execute_Program"?
-    # Is there any advantage to this that we could see being useful to us in the future?
-    # Is it better to maybe just wrap it all up in one method, "execute_Program(self,p)"
-    # which saves a program and executes it at the same time
-
-    # Read a Program type instance and save its instructions in the memory of the CPU
-    # TODO: Change functionality not to direct saving but to parsing.
-    # Does that make sense?
-    def read_program(self, p):
+    # Parse a Program type instance, load it into the memory of the CPUEmulator
+    # as a list of Instruction type objects
+    def load_program(self, p):
         
         # Check if what we're trying to read is an instance od type "Program"
         if not isinstance(p, Program):
             raise NotImplementedError
             print("In Machine.read_program(p), p is not an instance of Program")
             
-        
-        # A way of putting a limit on the maximum size of memory.
-        # At the moment hard-coded to 10
-       # if len(p.instructions) > self.memory_size:
-       #     raise Exception('Memory exceeds the maximum allowed length')
-        
-        # What are we writing to memory again?
-        # The instructions or just symbols? I'd say the instructions. Not implemented yet.
-        #   self.memory.write(p.instructions)
+        # Parsing
+        for instruction in p.instructions:
+            
+            # For now just swap
+            if instruction == 5:
+                self.memory.append(InstructionSwap(self))
 
-    # The method which defines which function is to be executed after reading each instruction.
-    # The functions to be executed aren't defined explicitly as functions, but as a set of statements after a case check
-
+    
     # All of this is to be replaced with custom instruction classes
+    # OBSOLETE
     def execute_instruction(self, i):
         
         # This here will set the active stack to stack0 every time we execute an instruction.
@@ -629,7 +597,7 @@ class CPUEmulator:
         #        self.reg_b = self.reg_b+1
         #    else:
         #        self.reg_b = self.reg_b+2
-
+        
     # Execute the list of instruction that's stored in the CPU's memory
     def execute_program(self):
 
@@ -639,12 +607,12 @@ class CPUEmulator:
         # This is easy to do, let's just leave it for when we have replicating organisms,
         # otherwise we'd just have one program that repeats itself infinitely many times
 
-        while self.instr_pointer.get() < self.memory.size():
+        while self.cpu.instr_pointer.get() < len(self.memory):
             
             # Save current instruction pointer value to later check if it was explicitly changed by an instruction
-            temp = self.instr_pointer.get()
+            temp = self.cpu.instr_pointer.get()
 
-            self.execute_instruction(self.memory.get(self.instr_pointer.get()))
+            self.memory[self.cpu.instr_pointer.get()].execute()
 
             # We have to allow for the possibility of the instruction changing the value of the IP
             # But we also have to ensure that if the instruction did nothing to explicitly change the IP,
@@ -653,32 +621,21 @@ class CPUEmulator:
             # Two options: Explicitly make each instruction change the IP as desired, or:
 
             # If it wasn't changed by an instruction, increase by 1, otherwise leave it
-            if self.instr_pointer.get() == temp:
-                self.instr_pointer.increment()
+            if self.cpu.instr_pointer.get() == temp:
+                self.cpu.instr_pointer.increment()
 
     # A string representation of the state of the machine
     def __str__(self):
-        string_representation = "Register A: " + str(self.reg_a.read()) + "\nRegister B: " + str(
-            self.reg_b.read()) + "\nRegister C: " + str(self.reg_c.read()) + "\nInstruction Pointer: " + str(self.instr_pointer.get()) + "\nMemory Content: " + str(self.memory.read()) + "\n"
+        string_representation = "Register A: " + str(self.cpu.reg_a.read()) + "\nRegister B: " + str(
+            self.cpu.reg_b.read()) + "\nRegister C: " + str(self.cpu.reg_c.read()) + "\nInstruction Pointer: " + str(self.cpu.instr_pointer.get()) + "\n"
         return string_representation
 
 # %%
-
-# How to test the instructions (here on example of swap):
-    
-# 1) Define a CPUEmulator Machine
 Machine = CPUEmulator(0,1,5)
 print(Machine)
-
-# 2) Create an instance of the instruction class
-a = InstructionSwap()
-
-# 3) Run the instruction with the run function. Pass the CPUEmulator as an attribute
-a.execute(Machine)
-
-# 4) Test whether it does what it should. 
-# In this case we expect the registers B and C to be swapped
-
+program0 = Program([5,5,5])
+Machine.load_program(program0)
+Machine.execute_program()
 print(Machine)
 
 # %%
