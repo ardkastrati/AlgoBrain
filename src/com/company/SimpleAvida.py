@@ -149,7 +149,7 @@ class InstructionSwap:
         pass
 
     # TODO: Raise exception if machine not instance of CPUEmulator
-    def execute(self, machine):
+    def run(self, machine):
         temp = machine.reg_b.read()
         machine.reg_b.write(machine.reg_c.read())
         machine.reg_c.write(temp)
@@ -514,6 +514,26 @@ class CPUEmulator:
         return string_representation
 
 # %%
+
+# How to test the instructions (here on example of swap):
+    
+# 1) Define a CPUEmulator Machine
+Machine = CPUEmulator(0,1,5)
+print(Machine)
+
+# 2) Create an instance of the instruction class
+a = InstructionSwap()
+
+# 3) Run the instruction with the run function. Pass the CPUEmulator as an attribute
+a.run(Machine)
+
+# 4) Test whether it does what it should. 
+# In this case we expect the registers B and C to be swapped
+
+print(Machine)
+
+# %%
+
 
 # TESTS:
     
