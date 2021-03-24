@@ -2,7 +2,6 @@
 from queue import LifoQueue
 from queue import Queue
 
-
 # %%
 class Program:
 
@@ -35,10 +34,66 @@ class Program:
         self.check_Validity(instr_list)
 
         self.instructions = instr_list
-
+        
+# %%
+class Register:
+    
+    # Default initialization to 0
+    def __init__(self,value = 0):
+        self.content = value
+        
+    def write(self,value):
+        self.content = value
+        
+    def read(self):
+        return self.content
+    
+    def increment(self, a = 1):
+        self.content += a
+        
+    def decrement(self, b = 1):
+        self.content -= b
+        
 # %%
 
-class Machine:
+class InstructionPointer:
+    
+    def __init__(self):
+        self.value = 0
+    
+    def get(self):
+        return self.value
+    
+    def increment(self, a = 1):
+        self.value += a
+    
+# %%
+class Memory:
+    
+    def __init__(self):
+        self.content = []
+    
+    # Maybe we should implement a function that checks if what we're writing to memory makes sense
+    # This only writes to the end of the memory, not at any index
+    def write(self,value):
+        self.content = value
+        
+    # Wipe the memory completely
+    def wipe(self):
+        self.content = []
+        
+    def size(self):
+        return len(self.content)
+    
+    def get(self,index):
+        return self.content[index]
+    
+    def read(self):
+        return self.content
+        
+# %%
+
+class CPUEmulator:
 
     # An Avida machine needs the following libraries to function:
     # from queue import LifoQueue
@@ -47,12 +102,12 @@ class Machine:
         
         # The three registers:
 
-        self.reg_a = a
-        self.reg_b = b
-        self.reg_c = c
+        self.reg_a = Register(a)
+        self.reg_b = Register(b)
+        self.reg_c = Register(c)
 
         # The instruction pointer. Initialize to 0.
-        self.instr_pointer = 0
+        self.instr_pointer = InstructionPointer()
         
         # The two stacks. Only one is active at a time.
         # By default it is stack0 in the beginning.
@@ -64,7 +119,7 @@ class Machine:
         self.active_stack = self.stack0
         
         # The memory for the instructions. Initialize to empty list
-        self.memory = []
+        self.memory = Memory()
         
         # The input and output buffers. Implemented as FIFO Queues
         self.input_buffer = Queue()
@@ -98,13 +153,15 @@ class Machine:
         # At the moment hard-coded to 10
         if len(p.instructions) > self.memory_size:
             raise Exception('Memory exceeds the maximum allowed length')
-
-        self.memory = p.instructions
+        
+        # What are we writing to memory again?
+        # The instructions or just symbols? I'd say the instructions. Not implemented yet.
+        self.memory.write(p.instructions)
 
     # The method which defines which function is to be executed after reading each instruction.
     # The functions to be executed aren't defined explicitly as functions, but as a set of statements after a case check
 
-    # When we get a couple more of them we can see whether it makes sense to also define seperate functions for each instr.
+    # All of this is to be replaced with custom instruction classes
     def execute_instruction(self, i):
         
         # This here will set the active stack to stack0 every time we execute an instruction.
@@ -115,8 +172,6 @@ class Machine:
         # This will be a lookup table where we'll see what each instruction is supposed to do
         
         # The instruction set as given on page 49 of reference paper
-        
-            
         
         # nop-a
         if i == 0:
@@ -142,81 +197,81 @@ class Machine:
             # for what the next instruction is because it produces an error,
             # instead we execute in on the defaul register.
             # This is to be changed once we introduce circular memory
-            if self.instr_pointer == len(self.memory) - 1:
+            if self.instr_pointer.get() == self.memory.size() - 1:
                 a = 1
             else:
-                a = self.memory[self.instr_pointer + 1]
+                a = self.memory.get(self.instr_pointer.get() + 1)
 
             if a == 0:
-                    if self.reg_a != self.reg_b:
+                    if self.reg_a.read() != self.reg_b.read():
                         pass # Do nothing, the next instruction will be executed
                     else:
-                        self.instr_pointer += 2 # To skip the next instruction, increase IP by 2
+                        self.instr_pointer.increment(2) # To skip the next instruction, increase IP by 2
             elif a == 2:
-                    if self.reg_c != self.reg_a:
+                    if self.reg_c.read() != self.reg_a.read():
                         pass # Do nothing, the next instruction will be executed
                     else:
-                        self.instr_pointer += 2 # To skip the next instruction, increase IP by 2
+                        self.instr_pointer.increment(2) # To skip the next instruction, increase IP by 2
             else:    
-                if self.reg_b != self.reg_c:
+                if self.reg_b.read() != self.reg_c.read():
                     pass # Do nothing, the next instruction will be executed
                 else:
-                    self.instr_pointer += 2 # To skip the next instruction, increase IP by 2
+                    self.instr_pointer.increment(2) # To skip the next instruction, increase IP by 2
                 
         # if-less
         elif i == 4:
             # Checking whether the next instruction is a nop:
-            if self.instr_pointer == len(self.memory) - 1:
+            if self.instr_pointer.get() == self.memory.size() - 1:
                 a = 1
             else:
-                a = self.memory[self.instr_pointer + 1]
+                a = self.memory.get(self.instr_pointer.get() + 1)
             
             if a == 0:
-                if self.reg_a < self.reg_b:
+                if self.reg_a.get() < self.reg_b.get():
                     pass
                 else:
-                    self.instr_pointer += 2
+                    self.instr_pointer.increment(2)
             if a == 2:
-                if self.reg_c < self.reg_a:
+                if self.reg_c.get() < self.reg_a.get():
                     pass
                 else:
-                    self.instr_pointer += 2
+                    self.instr_pointer.increment(2)
             else:
-                if self.reg_b < self.reg_c:
+                if self.reg_b.get() < self.reg_c.get():
                     pass
                 else:
-                    self.instr_pointer += 2
+                    self.instr_pointer.increment(2)
             
         # swap
         elif i == 5:
             # Checking whether the next instruction is a nop:
-            if self.instr_pointer == len(self.memory) - 1:
+            if self.instr_pointer.get() == self.memory.size() - 1:
                 a = 1
             else:
-                a = self.memory[self.instr_pointer + 1]
+                a = self.memory.get(self.instr_pointer.get() + 1)
             
             if a == 0:
-                temp = self.reg_a
-                self.reg_a = self.reg_b
-                self.reg_b = temp
+                temp = self.reg_a.read()
+                self.reg_a.write(self.reg_b.read())
+                self.reg_b.write(temp)
             elif a == 2:
-                temp = self.reg_c
-                self.reg_c = self.reg_a
-                self.reg_a = temp
+                temp = self.reg_c.read()
+                self.reg_c.write(self.reg_a.read())
+                self.reg_a.write(temp)
             else:
-                temp = self.reg_b
-                self.reg_b = self.reg_c
-                self.reg_c = temp
+                temp = self.reg_b.read()
+                self.reg_b.write(self.reg_c.read())
+                self.reg_c.write(temp)
                 
         # pop. TODO: Template matching
         elif i == 6:
             # NOTE: If stack is empty, pop should return 0 (see page 11 of original Avida paper)
             
             # Checking whether the next instruction is a nop:
-            if self.instr_pointer == len(self.memory) - 1:
+            if self.instr_pointer.get() == self.memory.size() - 1:
                 a = 1
             else:
-                a = self.memory[self.instr_pointer + 1]
+                a = self.memory.get(self.instr_pointer.get() + 1)
                 
             if self.active_stack.empty():
                 temp = 0
@@ -224,15 +279,15 @@ class Machine:
                 temp = self.active_stack.get()
                 
             if a == 0:
-                self.reg_a = temp
+                self.reg_a.write(temp)
             elif a == 2:
-                self.reg_c = temp
+                self.reg_c.write(temp)
             else:
-                self.reg_b = temp
+                self.reg_b.write(temp)
             
         # push. TODO: Template matching
         elif i == 7:
-            self.active_stack.put(self.reg_b)
+            self.active_stack.put(self.reg_b.read())
             
         # swap-stk
         elif i == 8:
@@ -243,44 +298,42 @@ class Machine:
             
         # shift-r. TODO: Template matching
         elif i == 9:
-            self.reg_b = self.reg_b >> 1 # Bitwise 1 right shift
+            self.reg_b.write(self.reg_b.read() >> 1) # Bitwise 1 right shift
             
         # shift-l. TODO: Template matching
         elif i == 10:
-            self.reg_b = self.reg_b << 1 # Bitwise 1 left shift
+            self.reg_b.write(self.reg_b.read() << 1) # Bitwise 1 left shift
         
         # inc. TODO: Template matching
         elif i == 11:
             # Checking whether the next instruction is a nop:
-            if self.instr_pointer == len(self.memory) - 1:
+            if self.instr_pointer.get() == self.memory.size() - 1:
                 a = 1
             else:
-                a = self.memory[self.instr_pointer + 1]
+                a = self.memory.get(self.instr_pointer.get() + 1)
 
             if a == 0:
-                    self.reg_a += 1
-            elif a == 1:
-                    self.reg_b += 1
+                    self.reg_a.increment()
             elif a == 2:
-                    self.reg_c += 1
+                    self.reg_c.increment()
             else:    
-                self.reg_b = self.reg_b + 1
+                self.reg_b.increment()
             
         # dec. TODO: Template matching
         elif i == 12:
-            self.reg_b = self.reg_b - 1
+            self.reg_b.decrement()
             
         # add. TODO: Template matching
         elif i == 13:
-            self.reg_b = self.reg_b + self.reg_c
+            self.reg_b.write(self.reg_b.read() + self.reg_c.read())
         
         # sub. TODO: Template matching
         elif i == 14:
-            self.reg_b = self.reg_b - self.reg_c
+            self.reg_b.write(self.reg_b.read() - self.reg_c.read())
             
         # nand. TODO: Template matching
         elif i == 15:
-            self.reg_b = ~(self.reg_b & self.reg_c) # Bitwise NAND
+            self.reg_b.write( ~(self.reg_b.read() & self.reg_c.read())) # Bitwise NAND
         
         # h-alloc. TODO: All
         # The instruction allocates new memory, necessary for self-replication
@@ -375,12 +428,12 @@ class Machine:
         # This is easy to do, let's just leave it for when we have replicating organisms,
         # otherwise we'd just have one program that repeats itself infinitely many times
 
-        while self.instr_pointer < len(self.memory):
+        while self.instr_pointer.get() < self.memory.size():
             
             # Save current instruction pointer value to later check if it was explicitly changed by an instruction
-            temp = self.instr_pointer
+            temp = self.instr_pointer.get()
 
-            self.execute_instruction(self.memory[self.instr_pointer])
+            self.execute_instruction(self.memory.get(self.instr_pointer.get()))
 
             # We have to allow for the possibility of the instruction changing the value of the IP
             # But we also have to ensure that if the instruction did nothing to explicitly change the IP,
@@ -389,22 +442,24 @@ class Machine:
             # Two options: Explicitly make each instruction change the IP as desired, or:
 
             # If it wasn't changed by an instruction, increase by 1, otherwise leave it
-            if self.instr_pointer == temp:
-                self.instr_pointer += 1
+            if self.instr_pointer.get() == temp:
+                self.instr_pointer.increment()
 
     # A string representation of the state of the machine
     def __str__(self):
-        string_representation = "Register A: " + str(self.reg_a) + "\nRegister B: " + str(
-            self.reg_b) + "\nRegister C: " + str(self.reg_c) + "\nInstruction Pointer: " + str(self.instr_pointer) +"\n"
+        string_representation = "Register A: " + str(self.reg_a.read()) + "\nRegister B: " + str(
+            self.reg_b.read()) + "\nRegister C: " + str(self.reg_c.read()) + "\nInstruction Pointer: " + str(self.instr_pointer.get()) + "\nMemory Content: " + str(self.memory.read())
         return string_representation
+
 # %%
+
 
 # TESTS:
     
 # Three swaps on register B and its complement
 program0 = Program([5,5,5])
 program0.instructions
-machine0 = Machine(4, 7, 8)
+machine0 = CPUEmulator(4, 7, 8)
 print(machine0)
 machine0.read_program(program0)
 machine0.execute_program()
@@ -414,7 +469,7 @@ print(machine0)
 # three increments on modified register C
 
 program1 = Program([11, 11, 11, 0, 11, 2, 11, 2, 11, 2])
-machine1 = Machine(0,0,0)
+machine1 = CPUEmulator(0,0,0)
 print(machine1)
 machine1.read_program(program1)
 machine1.execute_program()
@@ -422,5 +477,5 @@ print(machine1)
 
 # Trying to read a program of larger length than the hard-coded Machine memory 10
 program2 = Program([0,1,2,3,4,5,6,7,8,9,10])
-machine2 = Machine(0,0,0)
+machine2 = CPUEmulator(0,0,0)
 machine2.read_program(program2)
