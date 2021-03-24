@@ -91,7 +91,59 @@ class Memory:
     
     def read(self):
         return self.content
+    
+# %%
+
+# Separate the hardware from the CPUEmulator
+# TODO: Replace all of the elements of the CPUEmulator which rely on direct access to
+# this virtual hardware
+
+class CPU:
+    
+    def __init__(self, a, b, c):
+         # The three registers:
+
+        self.reg_a = Register(a)
+        self.reg_b = Register(b)
+        self.reg_c = Register(c)
+
+        # The instruction pointer. Initialize to 0.
+        self.instr_pointer = InstructionPointer()
         
+        # The two stacks. Only one is active at a time.
+        # By default it is stack0 in the beginning.
+        self.stack0 = LifoQueue()
+        self.stack1 = LifoQueue()
+        
+        # active_stack is a pointer to the currently active stack, not a copy of it.
+        # Exactly what we need.
+        self.active_stack = self.stack0
+        
+        # The memory for the instructions. Initialize to empty list
+        self.memory = Memory()
+        
+        # The input and output buffers. Implemented as FIFO Queues
+        self.input_buffer = Queue()
+        self.output_buffer = Queue()
+        
+        # Maximum memory size of the Machine. At the moment hard-coded to 10
+        self.memory_size = 10
+        
+        # TODO: Add the three "read", "write" and "flow control" heads
+        # TODO: Add input and output buffers which the organism (machine)
+        # will use to interact with the environment
+        
+        # OPEN QUESTION: How to approach the task of the reward system?
+        # We have no restrictions on the machines at the moment.
+        
+# %%
+
+# BIG TODO: Implement a separate class for each instruction
+# There are some technicalities here, like, how to have the instructions be able to access
+# the underlying hardware
+# Ard's idea: Pass the Hardware as an argument to the execute() function of the instruction instance
+
+
 # %%
 
 class CPUEmulator:
