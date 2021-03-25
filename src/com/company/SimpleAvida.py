@@ -70,7 +70,18 @@ class InstructionPointer:
     
     def increment(self, a = 1):
         self.value += a
-    
+# %%
+class ReadHead:
+    def __init__(self):
+        pass
+# %% 
+class WriteHead:
+    def __init__(self):
+        pass
+# %% 
+class flowcontrolHead:
+    def __init__(self):
+        pass
 # %%
 class Memory:
     
@@ -238,77 +249,77 @@ class InstructionSwap:
         self.machine.reg_c.write(temp)
 
 class InstructionSwapStack:
-    def __init__(self):
-        pass
-    def execute(self,machine):
-        if machine.active_stack == machine.stack0:
-            machine.active_stack= machine.stack1
+    def __init__(self,emulator):
+        self.machine = emulator.cpu
+    def execute(self):
+        if self.machine.active_stack == self.machine.stack0:
+            self.machine.active_stack= self.machine.stack1
         else:
-            machine.active_stack = machine.stack2
+            self.machine.active_stack = self.machine.stack2
             
 class RightShift:
-     def __init__(self):
-         pass
-     def execute(self,machine):
-            machine.reg_b.write(machine.reg_b.read() >> 1)
+     def __init__(self,emulator):
+         self.machine = emulator.cpu
+     def execute(self):
+            self.machine.reg_b.write(self.machine.reg_b.read() >> 1)
             
 class LeftShift:
-    def __init__(self):
-        pass
-    def execute(self,machine):
-        machine.reg_b.write(machine.reg_b.read() << 1)
+    def __init__(self,emulator):
+        self.machine = emulator.cpu
+    def execute(self):
+        self.machine.reg_b.write(self.machine.reg_b.read() << 1)
         
 class inc:
-    def __init__(self):
-        pass
-    def execute(self,machine):
+    def __init__(self,emulator):
+        self.machine = emulator.cpu
+    def execute(self):
      # Checking whether the next instruction is a nop:
-            if machine.instr_pointer.get() == machine.memory.size() - 1:
+            if self.machine.instr_pointer.get() == self.machine.memory.size() - 1:
                 a = 1
             else:
-                a = machine.memory.get(machine.instr_pointer.get() + 1)
+                a = self.machine.memory.get(self.machine.instr_pointer.get() + 1)
 
             if a == 0:
-                    machine.reg_a.increment()
+                    self.machine.reg_a.increment()
             elif a == 2:
-                    machine.reg_c.increment()
+                    self.machine.reg_c.increment()
             else:    
-                machine.reg_b.increment()
+                self.machine.reg_b.increment()
                 
 class dec:
-    def __init__(self):
-        pass
-    def execute(self,machine):
-        machine.reg_b.decrement()
+    def __init__(self,emulator):
+        self.machine = emulator.cpu
+    def execute(self):
+        self.machine.reg_b.decrement()
         
 class add:
-    def __init__(self):
-        pass
-    def execute(self,machine):
-         machine.reg_b.write(machine.reg_b.read() + machine.reg_c.read())
+    def __init__(self,emulator):
+        self.machine = emulator.cpu
+    def execute(self):
+         self.machine.reg_b.write(self.machine.reg_b.read() + self.machine.reg_c.read())
          
 class sub:
-    def __init__(self):
-        pass
-    def execute(self,machine):
-        machine.reg_b.write(machine.reg_b.read() - machine.reg_c.read())
+    def __init__(self,emulator):
+        self.machine = emulator.cpu
+    def execute(self):
+        self.machine.reg_b.write(self.machine.reg_b.read() - self.machine.reg_c.read())
         
 class nand:
-    def __init__(self):
-        pass
-    def execute(self,machine):
-        machine.reg_b.write( ~(machine.reg_b.read() & machine.reg_c.read()))
+    def __init__(self,emulator):
+        self.machine = emulator.cpu
+    def execute(self):
+        self.machine.reg_b.write( ~(self.machine.reg_b.read() & self.machine.reg_c.read()))
         
 class h_alloc:
-    def __init__(self):
-        pass
-    def execute(self,machine):
-        machine.memory_size = machine.memory_size + machine.memory_size_child
+    def __init__(self,emulator):
+        self.machine = emulator.cpu
+    def execute(self):
+        self.machine.memory_size = self.machine.memory_size + self.machine.memory_size_child
         
 class h_divide:
-    def __init__(self):
-        pass
-    def execute(self,machine):
+    def __init__(self,emulator):
+        self.machine = emulator.cpu
+    def execute(self):
         pass
     
 # %%
@@ -643,7 +654,7 @@ print(Machine)
 # TESTS (NO LONGER VALID. SEE ABOVE):
     
 # Three swaps on register B and its complement
-program0 = Program([5,5,5])
+"""program0 = Program([5,5,5])
 program0.instructions
 machine0 = CPUEmulator(4, 7, 8)
 print(machine0)
@@ -665,3 +676,4 @@ print(machine1)
 program2 = Program([0,1,2,3,4,5,6,7,8,9,10])
 machine2 = CPUEmulator(0,0,0)
 machine2.read_program(program2)
+"""
