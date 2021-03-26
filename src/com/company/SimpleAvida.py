@@ -151,16 +151,8 @@ class CPU:
         
 # %%
 
-# TODO: Implement a separate class for each instruction
-# There are some technicalities here, like, how to have the instructions be able to access
-# the underlying hardware
-# Ard's idea: Pass the Hardware as an argument to the execute() function of the instruction instance
-
 # TODO: Template matching and nop's as modifiers for all instructions
 # TODO: Test the instructions
-# TODO: Change the implementation to follow the Command design pattern. Right now it doesn't
-# Big difference: The execute function of the Command pattern takes no arguments.
-# All arguments it could need are passed into the construction of the Command object
 
 # %% The Instructions
 
