@@ -30,11 +30,12 @@ class Program:
         i = 0
         for instruction in instr_list:
             i += 1
+           
             if instruction < 0 or instruction > 25 or int(instruction) != instruction:
                 print("Invalid instruction at index " + str(i))
                 raise NotImplementedError
                 
-                
+            
         # We can surely do this with assertions. Is it the optimal way to do it though?
     
     # The constructor
@@ -79,18 +80,26 @@ class InstructionPointer:
 
 class ReadHead:
     
-    def __init__(self):
-        self.value = 0
-
+    def __init__(self,machine = 0):
+        self.machine = machine
+        #self.value = value
+    def get(self):
+        return self.machine
+    def inc(self):
+        self.machine +=1 
+    
 class WriteHead:
     
-    def __init__(self):
-        self.value = 0
-
+    def __init__(self,machine = 1):
+        self.value = machine
+    def inc(self):
+        self.value +=1
 class FlowControlHead:
     
     def __init__(self):
         self.value = 0
+    def sethead(self,value):
+        self.value = value
 # %% The Memory
 
 class Memory:
@@ -340,15 +349,15 @@ class InstructionRightShift:
         else:
             next = self.emulator.memory.get(self.emulator.instr_pointer.get() + 1)
             
-        self.machine.reg_b.write(self.machine.reg_b.read() >> 1)
+        self.emulator.reg_b.write(self.emulator.reg_b.read() >> 1)
             
 class InstructionLeftShift:
     
-    def __init__(self):
-        pass
+    def __init__(self,emulator):
+        self.emulator = emulator
     
-    def execute(self,machine):
-        machine.reg_b.write(machine.reg_b.read() << 1)
+    def execute(self):
+        self.emulator.reg_b.write(self.emulator.reg_b.read() << 1)
         
 class InstructionInc:
     
@@ -417,11 +426,11 @@ class InstructionHAlloc:
 class InstructionHDivide:
     
     def __init__(self,emulator):
-        pass
+        self.emulator = emulator
     
     def execute(self):
+        #print(self.emulator.read_head.get())
         pass
-
     
 class InstructionIO:
     
@@ -521,12 +530,12 @@ class CPUEmulator:
             print("In Machine.read_program(p), p is not an instance of Program")
             
         # Check if the program we're trying to read doesn't exceed the memory size of the CPUEmulator
-        if len(p.instructions) > self.memory_size:
-            raise Exception("Program length exceeds Emulator memory size")
+        #if len(p.instructions) > self.memory_size:
+        #    raise Exception("Program length exceeds Emulator memory size")
             
         # Parsing
         for instruction in p.instructions:
-            
+            self.read_head.inc()
             # For now just swap
             if instruction == 0:
                 self.memory.append(InstructionNopA(self))
@@ -608,7 +617,7 @@ class CPUEmulator:
                 
             elif instruction == 25:
                 self.memory.append(InstructionIfLabel(self))
-    
+            
     def execute_program(self):
 
         # For now it just executes each instruction in the list one by one.
@@ -618,12 +627,12 @@ class CPUEmulator:
         # otherwise we'd just have one program that repeats itself infinitely many times
 
         while self.instr_pointer.get() < self.memory.size():
-            
+            self.write_head.inc()
             # Save current instruction pointer value to later check if it was explicitly changed by an instruction
             temp = self.instr_pointer.get()
 
             self.memory.get(self.instr_pointer.get()).execute()
-
+            WriteHead()
             # If the IP wasn't changed by an instruction, increase by 1, otherwise leave it
             if self.instr_pointer.get() == temp:
                 self.instr_pointer.increment()
@@ -653,7 +662,7 @@ print(Emulator0)
 
 Emulator1 = CPUEmulator(0,0,0)
 print(Emulator1)
-program1 = Program([11, 11, 11, 0, 11, 2, 11, 2, 11, 2])
+program1 = Program([11, 11, 11, 0, 17, 2, 11, 2, 11, 2])
 Emulator1.load_program(program1)
 Emulator1.execute_program()
 print(Emulator1)
