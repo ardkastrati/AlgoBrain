@@ -95,8 +95,6 @@ class ReadHead:
     
     def set(self,a):
         self.value = a
-    
-
 
 class WriteHead:
     
@@ -575,6 +573,7 @@ class InstructionHDivide:
         
         while iterator < self.emulator.write_head.get():
             temp.append(self.emulator.program[iterator])
+            iterator += 1
             
         result = Program(temp)
         return result
@@ -676,7 +675,7 @@ class InstructionMovHead:
             self.emulator.write_head.set(self.emulator.fc_head.get())
                 
         else:
-            self.machine.instr_pointer.set(self.emulator.fc_head.get())
+            self.emulator.instr_pointer.set(self.emulator.fc_head.get())
         
 # Advance the ?Instruction-Head? by CX positions, and set the
 # CX register to the initial position of the head.
@@ -698,6 +697,7 @@ class InstructionJmpHead:
             
         if isinstance(next, InstructionNopB):
             temp1 = self.emulator.read_head.get()
+<<<<<<< Updated upstream
             self.emulator.read_head.inc(temp)
                 
         elif isinstance(next, InstructionNopC):
@@ -706,25 +706,67 @@ class InstructionJmpHead:
                 
         else:
             temp1 = self.emulator.instr_pointer.get()
+=======
+            self.emulator.read_head.increment(temp)
+                
+        elif isinstance(next, InstructionNopC):
+            temp1 = self.emulator.write_head.get()
+            self.emulator.write_head.increment(temp)
+                
+        else:
+            temp1 = self.machine.instr_pointer.get()
+>>>>>>> Stashed changes
             self.emulator.instr_pointer.increment(temp)
             
         self.emulator.cpu.reg_c.write(temp1)
-    
+
+# Write the position of the ?Instruction-Head? into the CX register
+# A - instruction, default
+# B - read
+# C - write
 class InstructionGetHead:
     
     def __init__(self,emulator):
-        pass
+        self.emulator = emulator
     
     def execute(self):
-        pass
+        if self.emulator.instr_pointer.get() >= self.emulator.memory.size() - 1:
+            next = 0
+        else:
+            next = self.emulator.memory.get(self.emulator.instr_pointer.get() + 1)
+            
+        if isinstance(next, InstructionNopB):
+            self.emulator.cpu.reg_c.write(self.emulator.read_head.get())
+                
+        elif isinstance(next, InstructionNopC):
+            self.emulator.cpu.reg_c.write(self.emulator.write_head.get())
+        else:
+            self.emulator.cpu.reg_c.write(self.emulator.instr_pointer.get())
 
+# Set the ?Flow-Control-Head? to the address pointed to by the
+# ?CX? register.
+
+# A - instruction, default
+# B - read
+# C - write
 class InstructionSetFlow:
     
     def __init__(self,emulator):
-        pass
+        self.emulator = emulator
     
     def execute(self):
-        pass
+        
+        if self.emulator.instr_pointer.get() >= self.emulator.memory.size() - 1:
+            next = 0
+        else:
+            next = self.emulator.memory.get(self.emulator.instr_pointer.get() + 1)
+            
+        if isinstance(next, InstructionNopA):
+            self.emulator.fc_head.set(self.emulator.cpu.reg_a)
+        elif isinstance(next, InstructionNopB):
+            self.emulator.fc_head.set(self.emulator.cpu.reg_b)
+        else:
+            self.emulator.fc_head.set(self.emulator.cpu.reg_c)
 
 class InstructionIfLabel:
     
@@ -769,16 +811,16 @@ class CPUEmulator:
             raise NotImplementedError
             print("In Machine.read_program(p), p is not an instance of Program")
             
-        # Check if the program we're trying to read doesn't exceed the memory size of the CPUEmulator
-        #if len(p.instructions) > self.memory_size:
-        #    raise Exception("Program length exceeds Emulator memory size")
+        #Check if the program we're trying to read doesn't exceed the memory size of the CPUEmulator
+        if len(p.instructions) > self.memory_size:
+            raise Exception("Program length exceeds Emulator memory size")
             
         # Parsing
         
         self.program = p
         
         for instruction in p.instructions:
-            self.read_head.inc()
+            self.read_head.increment()
             # For now just swap
             if instruction == 0:
                 self.memory.append(InstructionNopA(self))
@@ -870,12 +912,11 @@ class CPUEmulator:
         # otherwise we'd just have one program that repeats itself infinitely many times
 
         while self.instr_pointer.get() < self.memory.size():
-            self.write_head.inc()
+            self.write_head.increment()
             # Save current instruction pointer value to later check if it was explicitly changed by an instruction
             temp = self.instr_pointer.get()
 
             self.memory.get(self.instr_pointer.get()).execute()
-            WriteHead()
             # If the IP wasn't changed by an instruction, increase by 1, otherwise leave it
             if self.instr_pointer.get() == temp:
                 self.instr_pointer.increment()
