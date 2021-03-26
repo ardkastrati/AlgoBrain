@@ -87,7 +87,7 @@ class ReadHead:
     def __init__(self):
         self.value = 0
     
-    def increment(self, a = 1):
+    def inc(self, a = 1):
         self.value += a
         
     def get(self):
@@ -103,7 +103,7 @@ class WriteHead:
     def __init__(self):
         self.value = 0
     
-    def increment(self, a = 1):
+    def inc(self, a = 1):
         self.value += a
         
     def get(self):
@@ -571,9 +571,9 @@ class InstructionHDivide:
     
     def execute(self):        
         temp = []
-        iterator = self.emulator.read_head
+        iterator = self.emulator.read_head.get()
         
-        while iterator < self.emulator.write_head:
+        while iterator < self.emulator.write_head.get():
             temp.append(self.emulator.program[iterator])
             
         result = Program(temp)
@@ -697,16 +697,16 @@ class InstructionJmpHead:
         temp = self.emulator.cpu.reg_c.read()
             
         if isinstance(next, InstructionNopB):
-            temp1 = self.machine.read_head.get()
-            self.machine.read_head.increment(temp)
+            temp1 = self.emulator.read_head.get()
+            self.emulator.read_head.inc(temp)
                 
         elif isinstance(next, InstructionNopC):
-            temp1 = self.machine.write_head.get()
-            self.machine.write_head.increment(temp)
+            temp1 = self.emulator.write_head.get()
+            self.emulator.write_head.inc(temp)
                 
         else:
-            temp1 = self.machine.instr_pointer.get()
-            self.machine.instr_pointer.increment(temp)
+            temp1 = self.emulator.instr_pointer.get()
+            self.emulator.instr_pointer.increment(temp)
             
         self.emulator.cpu.reg_c.write(temp1)
     
