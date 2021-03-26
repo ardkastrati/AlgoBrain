@@ -96,8 +96,8 @@ class WriteHead:
         self.value +=1
 class FlowControlHead:
     
-    def __init__(self):
-        self.value = 0
+    def __init__(self,machine = 0):
+        self.value = machine
     def sethead(self,value):
         self.value = value
 # %% The Memory
@@ -468,11 +468,12 @@ class InstructionMovHead:
 class InstructionJmpHead:
     
     def __init__(self,emulator):
-        pass
+        self.emulator = emulator
     
     def execute(self):
-        pass
-    
+        temp = self.emulator.instr_pointer.get()
+        self.emulator.instr_pointer.increment(self.emulator.cpu.reg_c.read())
+        self.emulator.cpu.reg_c.write(temp)
 class InstructionGetHead:
     
     def __init__(self,emulator):
@@ -662,7 +663,7 @@ print(Emulator0)
 
 Emulator1 = CPUEmulator(0,0,0)
 print(Emulator1)
-program1 = Program([11, 11, 11, 0, 17, 2, 11, 2, 11, 2])
+program1 = Program([11, 11, 11, 0, 17, 2, 22, 2, 11, 2])
 Emulator1.load_program(program1)
 Emulator1.execute_program()
 print(Emulator1)
