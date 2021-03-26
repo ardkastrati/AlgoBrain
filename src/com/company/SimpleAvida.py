@@ -802,8 +802,8 @@ class CPUEmulator:
             print("In Machine.read_program(p), p is not an instance of Program")
             
         #Check if the program we're trying to read doesn't exceed the memory size of the CPUEmulator
-        if len(p.instructions) > self.memory_size:
-            raise Exception("Program length exceeds Emulator memory size")
+#        if len(p.instructions) > self.memory_size:
+#            raise Exception("Program length exceeds Emulator memory size")
             
         # Parsing
         

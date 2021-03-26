@@ -4,8 +4,9 @@ Created on Fri Mar 26 17:40:52 2021
 
 @author: Tbuob
 """
-
-import SimpleAvida
+import numpy as np
+import Standardprogram as stp
+import SimpleAvida as SA
 """Cell == Programm!"""
 """Thinking about how to implement the Avida-World"""
 #%%
@@ -17,8 +18,23 @@ class World:
         self.emulator = emulator
     """How many cells can be alive at the same time"""
     def Worldsize(size):
+        world = np.zeros([size,size])
+        
     #TODO
         pass
+    def Place_Cell(self,size,world):
+        self.world = world
+        a = np.random.randint(0,size)
+        b = np.random.randint(0,size)
+        #Place Cell into our matrix from which we know, what places
+        #are full and which places are not. Important for replication
+        world[a,b]=1
+        temp = stp.startprogram(a,b)
+        SA.cpuemulator(temp)
+        
+        
+        
+        
     """Call the function"""
     def Functioncall(instructionlist):
     #TODO    
