@@ -87,7 +87,7 @@ class ReadHead:
     def __init__(self):
         self.value = 0
     
-    def inc(self, a = 1):
+    def increment(self, a = 1):
         self.value += a
         
     def get(self):
@@ -101,7 +101,7 @@ class WriteHead:
     def __init__(self):
         self.value = 0
     
-    def inc(self, a = 1):
+    def increment(self, a = 1):
         self.value += a
         
     def get(self):
@@ -697,16 +697,7 @@ class InstructionJmpHead:
             
         if isinstance(next, InstructionNopB):
             temp1 = self.emulator.read_head.get()
-<<<<<<< Updated upstream
-            self.emulator.read_head.inc(temp)
-                
-        elif isinstance(next, InstructionNopC):
-            temp1 = self.emulator.write_head.get()
-            self.emulator.write_head.inc(temp)
-                
-        else:
-            temp1 = self.emulator.instr_pointer.get()
-=======
+
             self.emulator.read_head.increment(temp)
                 
         elif isinstance(next, InstructionNopC):
@@ -715,7 +706,6 @@ class InstructionJmpHead:
                 
         else:
             temp1 = self.machine.instr_pointer.get()
->>>>>>> Stashed changes
             self.emulator.instr_pointer.increment(temp)
             
         self.emulator.cpu.reg_c.write(temp1)
@@ -946,7 +936,7 @@ print(Emulator0)
 
 Emulator1 = CPUEmulator(0,0,0)
 print(Emulator1)
-program1 = Program([11, 11, 11, 0, 17, 2, 22, 2, 11, 2])
+program1 = Program([11, 11, 11, 0, 11, 2, 11, 2, 11, 2])
 Emulator1.load_program(program1)
 Emulator1.execute_program()
 print(Emulator1)
