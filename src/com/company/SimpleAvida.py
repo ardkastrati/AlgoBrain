@@ -520,6 +520,10 @@ class CPUEmulator:
             raise NotImplementedError
             print("In Machine.read_program(p), p is not an instance of Program")
             
+        # Check if the program we're trying to read doesn't exceed the memory size of the CPUEmulator
+        if len(p.instructions) > self.memory_size:
+            raise Exception("Program length exceeds Emulator memory size")
+            
         # Parsing
         for instruction in p.instructions:
             
@@ -620,13 +624,7 @@ class CPUEmulator:
 
             self.memory.get(self.instr_pointer.get()).execute()
 
-            # We have to allow for the possibility of the instruction changing the value of the IP
-            # But we also have to ensure that if the instruction did nothing to explicitly change the IP,
-            # that it's automatically increased by 1
-
-            # Two options: Explicitly make each instruction change the IP as desired, or:
-
-            # If it wasn't changed by an instruction, increase by 1, otherwise leave it
+            # If the IP wasn't changed by an instruction, increase by 1, otherwise leave it
             if self.instr_pointer.get() == temp:
                 self.instr_pointer.increment()
 
@@ -660,33 +658,7 @@ Emulator1.load_program(program1)
 Emulator1.execute_program()
 print(Emulator1)
 
-
-# %%
-
-
-# TESTS (NO LONGER VALID. SEE ABOVE):
-    
-# Three swaps on register B and its complement
-"""program0 = Program([5,5,5])
-program0.instructions
-machine0 = CPUEmulator(4, 7, 8)
-print(machine0)
-machine0.read_program(program0)
-machine0.execute_program()
-print(machine0)
-
-# Two increments on default register B, one increment on modified register A,
-# three increments on modified register C
-
-program1 = Program([11, 11, 11, 0, 11, 2, 11, 2, 11, 2])
-machine1 = CPUEmulator(0,0,0)
-print(machine1)
-machine1.read_program(program1)
-machine1.execute_program()
-print(machine1)
-
 # Trying to read a program of larger length than the hard-coded Machine memory 10
+Emulator2 = CPUEmulator(0,0,0)
 program2 = Program([0,1,2,3,4,5,6,7,8,9,10])
-machine2 = CPUEmulator(0,0,0)
-machine2.read_program(program2)
-"""
+Emulator2.load_program(program2)
