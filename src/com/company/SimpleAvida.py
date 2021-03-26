@@ -108,26 +108,19 @@ class CPU:
     # or just acces them directly? For now, it's direct access
     
     def __init__(self, a, b, c):
-         # The three registers:
-
+         
+        # The three registers:
         self.reg_a = Register(a)
         self.reg_b = Register(b)
         self.reg_c = Register(c)
-
-        # The instruction pointer. Initialize to 0.
-        self.instr_pointer = InstructionPointer()
         
         # The two stacks. Only one is active at a time.
         # By default it is stack0 in the beginning.
         self.stack0 = LifoQueue()
         self.stack1 = LifoQueue()
         
-        # active_stack is a pointer to the currently active stack, not a copy of it.
-        # Exactly what we need.
+        # active_stack is a pointer to the currently active stack.
         self.active_stack = self.stack0
-        
-        # The memory for the instructions. Initialize to empty list
-        self.memory = Memory()
         
         # The input and output buffers. Implemented as FIFO Queues
         self.input_buffer = Queue()
@@ -206,6 +199,16 @@ class InstructionIfLess:
         else:
             self.machine.instr_pointer.increment(2)
         
+class InstructionSwap:
+    
+    def __init__(self, emulator):
+        self.machine = emulator.cpu
+
+    # TODO: Raise exception if machine not instance of CPUEmulator
+    def execute(self):
+        temp = self.machine.reg_b.read()
+        self.machine.reg_b.write(self.machine.reg_c.read())
+        self.machine.reg_c.write(temp)
 
 class InstructionPop:
     
@@ -226,43 +229,50 @@ class InstructionPop:
         
         self.machine.reg_b.write(temp)
         
-class InstructionSwap:
+class InstructionPush:
     
     def __init__(self, emulator):
         self.machine = emulator.cpu
-
-    # TODO: Raise exception if machine not instance of CPUEmulator
+        
     def execute(self):
-        temp = self.machine.reg_b.read()
-        self.machine.reg_b.write(self.machine.reg_c.read())
-        self.machine.reg_c.write(temp)
+        self.machine.active_stack.put(self.machine.reg_b.read())
+        
 
 class InstructionSwapStack:
+    
     def __init__(self):
         pass
+    
     def execute(self,machine):
         if machine.active_stack == machine.stack0:
             machine.active_stack= machine.stack1
         else:
             machine.active_stack = machine.stack2
             
-class RightShift:
+class InstructionRightShift:
+    
      def __init__(self):
          pass
+     
      def execute(self,machine):
             machine.reg_b.write(machine.reg_b.read() >> 1)
             
-class LeftShift:
+class InstructionLeftShift:
+    
     def __init__(self):
         pass
+    
     def execute(self,machine):
         machine.reg_b.write(machine.reg_b.read() << 1)
         
-class inc:
+class InstructionInc:
+    
     def __init__(self):
         pass
+    
     def execute(self,machine):
      # Checking whether the next instruction is a nop:
+     # NOTE: It's not gonna work like this
             if machine.instr_pointer.get() == machine.memory.size() - 1:
                 a = 1
             else:
@@ -275,40 +285,117 @@ class inc:
             else:    
                 machine.reg_b.increment()
                 
-class dec:
+class InstructionDec:
+    
     def __init__(self):
         pass
+    
     def execute(self,machine):
         machine.reg_b.decrement()
         
-class add:
+class InstructionAdd:
+    
     def __init__(self):
         pass
+    
     def execute(self,machine):
          machine.reg_b.write(machine.reg_b.read() + machine.reg_c.read())
          
-class sub:
+class InstructionSub:
+    
     def __init__(self):
         pass
+    
     def execute(self,machine):
         machine.reg_b.write(machine.reg_b.read() - machine.reg_c.read())
         
-class nand:
+class InstructionNand:
+    
     def __init__(self):
         pass
+    
     def execute(self,machine):
         machine.reg_b.write( ~(machine.reg_b.read() & machine.reg_c.read()))
         
-class h_alloc:
+class InstructionHAlloc:
+    
     def __init__(self):
         pass
+    
     def execute(self,machine):
         machine.memory_size = machine.memory_size + machine.memory_size_child
         
-class h_divide:
+class InstructionHDivide:
+    
     def __init__(self):
         pass
+    
     def execute(self,machine):
+        pass
+    
+class InstructionIO:
+    
+    def __init__(self,emulator):
+        pass
+    
+    def execute(self):
+        pass
+    
+class InstructionHCopy:
+    
+    def __init__(self,emulator):
+        pass
+    
+    def execute(self):
+        pass
+    
+class InstructionHSearch:
+    
+    def __init__(self,emulator):
+        pass
+    
+    def execute(self):
+        pass
+    
+    
+class InstructionMovHead:
+    
+    def __init__(self,emulator):
+        pass
+    
+    def execute(self):
+        pass
+    
+class InstructionJmpHead:
+    
+    def __init__(self,emulator):
+        pass
+    
+    def execute(self):
+        pass
+    
+class InstructionGetHead:
+    
+    def __init__(self,emulator):
+        pass
+    
+    def execute(self):
+        pass
+
+class InstructionSetFlow:
+    
+    def __init__(self,emulator):
+        pass
+    
+    def execute(self):
+        pass
+
+class InstructionIfLabel:
+    
+    def __init__(self,emulator):
+        pass
+    
+    def execute(self):
         pass
     
 # %%
@@ -319,6 +406,7 @@ class CPUEmulator:
         
         self.cpu = CPU(a,b,c)
         self.memory = []
+        self.instr_pointer = InstructionPointer()
 
     # Parse a Program type instance, load it into the memory of the CPUEmulator
     # as a list of Instruction type objects
@@ -333,269 +421,87 @@ class CPUEmulator:
         for instruction in p.instructions:
             
             # For now just swap
-            if instruction == 5:
+            if instruction == 0:
+                self.memory.append(InstructionNopA(self))
+                
+            elif instruction == 1:
+                self.memory.append(InstructionNopB(self))
+                
+            elif instruction == 2:
+                self.memory.append(InstructionNopC(self))
+                
+            elif instruction == 3:
+                self.memory.append(InstructionIfNEq(self))
+                
+            elif instruction == 4:
+                self.memory.append(InstructionIfLess(self))
+                
+            elif instruction == 5:
                 self.memory.append(InstructionSwap(self))
-
+                
+            elif instruction == 6:
+                self.memory.append(InstructionPop(self))
+                
+            elif instruction == 7:
+                self.memory.append(InstructionPush(self))
+                
+            elif instruction == 8:
+                self.memory.append(InstructionSwapStack(self))
+                
+            elif instruction == 9:
+                self.memory.append(InstructionSwapStack(self))
+                
+            elif instruction == 9:
+                self.memory.append(InstructionRightShift(self))
+                
+            elif instruction == 10:
+                self.memory.append(InstructionLeftShift(self))
+                
+            elif instruction == 11:
+                self.memory.append(InstructionInc(self))
+            
+            elif instruction == 12:
+                self.memory.append(InstructionDec(self))
+                
+            elif instruction == 13:
+                self.memory.append(InstructionAdd(self))
+                
+            elif instruction == 14:
+                self.memory.append(InstructionSub(self))
+                
+            elif instruction == 15:
+                self.memory.append(InstructionNand(self))
+            
+            elif instruction == 16:
+                self.memory.append(InstructionHAlloc(self))
+                
+            elif instruction == 17:
+                self.memory.append(InstructionHDivide(self))
+                
+            elif instruction == 18:
+                self.memory.append(InstructionIO(self))
+                
+            elif instruction == 19:
+                self.memory.append(InstructionHCopy(self))
+            
+            elif instruction == 20:
+                self.memory.append(InstructionHSearch(self))
+                
+            elif instruction == 21:
+                self.memory.append(InstructionMovHead(self))
+                
+            elif instruction == 22:
+                self.memory.append(InstructionJmpHead(self))
+                
+            elif instruction == 23:
+                self.memory.append(InstructionGetHead(self))
+                
+            elif instruction == 24:
+                self.memory.append(InstructionSetFlow(self))
+                
+            elif instruction == 25:
+                self.memory.append(InstructionIfLabel(self))
     
-    # All of this is to be replaced with custom instruction classes
-    # OBSOLETE
-    def execute_instruction(self, i):
-        
-        # This here will set the active stack to stack0 every time we execute an instruction.
-        # Do we want that?
-        #self.active_stack = self.stack0
-        
-        
-        # This will be a lookup table where we'll see what each instruction is supposed to do
-        
-        # The instruction set as given on page 49 of reference paper
-        
-        # nop-a
-        if i == 0:
-            pass
-        
-        # nop-b
-        elif i == 1:
-            pass
-        
-        # nop-c
-        elif i == 2:
-            pass
-        
-        # if-n-equ
-        # We need to be careful how we manipulate the instruction pointer
-        # If it wasn't explicitly changed, it will increase by 1, otherwise it will follow the explicit change
-        elif i == 3:
-            
-            # Checking whether the next instruction is a nop:
-                
-            # At the moment we don't have circular memory
-            # If we're at the last instruction we won't do any checking
-            # for what the next instruction is because it produces an error,
-            # instead we execute in on the defaul register.
-            # This is to be changed once we introduce circular memory
-            if self.instr_pointer.get() == self.memory.size() - 1:
-                a = 1
-            else:
-                a = self.memory.get(self.instr_pointer.get() + 1)
-
-            if a == 0:
-                    if self.reg_a.read() != self.reg_b.read():
-                        pass # Do nothing, the next instruction will be executed
-                    else:
-                        self.instr_pointer.increment(2) # To skip the next instruction, increase IP by 2
-            elif a == 2:
-                    if self.reg_c.read() != self.reg_a.read():
-                        pass # Do nothing, the next instruction will be executed
-                    else:
-                        self.instr_pointer.increment(2) # To skip the next instruction, increase IP by 2
-            else:    
-                if self.reg_b.read() != self.reg_c.read():
-                    pass # Do nothing, the next instruction will be executed
-                else:
-                    self.instr_pointer.increment(2) # To skip the next instruction, increase IP by 2
-                
-        # if-less
-        elif i == 4:
-            # Checking whether the next instruction is a nop:
-            if self.instr_pointer.get() == self.memory.size() - 1:
-                a = 1
-            else:
-                a = self.memory.get(self.instr_pointer.get() + 1)
-            
-            if a == 0:
-                if self.reg_a.get() < self.reg_b.get():
-                    pass
-                else:
-                    self.instr_pointer.increment(2)
-            if a == 2:
-                if self.reg_c.get() < self.reg_a.get():
-                    pass
-                else:
-                    self.instr_pointer.increment(2)
-            else:
-                if self.reg_b.get() < self.reg_c.get():
-                    pass
-                else:
-                    self.instr_pointer.increment(2)
-            
-        # swap
-        elif i == 5:
-            # Checking whether the next instruction is a nop:
-            if self.instr_pointer.get() == self.memory.size() - 1:
-                a = 1
-            else:
-                a = self.memory.get(self.instr_pointer.get() + 1)
-            
-            if a == 0:
-                temp = self.reg_a.read()
-                self.reg_a.write(self.reg_b.read())
-                self.reg_b.write(temp)
-            elif a == 2:
-                temp = self.reg_c.read()
-                self.reg_c.write(self.reg_a.read())
-                self.reg_a.write(temp)
-            else:
-                temp = self.reg_b.read()
-                self.reg_b.write(self.reg_c.read())
-                self.reg_c.write(temp)
-                
-        # pop. TODO: Template matching
-        elif i == 6:
-            # NOTE: If stack is empty, pop should return 0 (see page 11 of original Avida paper)
-            
-            # Checking whether the next instruction is a nop:
-            if self.instr_pointer.get() == self.memory.size() - 1:
-                a = 1
-            else:
-                a = self.memory.get(self.instr_pointer.get() + 1)
-                
-            if self.active_stack.empty():
-                temp = 0
-            else:
-                temp = self.active_stack.get()
-                
-            if a == 0:
-                self.reg_a.write(temp)
-            elif a == 2:
-                self.reg_c.write(temp)
-            else:
-                self.reg_b.write(temp)
-            
-        # push. TODO: Template matching
-        elif i == 7:
-            self.active_stack.put(self.reg_b.read())
-            
-        # swap-stk
-        elif i == 8:
-            if self.active_stack == self.stack0:
-                self.active_stack = self.stack1
-            else:
-                self.active_stack = self.stack0
-            
-        # shift-r. TODO: Template matching
-        elif i == 9:
-            self.reg_b.write(self.reg_b.read() >> 1) # Bitwise 1 right shift
-            
-        # shift-l. TODO: Template matching
-        elif i == 10:
-            self.reg_b.write(self.reg_b.read() << 1) # Bitwise 1 left shift
-        
-        # inc. TODO: Template matching
-        elif i == 11:
-            # Checking whether the next instruction is a nop:
-            if self.instr_pointer.get() == self.memory.size() - 1:
-                a = 1
-            else:
-                a = self.memory.get(self.instr_pointer.get() + 1)
-
-            if a == 0:
-                    self.reg_a.increment()
-            elif a == 2:
-                    self.reg_c.increment()
-            else:    
-                self.reg_b.increment()
-            
-        # dec. TODO: Template matching
-        elif i == 12:
-            self.reg_b.decrement()
-            
-        # add. TODO: Template matching
-        elif i == 13:
-            self.reg_b.write(self.reg_b.read() + self.reg_c.read())
-        
-        # sub. TODO: Template matching
-        elif i == 14:
-            self.reg_b.write(self.reg_b.read() - self.reg_c.read())
-            
-        # nand. TODO: Template matching
-        elif i == 15:
-            self.reg_b.write( ~(self.reg_b.read() & self.reg_c.read())) # Bitwise NAND
-        
-        # h-alloc. TODO: All
-        # The instruction allocates new memory, necessary for self-replication
-        # Extends the memory by the maximal size the offspring is allowed to have
-        # For now let's hard-code that size to 10 instructions
-        # The newly inserted memory is initilized either to a default instruction
-        # (typically nop-A) or to random code
-        elif i == 16:
-            pass
-        
-        # h-divide. TODO: All
-        # After self-replication has been completed, h-divide splits off the instructions
-        # between the read head and the write head and uses them as the genome for the
-        # offspring organism
-        
-        # After splitting off, the state of both the parent and the offspring is cleared
-        # (registers and queues reset, all pointers reset to position 0)
-        
-        # There are conditions under which h-divide fails
-        elif i == 17:
-            pass
-            
-        # IO. TODO: All
-        elif i == 18:
-            pass
-        
-        # h-copy. TODO: All
-        # Copies the instruction at the position of the read head to the 
-        # position of the write head and advances both heads by 1
-        
-        # First let's implement a standard copy algorithm, but afterwards we'll need
-        # to think of mutations
-        elif i == 19:
-            pass
-        
-        # h-search. TODO: All
-        elif i == 20:
-            pass
-        
-        # mov-head. TODO: All
-        elif i == 21:
-            pass
-        
-        # jmp-head. TODO: All
-        elif i == 22:
-            pass
-        
-        # get-head. TODO: All
-        elif i == 23:
-            pass
-        
-        # set-flow. TODO: All
-        elif i == 24:
-            pass
-        
-        # if-label. TODO: All
-        elif i == 25:
-            pass
-                
-        
-        # i is how we index the different instructions.
-        # Here it's the instruction pointer that we should manipulate, not i
-        
-        # compare if register a == register b
-        #if i == 1:
-        #    if(self.reg_b != self.reg_c):
-        #        i+=1
-        #    else:
-        #        i+=2
-        #    #print("instruction here")
-
-        # Which instructions are these exactly?
-        #if i == 9:
-        #    if self.reg_b == self.reg_c:
-        #        self.reg_b = False
-        #    else:
-        #        self.reg_b = True
-        
-        #if i == 10:
-        #    if self.reg_b < self.reg_c:
-        #        self.reg_b = self.reg_b+1
-        #    else:
-        #        self.reg_b = self.reg_b+2
-        
-    # Execute the list of instruction that's stored in the CPU's memory
     def execute_program(self):
 
         # For now it just executes each instruction in the list one by one.
@@ -604,12 +510,12 @@ class CPUEmulator:
         # This is easy to do, let's just leave it for when we have replicating organisms,
         # otherwise we'd just have one program that repeats itself infinitely many times
 
-        while self.cpu.instr_pointer.get() < len(self.memory):
+        while self.instr_pointer.get() < len(self.memory):
             
             # Save current instruction pointer value to later check if it was explicitly changed by an instruction
-            temp = self.cpu.instr_pointer.get()
+            temp = self.instr_pointer.get()
 
-            self.memory[self.cpu.instr_pointer.get()].execute()
+            self.memory[self.instr_pointer.get()].execute()
 
             # We have to allow for the possibility of the instruction changing the value of the IP
             # But we also have to ensure that if the instruction did nothing to explicitly change the IP,
@@ -618,8 +524,8 @@ class CPUEmulator:
             # Two options: Explicitly make each instruction change the IP as desired, or:
 
             # If it wasn't changed by an instruction, increase by 1, otherwise leave it
-            if self.cpu.instr_pointer.get() == temp:
-                self.cpu.instr_pointer.increment()
+            if self.instr_pointer.get() == temp:
+                self.instr_pointer.increment()
 
     # A string representation of the state of the machine
     def __str__(self):
