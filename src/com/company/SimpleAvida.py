@@ -1,18 +1,23 @@
 # TODO: This is a big and general one. DOCUMENT THE CODE BETTER.
 # Write a full documentation. It will reveal itself once we have a functional system.
+
 # %%
 # Keeping track of all the imports we'll need
 from queue import LifoQueue
 from queue import Queue
 
+# Should we define separate classes for Stacks and Buffers too maybe?
+# Probably.
 
-# %%
+
+# %% The Program
+
 class Program:
 
     # AVIDA Program class.
     
     # An instance of this class is nothing more than a list of instructions in AVIDA.
-    # Each instruction is to be interpreted by the "Machine".
+    # Each instruction is to be interpreted by the "CPUEmulator".
     # The instructions are symbols in an alphabet given by the instruction set.
     
     # Our instruction set has 26 instructions.
@@ -20,7 +25,7 @@ class Program:
     # is that all of the elements of the list of instructions are integers in range(0,26)
 
 
-     # Will check whether the passed list is a valid list of instructions. TODO.
+     # Will check whether the passed list is a valid list of instructions.
     def check_Validity(self, instr_list):
         i = 0
         for instruction in instr_list:
@@ -39,7 +44,8 @@ class Program:
 
         self.instructions = instr_list
         
-# %%
+# %% The Registers
+
 class Register:
     
     # Default initialization to 0
@@ -58,7 +64,7 @@ class Register:
     def decrement(self, b = 1):
         self.content -= b
         
-# %%
+# %% The Heads
 
 class InstructionPointer:
     
@@ -70,19 +76,23 @@ class InstructionPointer:
     
     def increment(self, a = 1):
         self.value += a
-# %%
+
 class ReadHead:
+    
     def __init__(self):
-        pass
-# %% 
+        self.value = 0
+
 class WriteHead:
+    
     def __init__(self):
-        pass
-# %% 
-class flowcontrolHead:
+        self.value = 0
+
+class FlowControlHead:
+    
     def __init__(self):
-        pass
-# %%
+        self.value = 0
+# %% The Memory
+
 class Memory:
     
     def __init__(self):
@@ -107,11 +117,10 @@ class Memory:
     def read(self):
         return self.content
     
-# %%
-
-# Separate the hardware from the CPUEmulator
-# TODO: Replace all of the elements of the CPUEmulator which rely on direct access to
-# this virtual hardware
+    def append(self,value):
+        self.content.append(value)
+    
+# %% The CPU
 
 class CPU:
     
@@ -137,13 +146,6 @@ class CPU:
         self.input_buffer = Queue()
         self.output_buffer = Queue()
         
-        # Maximum memory size of the Machine. At the moment hard-coded to 10
-        self.memory_size = 10
-
-        # TODO: Add the three "read", "write" and "flow control" heads
-        # TODO: Add input and output buffers which the organism (machine)
-        # will use to interact with the environment
-        
         # OPEN QUESTION: How to approach the task of the reward system?
         # We have no restrictions on the machines at the moment.
         
@@ -159,7 +161,12 @@ class CPU:
 # TODO: Change the implementation to follow the Command design pattern. Right now it doesn't
 # Big difference: The execute function of the Command pattern takes no arguments.
 # All arguments it could need are passed into the construction of the Command object
-# %%
+
+# %% The Instructions
+
+# NOTATION: machine variable stands for the hardware,
+# emulator variable stands for the emulator
+
 class InstructionNopA:
     
     def __init__(self,emulator):
@@ -190,21 +197,49 @@ class InstructionNopC:
 class InstructionIfNEq:
     
     def __init__(self,emulator):
-        self.machine = emulator
+        
+        self.machine = emulator.cpu
     
     def execute(self):
-        if self.machine.reg_b.read() != self.machine.reg_c.read():
-            pass # Do nothing, the next instruction will be executed
-        else:
-            self.machine.instr_pointer.increment(2) # To skip the next instruction, increase IP by 2
         
+        if self.emulator.instr_pointer.get() >= self.emulator.memory.size() - 1:
+            next = 0
+        else:
+            next = self.emulator.memory.get(self.emulator.instr_pointer.get() + 1)
+        
+        if isinstance(next, InstructionNopA):
+            if self.machine.reg_a.read() != self.machine.reg_b.read():
+                pass
+            else:
+                self.machine.instr_pointer.increment(2)
+                
+        elif isinstance(next, InstructionNopC):
+            if self.machine.reg_c.read() != self.machine.reg_a.read():
+                pass
+            else:
+                self.machine.instr_pointer.increment(2)
+                
+        else:
+            if self.machine.reg_b.read() != self.machine.reg_c.read():
+                pass
+            else:
+                self.machine.instr_pointer.increment(2)
+            
 
 class InstructionIfLess:
     
     def __init__(self, emulator):
+        
         self.machine = emulator.cpu
+
     
     def execute(self,machine):
+        
+        if self.emulator.instr_pointer.get() >= self.emulator.memory.size() - 1:
+            next = 0
+        else:
+            next = self.emulator.memory.get(self.emulator.instr_pointer.get() + 1)
+        
         if self.machine.reg_b.get() < self.machine.reg_c.get():
             pass
         else:
@@ -213,20 +248,51 @@ class InstructionIfLess:
 class InstructionSwap:
     
     def __init__(self, emulator):
-        self.machine = emulator.cpu
+        self.emulator = emulator
 
-    # TODO: Raise exception if machine not instance of CPUEmulator
     def execute(self):
-        temp = self.machine.reg_b.read()
-        self.machine.reg_b.write(self.machine.reg_c.read())
-        self.machine.reg_c.write(temp)
+        
+        # Getting the next instruction to check if it's a nop modifier
+        # Just the else: part will be necessary once we have circular memory
+        # The next = 0 part is there just to make the whole thing work
+        if self.emulator.instr_pointer.get() >= self.emulator.memory.size() - 1:
+            next = 0
+        else:
+            next = self.emulator.memory.get(self.emulator.instr_pointer.get() + 1)
+            
+        
+        if isinstance(next, InstructionNopA):
+            temp = self.emulator.cpu.reg_a.read()
+            self.emulator.cpu.reg_a.write(self.emulator.cpu.reg_b.read())
+            self.emulator.cpu.reg_b.write(temp)
+                
+        elif isinstance(next, InstructionNopC):
+            temp = self.emulator.cpu.reg_c.read()
+            self.emulator.cpu.reg_c.write(self.emulator.cpu.reg_a.read())
+            self.emulator.cpu.reg_a.write(temp)
+                
+        else:
+            temp = self.emulator.cpu.reg_b.read()
+            self.emulator.cpu.reg_b.write(self.emulator.cpu.reg_c.read())
+            self.emulator.cpu.reg_c.write(temp)
 
 class InstructionPop:
     
     def __init__(self, emulator):
+        
         self.machine = emulator.cpu
+        
+        if emulator.instr_pointer.get() == emulator.memory.size() - 1:
+            pass
+        else:
+            self.next = emulator.memory.get(emulator.instr_pointer.get() + 1)
     
     def execute(self):
+        
+        if self.emulator.instr_pointer.get() >= self.emulator.memory.size() - 1:
+            next = 0
+        else:
+            next = self.emulator.memory.get(self.emulator.instr_pointer.get() + 1)
         
         # Making sure that if the stack is empty, pop returns a 0 and not an exception
         # as is defined in the implementation of the LifoQueue()
@@ -243,31 +309,46 @@ class InstructionPop:
 class InstructionPush:
     
     def __init__(self, emulator):
+        
         self.machine = emulator.cpu
         
     def execute(self):
+        
+        if self.emulator.instr_pointer.get() >= self.emulator.memory.size() - 1:
+            next = 0
+        else:
+            next = self.emulator.memory.get(self.emulator.instr_pointer.get() + 1)
+            
         self.machine.active_stack.put(self.machine.reg_b.read())
         
 
 class InstructionSwapStack:
 
-
     def __init__(self,emulator):
+        
         self.machine = emulator.cpu
+        
     def execute(self):
+        
         if self.machine.active_stack == self.machine.stack0:
             self.machine.active_stack= self.machine.stack1
         else:
-            self.machine.active_stack = self.machine.stack2
+            self.machine.active_stack = self.machine.stack0
             
 
 class InstructionRightShift:
     
-     def __init__(self):
-         pass
+     def __init__(self, emulator):
+         self.emulator = emulator
      
-     def execute(self,machine):
-            machine.reg_b.write(machine.reg_b.read() >> 1)
+     def execute(self):
+         
+        if self.emulator.instr_pointer.get() >= self.emulator.memory.size() - 1:
+            next = 0
+        else:
+            next = self.emulator.memory.get(self.emulator.instr_pointer.get() + 1)
+            
+        self.machine.reg_b.write(self.machine.reg_b.read() >> 1)
             
 class InstructionLeftShift:
     
@@ -279,62 +360,75 @@ class InstructionLeftShift:
         
 class InstructionInc:
     
-    def __init__(self):
-        pass
     
-    def execute(self,machine):
-     # Checking whether the next instruction is a nop:
-     # NOTE: It's not gonna work like this
-            if machine.instr_pointer.get() == machine.memory.size() - 1:
-
+    def __init__(self, emulator):
+        self.emulator = emulator
+    
+    def execute(self):
+        
+        if self.emulator.instr_pointer.get() >= self.emulator.memory.size() - 1:
+            next = 0
+        else:
+            next = self.emulator.memory.get(self.emulator.instr_pointer.get() + 1)
+            
+        if isinstance(next, InstructionNopA):
+            self.emulator.cpu.reg_a.increment()
                 
+        elif isinstance(next, InstructionNopC):
+            self.emulator.cpu.reg_c.increment()
+                
+        else:
+            self.emulator.cpu.reg_b.increment()
+        
 
 class InstructionDec:
     
-    def __init__(self):
-        pass
     
-    def execute(self,machine):
-        machine.reg_b.decrement()
+    def __init__(self, emulator):
+        self.machine = emulator.cpu
+    
+    def execute(self):
+        self.machine.reg_b.decrement()
         
 class InstructionAdd:
     
-    def __init__(self):
-        pass
+    def __init__(self, emulator):
+        self.machine = emulator.cpu
     
-    def execute(self,machine):
-         machine.reg_b.write(machine.reg_b.read() + machine.reg_c.read())
+    def execute(self):
+         self.machine.reg_b.write(self.machine.reg_b.read() + self.machine.reg_c.read())
          
 class InstructionSub:
     
-    def __init__(self):
-        pass
+    def __init__(self, emulator):
+        self.machine = emulator.cpu
     
-    def execute(self,machine):
-        machine.reg_b.write(machine.reg_b.read() - machine.reg_c.read())
+    def execute(self):
+        self.machine.reg_b.write(self.machine.reg_b.read() - self.machine.reg_c.read())
         
 class InstructionNand:
     
-    def __init__(self):
-        pass
+    def __init__(self, emulator):
+        self.machine = emulator.cpu
     
-    def execute(self,machine):
-        machine.reg_b.write( ~(machine.reg_b.read() & machine.reg_c.read()))
+    def execute(self):
+        self.machine.reg_b.write( ~(self.machine.reg_b.read() & self.machine.reg_c.read()))
         
 class InstructionHAlloc:
     
-    def __init__(self):
-        pass
+    def __init__(self, emulator):
+        self.emulator = emulator
     
-    def execute(self,machine):
-        machine.memory_size = machine.memory_size + machine.memory_size_child
+    def execute(self):
+        self.emulator.memory_size = self.emulator.memory_size + self.emulator.memory_size_child
         
 class InstructionHDivide:
     
-    def __init__(self):
+    def __init__(self,emulator):
         pass
     
-    def execute(self,machine):
+    def execute(self):
+        pass
 
     
 class InstructionIO:
@@ -409,8 +503,21 @@ class CPUEmulator:
     def __init__(self, a, b, c):
         
         self.cpu = CPU(a,b,c)
-        self.memory = []
+        
+        self.memory = Memory()
+        
         self.instr_pointer = InstructionPointer()
+        self.read_head = ReadHead()
+        self.write_head = WriteHead()
+        self.fc_head = FlowControlHead()
+        
+        # Restricting memory size to 10. Hard coded at the moment,
+        # will be changed later
+        self.memory_size = 10
+        
+        # Restricting memory size of child organism to 10. Hard coded at the moment
+        # Will be changed later
+        self.memory_size_child = 10
 
     # Parse a Program type instance, load it into the memory of the CPUEmulator
     # as a list of Instruction type objects
@@ -514,12 +621,12 @@ class CPUEmulator:
         # This is easy to do, let's just leave it for when we have replicating organisms,
         # otherwise we'd just have one program that repeats itself infinitely many times
 
-        while self.instr_pointer.get() < len(self.memory):
+        while self.instr_pointer.get() < self.memory.size():
             
             # Save current instruction pointer value to later check if it was explicitly changed by an instruction
             temp = self.instr_pointer.get()
 
-            self.memory[self.instr_pointer.get()].execute()
+            self.memory.get(self.instr_pointer.get()).execute()
 
             # We have to allow for the possibility of the instruction changing the value of the IP
             # But we also have to ensure that if the instruction did nothing to explicitly change the IP,
@@ -534,18 +641,33 @@ class CPUEmulator:
     # A string representation of the state of the machine
     def __str__(self):
         string_representation = "Register A: " + str(self.cpu.reg_a.read()) + "\nRegister B: " + str(
-            self.cpu.reg_b.read()) + "\nRegister C: " + str(self.cpu.reg_c.read()) + "\nInstruction Pointer: " + str(self.cpu.instr_pointer.get()) + "\n"
+            self.cpu.reg_b.read()) + "\nRegister C: " + str(self.cpu.reg_c.read()) + "\nInstruction Pointer: " + str(self.instr_pointer.get()) + "\n"
         return string_representation
 
-# %%
+# %% TESTS:
 
-# Three swaps on register B and its complement
-Machine = CPUEmulator(0,1,5)
-print(Machine)
-program0 = Program([5,5,5])
-Machine.load_program(program0)
-Machine.execute_program()
-print(Machine)
+# Three swaps on register B and its complement, then a swap on A and its compelement
+# Start : 0, 1, 5
+# Expected result: 5, 0, 1
+
+Emulator0 = CPUEmulator(0,1,5)
+print(Emulator0)
+program0 = Program([5,5,5,5,0])
+Emulator0.load_program(program0)
+Emulator0.execute_program()
+print(Emulator0)
+
+
+# Two increments on default register B, one increment on modified register A,
+# three increments on modified register C
+
+Emulator1 = CPUEmulator(0,0,0)
+print(Emulator1)
+program1 = Program([11, 11, 11, 0, 11, 2, 11, 2, 11, 2])
+Emulator1.load_program(program1)
+Emulator1.execute_program()
+print(Emulator1)
+
 
 # %%
 
