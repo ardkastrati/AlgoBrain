@@ -219,7 +219,7 @@ class InstructionNopC:
 class InstructionIfNEq:
     
     def __init__(self,emulator):
-        
+        self.emulator = emulator
         self.machine = emulator.cpu
     
     def execute(self):
@@ -245,7 +245,7 @@ class InstructionIfNEq:
             if self.machine.reg_b.read() != self.machine.reg_c.read():
                 pass
             else:
-                self.machine.instr_pointer.increment(2)
+                self.emulator.instr_pointer.increment(2)
             
 
 class InstructionIfLess:
@@ -347,7 +347,7 @@ class InstructionPop:
             self.machine.reg_b.write(temp)
             
         
-        self.machine.reg_b.write(temp)
+        #self.machine.reg_b.write(temp)
         
 class InstructionPush:
     
@@ -404,10 +404,10 @@ class InstructionRightShift:
             next = self.emulator.memory.get(self.emulator.instr_pointer.get() + 1)
             
         if isinstance(next, InstructionNopA):
-            self.machine.reg_b.write(self.machine.reg_a.read() >> 1)
+            self.machine.reg_a.write(self.machine.reg_a.read() >> 1)
                 
         elif isinstance(next, InstructionNopC):
-            self.machine.reg_b.write(self.machine.reg_c.read() >> 1)
+            self.machine.reg_c.write(self.machine.reg_c.read() >> 1)
                 
         else:
             self.machine.reg_b.write(self.machine.reg_b.read() >> 1)
@@ -428,10 +428,10 @@ class InstructionLeftShift:
             
             
         if isinstance(next, InstructionNopA):
-            self.machine.reg_b.write(self.machine.reg_a.read() << 1)
+            self.machine.reg_a.write(self.machine.reg_a.read() << 1)
                 
         elif isinstance(next, InstructionNopC):
-            self.machine.reg_b.write(self.machine.reg_c.read() << 1)
+            self.machine.reg_c.write(self.machine.reg_c.read() << 1)
                 
         else:
             self.machine.reg_b.write(self.machine.reg_b.read() << 1)
@@ -802,8 +802,8 @@ class CPUEmulator:
             print("In Machine.read_program(p), p is not an instance of Program")
             
         #Check if the program we're trying to read doesn't exceed the memory size of the CPUEmulator
-#        if len(p.instructions) > self.memory_size:
-#            raise Exception("Program length exceeds Emulator memory size")
+        if len(p.instructions) > self.memory_size:
+            raise Exception("Program length exceeds Emulator memory size")
             
         # Parsing
         
@@ -838,9 +838,7 @@ class CPUEmulator:
                 
             elif instruction == 8:
                 self.memory.append(InstructionSwapStack(self))
-                
-            elif instruction == 9:
-                self.memory.append(InstructionSwapStack(self))
+
                 
             elif instruction == 9:
                 self.memory.append(InstructionRightShift(self))
@@ -933,7 +931,7 @@ print(Emulator0)
 
 # Two increments on default register B, one increment on modified register A,
 # three increments on modified register C
-
+print("Test 2 -> 3times inc reg_B, one time reg_A, three times reg_C")
 Emulator1 = CPUEmulator(0,0,0)
 print(Emulator1)
 program1 = Program([11, 11, 11, 0, 11, 2, 11, 2, 11, 2])
@@ -943,6 +941,128 @@ print(Emulator1)
 
 
 # Trying to read a program of larger length than the hard-coded Machine memory 10
+"""print("Test 3 ")
 Emulator2 = CPUEmulator(0,0,0)
+print(Emulator2)
 program2 = Program([0,1,2,3,4,5,6,7,8,9,10])
 Emulator2.load_program(program2)
+Emulator2.execute_program()
+print(Emulator2)"""
+#Test 3
+#%% 
+#Those Functios called here need fixing!
+# Fix when nop's are implemented!
+#
+#
+print ("Test 4 -> subtraction  reg_B-reg_C,")
+Emulator3 = CPUEmulator(1,3,6)
+print(Emulator3)
+program3 = Program([14,1])
+program4 = Program([14,2])
+Emulator3.load_program(program3)
+Emulator3.execute_program()
+print(Emulator3)
+Emulator3.load_program(program4)
+Emulator3.execute_program()
+print(Emulator3)
+print("Needs Correct implementation!" '\n' '\n')
+print("Test 5 -> adding reg_b + reg_c, reg_a +reg_c")
+Emulator4 = CPUEmulator(1,3,5)
+print("Start")
+print(Emulator4)
+program4 = Program([13,1,13,0])
+#program5 = Program([13,0])
+Emulator4.load_program(program4)
+Emulator4.execute_program()
+print(Emulator4)
+#Emulator4.load_program(program5)
+#Emulator4.execute_program()
+#print(Emulator4)
+print("Needs correct implementation!" '\n' "-> Please Check if this is correct" '\n')
+#%%
+#   More Tests
+
+print ("Test 6 -> subtraction  reg_B = reg_B-reg_C,reg_C = reg_B_new-reg_C")
+Emulator5 = CPUEmulator(1,3,6)
+print(Emulator5)
+program5 = Program([15])
+program6 = Program([15,2])
+Emulator5.load_program(program5)
+Emulator5.execute_program()
+print(Emulator5)
+Emulator5.load_program(program6)
+Emulator5.execute_program()
+print(Emulator5)
+
+#%%
+#Tests for more functions
+    
+print("Test 7 -> testing the swap and pop functions:" '\n' "swap AX-BX")
+Emulator6 = CPUEmulator(1, 3, 6)
+print(Emulator6)
+program6 = Program([5, 0])
+Emulator6.load_program(program6)
+Emulator6.execute_program()
+print(Emulator6)
+print("swap BX-CX")
+program6 = Program([5, 1])
+Emulator6.load_program(program6)
+Emulator6.execute_program()
+print(Emulator6)
+print("swap CX-AX")
+program6 = Program([5, 2])
+Emulator6.load_program(program6)
+Emulator6.execute_program()
+print(Emulator6)
+
+print("Test 8 -> testing the pop functions:" '\n' "pop BX")
+Emulator7 = CPUEmulator(1, 3, 6)
+print(Emulator7)
+program7 = Program([7, 2, 6, 1])
+Emulator7.load_program(program7)
+Emulator7.execute_program()
+print(Emulator7)
+print("pop AX")
+print("""Needs work, for some reason it calls pop three times, once one AX, once on BX and once on CX""")
+program8 = Program([7, 2, 6, 0, 6, 2])
+Emulator8 = CPUEmulator(1, 3, 6)
+Emulator8.load_program(program8)
+Emulator8.execute_program()
+print(Emulator8)
+print("pop CX")
+"""Error here, pops cx and bx like wtf?"""
+program7 = Program([6, 2])
+Emulator7.load_program(program7)
+Emulator7.execute_program()
+print(Emulator7)
+
+print("Test 9 -> testing the shift-r and shift-l functions:" '\n' "shift-r AX")
+Emulator9 = CPUEmulator(1, 3, 6)
+print(Emulator9)
+program9 = Program([9, 0])
+Emulator9.load_program(program9)
+Emulator9.execute_program()
+print(Emulator9)
+print("shift-l AX")
+Emulator9 = CPUEmulator(7, 3, 6)
+print(Emulator9)
+program9 = Program([9, 1])
+Emulator9.load_program(program9)
+Emulator9.execute_program()
+print(Emulator9)
+print("shift-r AX")
+Emulator9 = CPUEmulator(7, 3, 6)
+print(Emulator9)
+program9 = Program([10, 1])
+Emulator9.load_program(program9)
+Emulator9.execute_program()
+print(Emulator9)
+
+#%% H-functions:
+print("h-alloc, h-divide")
+Emulator9 = CPUEmulator(7, 3, 6)
+print(Emulator9)
+program9 = Program([3, 1, 9, 2, 16, 17, 10, 0, 10, 1])
+Emulator9.load_program(program9)
+Emulator9.execute_program()
+print(Emulator9)
