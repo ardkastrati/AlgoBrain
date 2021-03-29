@@ -31,3 +31,25 @@ class run:
         
 #%%
 run(1)
+
+#%%
+print("\nDEFAULT SELF-COPYING PROGRAM AS IN A.3 OF THE PAPER:")
+
+# h-alloc
+# h-search
+# nop-c
+# nop-a
+# mov-head
+# nop-c
+# h-search
+# h-copy
+# if-label
+# nop-c
+# nop-a
+# h-divide
+# mov-head
+# nop-a
+# nop-b
+
+program = SA.Program([16,20,2,0,21,2,20,19,25,2,0,17,21,0,1])
+
