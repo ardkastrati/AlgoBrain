@@ -463,6 +463,8 @@ class InstructionInc:
         else:
             self.emulator.cpu.reg_b.increment()
             print("DEBUGGING: Inc was run on B")
+            
+        print("\n")
 
 class InstructionDec:
     
@@ -490,6 +492,8 @@ class InstructionDec:
         else:
             self.emulator.cpu.reg_b.decrement()
             print("DEBUGGING: Dec was run on B")
+        
+        print("\n")
         
 class InstructionAdd:
     
@@ -689,6 +693,8 @@ class InstructionHSearch:
             self.emulator.cpu.reg_b.write(index1)
             self.emulator.cpu.reg_c.write(len(to_match))
                   
+            
+        print("\n")
 # Move the ?Instruction-Head? to the position of the Flow-Control-Head
 # A - instruction, default
 # B - read
@@ -713,6 +719,8 @@ class InstructionMovHead:
         else:
             self.emulator.instr_pointer.set(self.emulator.fc_head.get())
             print("DEBUGGING: IP position is: " + str(self.emulator.instr_pointer.get()))
+            
+        print("\n")
         
 # Advance the ?Instruction-Head? by CX positions, and set the
 # CX register to the initial position of the head.
@@ -1006,7 +1014,8 @@ print("\nWill test this on the machine with all registers initialized to 0")
 print("\nExpected result: the inc's are skipped and only the dec was run")
 print("\nWant to keep track of total number of executed instructions for debugging purposes")
 #%% 
-program = Program([20,0,21,11,11,2,12])
+program = Program([20,0,1,21,11,11,1,2,12])
+print("\n"+str(program.instructions)+"\n")
 emulator = CPUEmulator(0,0,0)
 emulator.load_program(program)
 emulator.execute_program()
