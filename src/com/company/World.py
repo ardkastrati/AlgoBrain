@@ -13,11 +13,68 @@ import SimpleAvida as SA
 """Class World is the AvidaWorld, how big it is, calls the cpuemulator, counts 
 the time the cells are alive, gives them resources
 """
+
+
+#%%
+
+# We need to think about how to abstract away the programs and emulators
+# The World doesn't need to know all of the implementation details
+# Well, we already have the abstraction in a way. It offers methods
+# load_program(Program) and execute_program()
+
+# The replication process still doesn't fully make sense to me
+
+# Also, we need to change the execute_program function to make the organisms
+# run quasi-parallel. Therefore, execute_program should instead be 
+# execute_instruction, and the scheduler will forever run execute_instruction()
+# for each organism in its CPUEmulator pool
+
+# The Scheduler needs access to each of the CPUEmulators in the World pool
+
+# 
+
+
+
+# A separate class for the Avida Scheduler
+
+# "The Scheduler divides time up from the real CPU such that these virtual CPUs
+# execute in a simulated parallel fashion"
+
+# For the beginning, let's implement a scheduler that will have all virtual CPUs
+# run at the same speed
+
+
+class Scheduler:
+    pass
+
+#%% 
+
+# Let's define a separate class for the organism pool.
+# Who knows what advantages this may bring us in the future
+
+# The Pool obviously has to have a predefined defined size. Call it N.
+
+class Pool:
+    
+    def __init__(self, N):
+        
+        # Just a list of length N
+        self.pool = [0 for element in range(0,N)]
+
+    
 class World:
-    def __init__(self,emulator):
-        self.emulator = emulator
+    
+    # N stands for the number of cells, as per reference paper
+    def __init__(self,N):
+        
+        self.pool = Pool(N)
+        
+        self.scheduler = Scheduler()
+        
+    
     """How many cells can be alive at the same time"""
     def Worldsize(size):
+        """Rather than having an nxn array, maybe it's easier to have a list"""
         world = np.zeros([size,size])
         
     #TODO
