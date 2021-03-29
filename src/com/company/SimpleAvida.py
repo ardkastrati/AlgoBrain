@@ -668,17 +668,30 @@ class InstructionHSearch:
             temp = self.emulator.program[index0:]
             
             print("DEBUGGING: temp is: " + str(temp))
+                        
+            index1 = 0
             
-        
+            iterator = 0
+            
+                    
+            while len(temp) > len(to_match):
+                
+                if temp[0:len(to_match)] == to_match:
+                    index1 = iterator + len(to_match)
+                    break
+                
+                else:
+                    temp.remove(temp[0])
+                    iterator += 1
+                
+                
             # I want the index at which to_match can be found in the memory, starting from the end of the template,
             # to which iterator1 is initialized, until the end of the memory
             
-            # In his example:
-            # b is the smaller list (our to_match)
-            # a is the larger list (our program from iterator1 to the end)
-            
             # This needs to be replaced with a more intelligent loop that will return if there is no such index
-            index1 = [(i, i+len(to_match)) for i in range(len(temp)) if temp[i:i+len(to_match)] == to_match][0][1]
+            
+            
+            #index1 = [(i, i+len(to_match)) for i in range(len(temp)) if temp[i:i+len(to_match)] == to_match][0][1]
             
             print("DEBUGGING: index1 is: " + str(index1))
             
@@ -994,7 +1007,7 @@ print(Emulator1)
 
 
 # Trying to read a program of larger length than the hard-coded Machine memory 10
-"""print("Test 3 ")
+"""print("Test 3 ")2
 Emulator2 = CPUEmulator(0,0,0)
 print(Emulator2)
 program2 = Program([0,1,2,3,4,5,6,7,8,9,10])
@@ -1014,7 +1027,7 @@ print("\nWill test this on the machine with all registers initialized to 0")
 print("\nExpected result: the inc's are skipped and only the dec was run")
 print("\nWant to keep track of total number of executed instructions for debugging purposes")
 #%% 
-program = Program([20,0,1,21,11,11,1,2,12])
+program = Program([20,0,1,21,11,11,1,12])
 print("\n"+str(program.instructions)+"\n")
 emulator = CPUEmulator(0,0,0)
 emulator.load_program(program)
@@ -1023,6 +1036,8 @@ emulator.execute_program()
 print(emulator)
 #%% 
 print("HSearch fails when there is no matching template")
+#%%
+
 #%% 
 #Those Functios called here need fixing!
 # Fix when nop's are implemented!
