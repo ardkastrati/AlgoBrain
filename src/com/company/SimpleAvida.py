@@ -123,6 +123,20 @@ class FlowControlHead:
         
     def get(self):
         return self.value
+    
+# %% The Memory
+
+class MetabolicRate:
+    
+    def __init__(self):
+        self.rate = 0
+    
+    def set(self,a):
+        self.rate = a
+        
+    def get(self):
+        return self.rate
+    
 
 # %% The Memory
 
@@ -577,7 +591,12 @@ class InstructionHAlloc:
         self.emulator = emulator
     
     def execute(self):
+        
         self.emulator.memory_size = self.emulator.memory_size + self.emulator.memory_size_child
+        
+
+        for i in range(0, self.emulator.memory_size_child):
+            self.emulator.program.append(0)
 
 # Split off the instructions between the Read-Head and the Write-Head
 # and turn them into a new organism.
@@ -588,7 +607,10 @@ class InstructionHDivide:
     def __init__(self,emulator):
         self.emulator = emulator
     
-    def execute(self):        
+    def execute(self):
+        
+        print("DEBUGGING: Executing H-Divide")
+        
         temp = []
         iterator = self.emulator.read_head.get()
         
@@ -598,7 +620,8 @@ class InstructionHDivide:
             
         result = Program(temp)
         
-        return result
+        print("Result of HDivide:")
+        print(result.instructions)
             
 
 # Don't care right now. When we have an Avida world we'll test it
@@ -673,7 +696,6 @@ class InstructionHSearch:
             
             iterator = 0
             
-                    
             while len(temp) > len(to_match):
                 
                 if temp[0:len(to_match)] == to_match:
@@ -760,10 +782,12 @@ class InstructionJmpHead:
                 
         elif isinstance(next, InstructionNopC):
             temp1 = self.emulator.write_head.get()
+            
             self.emulator.write_head.increment(temp)
                 
         else:
             temp1 = self.machine.instr_pointer.get()
+            
             self.emulator.instr_pointer.increment(temp)
             
         self.emulator.cpu.reg_c.write(temp1)
@@ -778,6 +802,7 @@ class InstructionGetHead:
         self.emulator = emulator
     
     def execute(self):
+        
         if self.emulator.instr_pointer.get() >= self.emulator.memory.size() - 1:
             next = 0
         else:
@@ -788,6 +813,7 @@ class InstructionGetHead:
                 
         elif isinstance(next, InstructionNopC):
             self.emulator.cpu.reg_c.write(self.emulator.write_head.get())
+            
         else:
             self.emulator.cpu.reg_c.write(self.emulator.instr_pointer.get())
 
@@ -816,10 +842,19 @@ class InstructionSetFlow:
         else:
             self.emulator.fc_head.set(self.emulator.cpu.reg_c)
 
+# If the label after this instruction is the complement of the most
+# recently copied instructions, execute the next instruction after the
+# label, otherwise skip it.
+
+# This implies that we have to keep track of the copied instructions
+
+# These can be accesed by reading the emulator.program list from the end of the
+# original memory to the write head
+
 class InstructionIfLabel:
     
     def __init__(self,emulator):
-        pass
+        self.emulator = emulator
     
     def execute(self):
         pass
@@ -827,7 +862,10 @@ class InstructionIfLabel:
 # %%
 
 class CPUEmulator:
-
+    
+    # Update: Added Metabolic rate, to be used as a reward system.
+    # Upon initialization, set to 0
+    # Something to think about: Should be passed to the child (possibly)
     def __init__(self, a, b, c):
         
         self.cpu = CPU(a,b,c)
@@ -835,6 +873,8 @@ class CPUEmulator:
         self.memory = Memory()
         
         self.program = []
+        
+        self.original_memory = 0
         
         self.instr_pointer = InstructionPointer()
         self.read_head = ReadHead()
@@ -848,6 +888,10 @@ class CPUEmulator:
         # Restricting memory size of child organism to 10. Hard coded at the moment
         # Will be changed later
         self.memory_size_child = 10
+        
+        # Metabolic rate
+        
+        self.metabolic_rate = MetabolicRate()
         
         
     # Parse a Program type instance, load it into the memory of the CPUEmulator
@@ -863,6 +907,7 @@ class CPUEmulator:
         self.read_head.set(0)
         self.write_head.set(0)
         self.fc_head.set(0)
+        self.original_memory = len(p.instructions)
         
         # Check if what we're trying to read is an instance od type "Program"
         if not isinstance(p, Program):
@@ -870,14 +915,16 @@ class CPUEmulator:
             print("In Machine.read_program(p), p is not an instance of Program")
             
         #Check if the program we're trying to read doesn't exceed the memory size of the CPUEmulator
-        if len(p.instructions) > self.memory_size:
-            raise Exception("Program length exceeds Emulator memory size")
+        #if len(p.instructions) > self.memory_size:
+        #    raise Exception("Program length exceeds Emulator memory size")
             
         # Parsing
         
         self.program = p.instructions
         
         for instruction in p.instructions:
+            
+            self.write_head.increment()
             
             if instruction == 0:
                 self.memory.append(InstructionNopA(self))
@@ -1027,7 +1074,7 @@ print("\nWill test this on the machine with all registers initialized to 0")
 print("\nExpected result: the inc's are skipped and only the dec was run")
 print("\nWant to keep track of total number of executed instructions for debugging purposes")
 #%% 
-program = Program([20,0,1,21,11,11,1,12])
+program = Program([20,0,1,21,11,11,1,2,12])
 print("\n"+str(program.instructions)+"\n")
 emulator = CPUEmulator(0,0,0)
 emulator.load_program(program)
@@ -1035,8 +1082,43 @@ emulator.execute_program()
 #%% 
 print(emulator)
 #%% 
-print("HSearch fails when there is no matching template")
+print("\nTESTING H-COPY:")
+print("First step: Allocate memory")
+print("Second step: Run H-Copy")
+
+program = Program([1,2,3,4,5,6,7,8,9,10,16,19,19,19,19,19,19,19,19,19,19,17])
+emulator = CPUEmulator(0,0,0)
+emulator.load_program(program)
+print(emulator.program)
+emulator.execute_program()
+print(emulator.program)
+
+print("\nWhat happens here is: We have an organism of size 21.")
+print("\nFirst, it allocates memory for a child of size 10")
+print("\nThen, it runs H-Copy 10 times and copies the first 10 instructions of the original organism into the child")
+
 #%%
+print("\nDEFAULT SELF-COPYING PROGRAM AS IN A.3 OF THE PAPER:")
+
+# h-alloc
+# h-search
+# nop-c
+# nop-a
+# mov-head
+# nop-c
+# h-search
+# h-copy
+# if-label
+# nop-c
+# nop-a
+# h-divide
+# mov-head
+# nop-a
+# nop-b
+
+program = Program([16,20,2,0,21,2,20,19,25,2,0,17,21,0,1])
+
+
 
 #%% 
 #Those Functios called here need fixing!
