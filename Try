@@ -1,53 +1,105 @@
 #include <iostream>
-#include <string>
-#include <bits/stdc++.h>
-//#include <chrono>
+#include <vector>
+#include <chrono>
+
 using namespace std;
 
 
-bool Try (qp, r0, R0, t0, P)    //Try(start in last address, first task, all tasks, starting time, probability)
+int T;      //total time T must be a global variable
+
+int r1, r2, r3;     //tasks we want to solve
+
+vector <int> Q;
+
+for (int k = 1; k <= 5; k++)    //we have 5 tokens, we write 1-5
+{    
+    Q.push_back(k);    
+}
+
+
+bool Try (int* qp, int r0, int R0, float t0, float P)        //Try(start in last address of memory, first task, all tasks, starting time, probability)
 {
-    stack <float> S;       //initialize empty stack
+    vector <float> S;               //initialize empty stack 
 
-    //the stack is supposed to start out empty, how do we fill it up now?
+    int r = r0;                     //current task we want to solve
 
-    int r = r0;
+    int R = R0;                     //set of tasks that need to be solved
 
-    //set R=R0,  for the bottom while loop we need to know the length of R
-    
     int t = t0;
 
     bool Done = false;
 
-    bool mark = false;      //we want mark(r) to indicate when we've made changes, s.t. we can save previous state values to undo^
+    int sizeR = 1;                  "we need a way to measure the size of R: what type is it"
 
-    while(R > 0 && t <= P*T && "instruction pointer valid" && "instruction valid") 
+    int* ip = Q[0];                  //instruction pointer, points at next instruction to be executed
+
+    vector <bool> mark;             "we have i marks that need to be initialized, here we make 1 for starters, maybe make a matrix with i columns and r rows?"
+                            
+    for (int k = 1; k <= sizeR; k++)    //each mark with R entries, each initialized with false
     {
-        //execute token z(ip(r))(r)  ->  save token as integer on stack and push
-
-        //increase time t continuously, problem I see is that if we would just measure execution time we would have to measure for entire WHILE, so outside of the loop, but then we couldnt use t to compare to P*T in condition, so we have to find a way to increase t in the loop which considers computation time
-        //
-
-        if (mark == false  && "changes to state occurred")
-        {
-            mark = true;
-
-        }
-
-        //set r equal to the next task in R
+        S.push_back(false);
     }
 
-    Done = true;
+    while (sizeR > 0 && t <= P*T && "-l(s(r))" <= ip && ip <= qp && "instruction valid")       //not sure about comparing the pointer to check if adress within range
+    {
+        //RUN THE PROGRAM
 
-    //return boolean; when what?
+        "continuously increase time t"
+
+        *qp = *ip;  "do we even want to write here?"                  //execute token z(ip(r))(r), we say we write on top of memory, and qp is the top of the memory
+
+
+        if (mark[r] == false  && "changes to state occurred")  //whenever we change some state component si(r) && marki(r)==false, then we push i, r and si(r) onto the stack to save it AND  set marki(r)==true
+        {
+            mark[r] = true;
+
+            S.push_back("si(r)");   //pushing in this order might make more sense for when we want to restore stack in step 4)
+            S.push_back(r);
+            S.push_back("i");
+        }
+
+        "IF Remove r from R if solved, this is the r which just invoked a change and made marki(r)=true"
+        sizeR -= 1;
+
+        if (sizeR > 0)       //IF R>0 set r equal to the next task in R
+        {
+            r = r1;         "the next task must be found by traversing by one spot in memory"
+        }
+        else                //ELSE set done = true && afrozen = qp (all tasks solved, new code frozen, if any)
+        {
+            Done = true;
+            "afrozen = qp"     
+        }
+    }
+
+    if (*ip == *(qp+1))     //IF ip(r) = pq + 1: then WHILE done = false and there is an unused token Z DO: set qp+1=Z and done = try (.....recursion.....)
+    {
+        while (Done == false && "Z element of Q")
+        {
+            //set qp+1 equal to Z
+            Done = Try(qp + 1, r, R, t, P*);        "P* is the beginning of P being multiplied with something for recursion"
+        }
+    }
+
+    "restore all tapes to their states from the beginning of the current iteration of Trys"
+
+    return Done;
 }
+
 
 int main()
 {
-    int T;      //initialize total time
+    T = 1000;               //set total time to wanted value
 
-    S.push(......)    //stack starts with probablities/states, followed by tokens
-    
+    t1 = 0;                 //instruction 1 writes a 0
+
+    //we need to initialize the entire memory here
+
+    //we want to be able to run Try with very basic values in our memory
+
+    //the memory should be divided into positive and negative prefixes
+
+   /* 
    if (Try(qp, r0, R0, 0, 0.5) == true)
    {
 
@@ -56,6 +108,6 @@ int main()
    {
 
    }
-    
+   */ 
     return 0;
 }
