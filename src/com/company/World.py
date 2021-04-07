@@ -236,6 +236,7 @@ world.schedule()
 
 # Now, let's try the self-replicating program, to see what happens
 
+
 p2 = SA.Program([16,20,2,0,21,2,20,19,25,2,0,17,21,0,1])
 
 emulator2 = SA.CPUEmulator()
