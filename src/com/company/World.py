@@ -29,10 +29,13 @@ class Pool:
         # Just a list of length N
         self.pool = [0 for element in range(0,N)]
         
-    def put(self, emulator):
+    def put(self, emulator, position = "none"):
         
-        # Puts a CPUEmulator at a random location in the pool
-        idx = np.random.randint(0,len(self.pool))
+        # If no position specified, put emulator at random position in the pool
+        if position == "none":
+            idx = np.random.randint(0,len(self.pool))
+        else:
+            idx = position
         self.pool[idx] = emulator
         
     def size(self):
@@ -108,32 +111,39 @@ class World:
         
         emulators = self.pool.get()
         
-        for i in range(0,50):
-            
+        for i in range(0,52):
         
             for emulator in emulators:
-            
-                while emulator.instr_pointer.get() < emulator.memory.size():
-            
-            
-                # Save current instruction pointer value to later check if it was explicitly changed by an instruction
-                temp = emulator.instr_pointer.get()
-            
-                print("Executing instruction " + str(temp))
-            
-                emulator.memory.get(emulator.instr_pointer.get()).execute()
-            
-            
-                # If the IP wasn't changed by an instruction, increase by 1, otherwise leave it
-                if emulator.instr_pointer.get() == temp:
-                    emulator.instr_pointer.increment()
+                
+                if not isinstance(emulator, SA.CPUEmulator):
+                    continue
+                
+                else:
+                    # If the next instruction to execute is HDivide:
+                    if isinstance(emulator.memory.get(emulator.instr_pointer.get()), SA.InstructionHDivide):
+                        
+                        
+                        print("\nIP IS AT: " + str(emulator.instr_pointer.get()) + "\n")
+                        
+                        # Grab the returned program,
+                        # pack it into a CPUEmulator
+                        # put it into the world at a random location
+                        
+                        program = SA.Program(emulator.execute_instruction())
+                        emulator = SA.CPUEmulator()
+                        emulator.load_program(program)
+                        self.place_cell(emulator,1)
+                    
+                    # Otherwise, just execute as usual
+                    else:    
+                        emulator.execute_instruction()
+
         
         
         
         
-        
-    def place_cell(self,emulator):
-        self.pool.put(emulator)
+    def place_cell(self,emulator,position = "none"):
+        self.pool.put(emulator,position)
     
     """def Place_Cell(self,size,world):
         self.world = world
@@ -200,22 +210,44 @@ class Input:
 
 # Manually initialize a CPUEmulator, to be put in the CPUEmulator Pool
 
-p = SA.Program([11, 11, 11, 0, 11, 2, 11, 2, 11, 2])
-emulator = SA.CPUEmulator(0,0,0)
-emulator.load_program(p)
+p0 = SA.Program([11, 11, 11])
+emulator0 = SA.CPUEmulator()
+emulator0.load_program(p0)
 
-print(emulator)
+print(emulator0)
 
-# Create an Avida World with 1 emulator slot
-world = World(1)
+p1 = SA.Program([12,12,12])
+emulator1 = SA.CPUEmulator()
+emulator1.load_program(p1)
+print(emulator1)
+
+# Create an Avida World with 2 emulator slots
+world = World(2)
 
 # Place the predefined emulator in a random spot
-world.place_cell(emulator)
+world.place_cell(emulator0,0)
+world.place_cell(emulator1,1)
 
-
-# The CPUEmulator.execute_program() method is about to become useless
-# The Scheduler will take over
+#%%
 
 world.schedule()
     
-        
+#%%
+
+# Now, let's try the self-replicating program, to see what happens
+
+p2 = SA.Program([16,20,2,0,21,2,20,19,25,2,0,17,21,0,1])
+
+emulator2 = SA.CPUEmulator()
+emulator2.load_program(p2)
+
+print(emulator2)
+
+world = World(2)
+
+world.place_cell(emulator2,0)
+
+world.schedule()
+
+print(emulator2)
+

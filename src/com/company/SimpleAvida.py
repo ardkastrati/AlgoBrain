@@ -494,8 +494,6 @@ class InstructionInc:
                 
         else:
             self.emulator.cpu.reg_b.increment()
-            
-        print("\n")
 
 class InstructionDec:
     
@@ -605,6 +603,8 @@ class InstructionHAlloc:
     
     def execute(self):
         
+        print("\nInstructionHAlloc was executed\n")
+        
         self.emulator.memory_size = self.emulator.memory_size + self.emulator.memory_size_child
         
 
@@ -629,13 +629,12 @@ class InstructionHDivide:
         while iterator < self.emulator.write_head.get():
             temp.append(self.emulator.program[iterator])
             iterator += 1
-            
-        self.emulator.cpu.clear()
         
         print("\nHDivide was executed\n")
             
         result = Program(temp)
-        return result
+        self.emulator.load_program(result)
+        return list(temp)
 
 # Don't care right now. When we have an Avida world we'll test it
 class InstructionIO:
@@ -922,15 +921,13 @@ class CPUEmulator:
     # Update: Added Metabolic rate, to be used as a reward system.
     # Upon initialization, set to 0
     # Something to think about: Should be passed to the child (possibly)
-    def __init__(self, a, b, c):
+    def __init__(self, a = 0, b = 0, c = 0):
         
         self.cpu = CPU(a,b,c)
         
         self.memory = Memory()
         
         self.program = []
-        
-        self.original_memory = 0
         
         self.instr_pointer = InstructionPointer()
         self.read_head = ReadHead()
@@ -963,7 +960,6 @@ class CPUEmulator:
         self.read_head.set(0)
         self.write_head.set(0)
         self.fc_head.set(0)
-        self.original_memory = len(p.instructions)
         self.program = []
         self.cpu.clear()
         
@@ -1063,6 +1059,31 @@ class CPUEmulator:
             elif instruction == 25:
                 self.memory.append(InstructionIfLabel(self))
             
+    def execute_instruction(self):
+        
+        ip = self.instr_pointer.get() % self.memory.size()
+        
+        print("Executing instruction " + str(ip))
+        
+        result_program = 300
+        
+        if isinstance(self.memory.get(ip), InstructionHDivide):
+            result_program = self.memory.get(ip).execute()
+        else:
+            self.memory.get(ip).execute()
+        
+        
+        
+        self.instr_pointer.set(self.instr_pointer.get() % self.memory.size())
+        
+        if self.instr_pointer.get() == ip:
+            self.instr_pointer.increment()
+            
+        if result_program == 300:
+            pass
+        else:
+            return result_program
+        
     def execute_program(self):
         
         
@@ -1086,9 +1107,10 @@ class CPUEmulator:
             # If the IP wasn't changed by an instruction, increase by 1, otherwise leave it
             if self.instr_pointer.get() == temp:
                 self.instr_pointer.increment()
+                
 
     # A string representation of the state of the machine
     def __str__(self):
-        string_representation = "Register A: " + str(self.cpu.reg_a.read()) + "\nRegister B: " + str(
-            self.cpu.reg_b.read()) + "\nRegister C: " + str(self.cpu.reg_c.read()) + "\nInstruction Pointer: " + str(self.instr_pointer.get()) + "\n" + str(self.program)
+        string_representation = "\nRegister A: " + str(self.cpu.reg_a.read()) + "\nRegister B: " + str(
+            self.cpu.reg_b.read()) + "\nRegister C: " + str(self.cpu.reg_c.read()) + "\nInstruction Pointer: " + str(self.instr_pointer.get()) + "\n" + "Memory: " + str(self.program) + "\n"
         return string_representation
