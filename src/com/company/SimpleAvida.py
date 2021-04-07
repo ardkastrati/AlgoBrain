@@ -196,6 +196,26 @@ class CPU:
         # OPEN QUESTION: How to approach the task of the reward system?
         # We have no restrictions on the machines at the moment.
         
+    # A method for clearing the CPU after running h-divide
+    
+    def clear(self):
+        
+        self.reg_a.write(0)
+        self.reg_b.write(0)
+        self.reg_c.write(0)
+        
+        while not self.stack0.empty():
+            self.stack0.get()
+            
+        while not self.stack1.empty():
+            self.stack1.get()
+            
+        while not self.input_buffer.empty():
+            self.input_buffer.get()
+            
+        while not self.output_buffer.empty():
+            self.output_buffer.get()
+        
 # %%
 
 # TODO: Template matching and nop's as modifiers for all instructions
@@ -468,15 +488,12 @@ class InstructionInc:
             
         if isinstance(next, InstructionNopA):
             self.emulator.cpu.reg_a.increment()
-            print("DEBUGGING: Inc was run on A")
                 
         elif isinstance(next, InstructionNopC):
             self.emulator.cpu.reg_c.increment()
-            print("DEBUGGING: Inc was run on C")
                 
         else:
             self.emulator.cpu.reg_b.increment()
-            print("DEBUGGING: Inc was run on B")
             
         print("\n")
 
@@ -497,17 +514,13 @@ class InstructionDec:
         
         if isinstance(next, InstructionNopA):
             self.machine.reg_a.decrement()
-            print("DEBUGGING: Dec was run on A")
                 
         elif isinstance(next, InstructionNopC):
             self.emulator.cpu.reg_c.decrement()
-            print("DEBUGGING: Dec was run on C")
                 
         else:
             self.emulator.cpu.reg_b.decrement()
-            print("DEBUGGING: Dec was run on B")
-        
-        print("\n")
+
         
 class InstructionAdd:
     
@@ -584,7 +597,7 @@ class InstructionNand:
             self.machine.reg_b.write(nand)
         
 # Allocate the maximum number of instructions that a child organism may have on divide
-# Hard code to 10 right now
+# Hard coded to 30 right now
 class InstructionHAlloc:
     
     def __init__(self, emulator):
@@ -609,7 +622,6 @@ class InstructionHDivide:
     
     def execute(self):
         
-        print("DEBUGGING: Executing H-Divide")
         
         temp = []
         iterator = self.emulator.read_head.get()
@@ -618,11 +630,12 @@ class InstructionHDivide:
             temp.append(self.emulator.program[iterator])
             iterator += 1
             
-        result = Program(temp)
+        self.emulator.cpu.clear()
         
-        print("Result of HDivide:")
-        print(result.instructions)
+        print("\nHDivide was executed\n")
             
+        result = Program(temp)
+        return result
 
 # Don't care right now. When we have an Avida world we'll test it
 class InstructionIO:
@@ -658,40 +671,31 @@ class InstructionHSearch:
         self.emulator = emulator
     
     def execute(self):
-        
-        print("DEBUGGING: HSearch was run")
-        
+                
         iterator = self.emulator.instr_pointer.get() + 1
         template = []
         
         while self.emulator.program[iterator] == 0 or self.emulator.program[iterator] == 1 or self.emulator.program[iterator] == 2:
             template.append(self.emulator.program[iterator])
             iterator += 1
-            
-        
-        print("DEBUGGING: HSearch template is: " + str(template))
         
         if len(template) == 0:
-            self.emulator.fc_head.set(self.emulator.instr_pointer.get() )
+            
+            print("\nHSearch has found no template. FC_head is set to: " + str(self.emulator.instr_pointer.get() + 1) + "\n")
+            self.emulator.fc_head.set(self.emulator.instr_pointer.get() + 1)
             self.emulator.cpu.reg_b.write(0)
             self.emulator.cpu.reg_c.write(0)
             
-            
-            
         else:
             
+            print("\nHSearch has found the following template: " + str(template) + "\n")
+            
             to_match = [(element + 1) % 3 for element in template]
-            
-            print("DEBUGGING: to_match is: " + str(to_match))
-        
+                    
             index0 = self.emulator.instr_pointer.get() + len(template) + 1
-            
-            print("DEBUGGING: index0 is: " + str(index0))
-            
-            temp = self.emulator.program[index0:]
-            
-            print("DEBUGGING: temp is: " + str(temp))
                         
+            temp = self.emulator.program[index0:]
+                                    
             index1 = 0
             
             iterator = 0
@@ -705,6 +709,10 @@ class InstructionHSearch:
                 else:
                     temp.remove(temp[0])
                     iterator += 1
+                    
+            # If no template match was found, FCHead is to be set to current IP
+            if index1 == 0:
+                index1 = - (len(template) + 1)
                 
                 
             # I want the index at which to_match can be found in the memory, starting from the end of the template,
@@ -715,21 +723,26 @@ class InstructionHSearch:
             
             #index1 = [(i, i+len(to_match)) for i in range(len(temp)) if temp[i:i+len(to_match)] == to_match][0][1]
             
-            print("DEBUGGING: index1 is: " + str(index1))
             
             jmp_index = index0 + index1
             
-            print("DEBUGGING: jmp_index is: " + str(jmp_index))
+            print("\nHSearch has set the FCHead to: " + str(jmp_index))
+            
             
             self.emulator.fc_head.set(jmp_index)
             
-            print("DEBUGGING: fc_head position is: " + str(self.emulator.fc_head.get()))
-            
-            self.emulator.cpu.reg_b.write(index1)
+            if index1 < 0:
+                self.emulator.cpu.reg_b.write(0)
+                print("\nHSearch has written 0 to reg_b" )
+            else:
+                self.emulator.cpu.reg_b.write(index1)
+                print("\nHSearch has written " + str(index1) + " to reg_b" )
+                
+                
             self.emulator.cpu.reg_c.write(len(to_match))
-                  
             
-        print("\n")
+            print("\nHSearch has written " + str(len(to_match)) + " to reg_c\n" )
+
 # Move the ?Instruction-Head? to the position of the Flow-Control-Head
 # A - instruction, default
 # B - read
@@ -745,17 +758,20 @@ class InstructionMovHead:
         else:
             next = self.emulator.memory.get(self.emulator.instr_pointer.get() + 1)
             
+        temp = self.emulator.fc_head.get()
+            
         if isinstance(next, InstructionNopB):
             self.emulator.read_head.set(self.emulator.fc_head.get())
+            print("\nMovHead has moved read_head to: " + str(temp) + "\n")
                 
         elif isinstance(next, InstructionNopC):
             self.emulator.write_head.set(self.emulator.fc_head.get())
+            print("\nMovHead has moved write_head to: " + str(temp) + "\n")
                 
         else:
             self.emulator.instr_pointer.set(self.emulator.fc_head.get())
-            print("DEBUGGING: IP position is: " + str(self.emulator.instr_pointer.get()))
+            print("\nMovHead has moved IP to: " + str(temp) + "\n")
             
-        print("\n")
         
 # Advance the ?Instruction-Head? by CX positions, and set the
 # CX register to the initial position of the head.
@@ -842,14 +858,14 @@ class InstructionSetFlow:
         else:
             self.emulator.fc_head.set(self.emulator.cpu.reg_c)
 
-# If the label after this instruction is the complement of the most
-# recently copied instructions, execute the next instruction after the
-# label, otherwise skip it.
-
 # This implies that we have to keep track of the copied instructions
 
 # These can be accesed by reading the emulator.program list from the end of the
 # original memory to the write head
+
+# The instruction reads in the template that follows it.
+# If the most recent series of copied instructions is the complement
+# of this template, the next instruction is executed, otherwise it is skipped
 
 class InstructionIfLabel:
     
@@ -857,8 +873,48 @@ class InstructionIfLabel:
         self.emulator = emulator
     
     def execute(self):
-        pass
-    
+        
+        # 1: Read in the template
+        
+        iterator = self.emulator.instr_pointer.get() + 1
+        template = []
+        
+        while self.emulator.program[iterator] == 0 or self.emulator.program[iterator] == 1 or self.emulator.program[iterator] == 2:
+            template.append(self.emulator.program[iterator])
+            iterator += 1
+            
+        # If template is empty, there is nothing to compare here.
+        # Skip next instruction
+            
+        if len(template) == 0:
+            temp = self.emulator.instr_pointer.get()
+            print("\nIfLabel has found no template to match. IP set to: " + str(temp + 2) + "\n")
+            self.emulator.instr_pointer.increment(2)
+            
+        # Otherwise: 
+        # Check if the most recent series of copied instructions is the
+        # complement of this template.
+        else:
+            to_match = [(element + 1) % 3 for element in template]
+            
+            print("\nIfLabel has found the following template to match: " + str(to_match))
+        
+            start = self.emulator.write_head.get() - len(to_match)
+        
+            end = self.emulator.write_head.get()
+        
+            most_recent = self.emulator.program[start:end]
+        
+            temp = self.emulator.instr_pointer.get()
+        
+            if to_match == most_recent:
+                print("\nIfLabel has matched the template. IP set to: " + str(temp + len(to_match) + 1) + "\n")
+                self.emulator.instr_pointer.set(temp + len(to_match) + 1)
+        
+            else:
+                print("\nIfLabel hasn't matched the template. IP set to: " + str(temp + len(to_match) + 2) + "\n")
+                self.emulator.instr_pointer.set(temp + len(to_match) + 2)
+            
 # %%
 
 class CPUEmulator:
@@ -885,9 +941,9 @@ class CPUEmulator:
         # will be changed later
         self.memory_size = 10
         
-        # Restricting memory size of child organism to 10. Hard coded at the moment
+        # Restricting memory size of child organism to 15. Hard coded at the moment
         # Will be changed later
-        self.memory_size_child = 10
+        self.memory_size_child = 15
         
         # Metabolic rate
         
@@ -908,6 +964,8 @@ class CPUEmulator:
         self.write_head.set(0)
         self.fc_head.set(0)
         self.original_memory = len(p.instructions)
+        self.program = []
+        self.cpu.clear()
         
         # Check if what we're trying to read is an instance od type "Program"
         if not isinstance(p, Program):
@@ -920,8 +978,9 @@ class CPUEmulator:
             
         # Parsing
         
-        self.program = p.instructions
-        
+        for element in p.instructions:
+            self.program.append(element)       
+
         for instruction in p.instructions:
             
             self.write_head.increment()
@@ -1005,7 +1064,8 @@ class CPUEmulator:
                 self.memory.append(InstructionIfLabel(self))
             
     def execute_program(self):
-
+        
+        
         # For now it just executes each instruction in the list one by one.
         # When the last instruction is executed we stop.
         # TODO: Make the Instruction Pointer loop back to the beginning of the memory
@@ -1016,8 +1076,17 @@ class CPUEmulator:
             
             # Save current instruction pointer value to later check if it was explicitly changed by an instruction
             temp = self.instr_pointer.get()
-
+            
+            print("Executing instruction " + str(temp))
+            
             self.memory.get(self.instr_pointer.get()).execute()
+            
+            
+            # Stop execution if the last instruction ran was h_divide
+            if isinstance(self.memory.get(self.instr_pointer.get()), InstructionHDivide):
+                break
+            
+            
             # If the IP wasn't changed by an instruction, increase by 1, otherwise leave it
             if self.instr_pointer.get() == temp:
                 self.instr_pointer.increment()
@@ -1118,6 +1187,20 @@ print("\nDEFAULT SELF-COPYING PROGRAM AS IN A.3 OF THE PAPER:")
 
 program = Program([16,20,2,0,21,2,20,19,25,2,0,17,21,0,1])
 
+#%% 
+
+
+emulator = CPUEmulator(0,0,0)
+emulator.load_program(program)
+
+print("\nEmulator before execting the instructions: \n")
+print(emulator)
+print("\n")
+
+emulator.execute_program()
+
+print("\nEmulator after execting the instructions: \n")
+print(emulator)
 
 
 #%% 
