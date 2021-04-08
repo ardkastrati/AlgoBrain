@@ -129,7 +129,7 @@ class FlowControlHead:
 class MetabolicRate:
     
     def __init__(self):
-        self.rate = 0
+        self.rate = 1
     
     def set(self,a):
         self.rate = a
@@ -946,6 +946,13 @@ class CPUEmulator:
         
         self.metabolic_rate = MetabolicRate()
         
+        # Age. Used by the scheduler to determine what the oldest emulator
+        # in the pool is. 
+        
+        # Defined here as the number of executed instructions
+        
+        self.age = 0
+        
         
     # Parse a Program type instance, load it into the memory of the CPUEmulator
     # as a list of Instruction type objects
@@ -1071,6 +1078,11 @@ class CPUEmulator:
             result_program = self.memory.get(ip).execute()
         else:
             self.memory.get(ip).execute()
+            
+        
+        # Every time an emulator executes an instruction, its age increases
+        # by 1
+        self.age += 1
         
         
         
@@ -1112,5 +1124,5 @@ class CPUEmulator:
     # A string representation of the state of the machine
     def __str__(self):
         string_representation = "\nRegister A: " + str(self.cpu.reg_a.read()) + "\nRegister B: " + str(
-            self.cpu.reg_b.read()) + "\nRegister C: " + str(self.cpu.reg_c.read()) + "\nInstruction Pointer: " + str(self.instr_pointer.get()) + "\n" + "Memory: " + str(self.program) + "\n"
+            self.cpu.reg_b.read()) + "\nRegister C: " + str(self.cpu.reg_c.read()) + "\nInstruction Pointer: " + str(self.instr_pointer.get()) + "\n" + "Memory: " + str(self.program) + "\n" + "Age: " + str(self.age) + "\n"
         return string_representation
