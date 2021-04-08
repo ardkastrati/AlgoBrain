@@ -43,9 +43,6 @@ class Pool:
     
     def get(self):
         return self.pool
-    
-    
-
 
 #%%
 
@@ -67,14 +64,7 @@ class World:
     def __init__(self,N):
         
         # Pool() will contain the set of CPUEmulators.
-        self.pool = Pool(N)
-    
-    """How many cells can be alive at the same time"""
-    def Worldsize(size):
-        """Rather than having an nxn array, maybe it's easier to have a list"""
-        world = np.zeros([size,size])
-        
-
+        self.pool = Pool(N)        
     
     # Let metabolic rate in the emulator stand for how many cycles it has
     # available for it in one scheduler iteration
@@ -85,8 +75,8 @@ class World:
             # In each iteration in the loop over emulators, execute
             # emulator.metabolic_rate.get() many instructions
             
-    # Let's make that infinite loop just, say, 52 iterations for now.
-    # Exactly the number of cycles needed for self-replication
+    # Let's make that infinite loop just, say, 104 iterations for now.
+    # Exactly the number of cycles needed for two self-replications
 
     
     def schedule(self):
@@ -167,35 +157,7 @@ class World:
         
     def place_cell(self,emulator,position = "none"):
         self.pool.put(emulator,position)
-    
-    """def Place_Cell(self,size,world):
-        self.world = world
-        a = np.random.randint(0,size)
-        b = np.random.randint(0,size)
-        #Place Cell into our matrix from which we know, what places
-        #are full and which places are not. Important for replication
-        world[a,b]=1
-        temp = stp.startprogram(a,b)
-        SA.cpuemulator(temp)
         
-    """
-        
-        
-        
-        
-    """Call the function"""
-    def Functioncall(instructionlist):
-    #TODO    
-        pass 
-    """kill the cell after a certain amount of time"""
-    def Killswitch(time,cell):
-    #TODO
-        pass
-    """call the h-divide and h-allocate function and let the parent cell give
-    birth to a new programm"""
-    def Replication(cell):
-    #TODO
-        pass
   #%%
 """Class mutation is responsible for every mutation factor of our programms 
 when they are replicating.
@@ -209,18 +171,6 @@ class Mutation:
     def mutation(cell):
         #TODO
         pass
-    
- #%% 
-"""Efficiency is for the amount of instructions a programm gets during a clockcylce
-Therefore, a more fit organism can do more in the same time"""  
-class Efficiency:
-    def __init__(self,value=0):
-        self.value = value
-    def raise_factor(self,rfactor):
-        self.value += rfactor
-    def lower_factor(self,lfactor):
-        self.value += lfactor
-        
 #%%
 """Class for the input that we send to the world, ie. what we want our programms
 to do """
@@ -228,8 +178,7 @@ class Input:
     
     def init__(self,emulator):
         self.emulator = emulator
-        
-
+    
 #%%
 
 """A DEMONSTRATION OF SELF-REPLICATION:"""
