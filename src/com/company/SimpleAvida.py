@@ -1072,6 +1072,8 @@ class CPUEmulator:
         
         print("Executing instruction " + str(ip))
         
+        # Just some random number. Will be used to detect whether HDivide was executed
+        # If it was, the function needs to return a value (the resulting child program)
         result_program = 300
         
         if isinstance(self.memory.get(ip), InstructionHDivide):
