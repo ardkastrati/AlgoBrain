@@ -74,21 +74,10 @@ class World:
         """Rather than having an nxn array, maybe it's easier to have a list"""
         world = np.zeros([size,size])
         
-    # The scheduler needs to access the CPUEmulators
-    # It needs to replace the execute_program() function
-    # Let us for now just have it have the exact same functionality
-    # as execute_program()
-    
-    # Ok, easy
-    
-    # Now let's do the following:
-    # schedule gets access to the memory of the CPUEmulator in the pool
-    # In a loop, it executes the instructions one by one
+
     
     # Let metabolic rate in the emulator stand for how many cycles it has
     # available for it in one scheduler iteration
-    
-    # Default: 1
     
     # Scheduler structure:
     # An infinite loop:
@@ -96,16 +85,9 @@ class World:
             # In each iteration in the loop over emulators, execute
             # emulator.metabolic_rate.get() many instructions
             
-    # Let's make that infinite loop just, say, 50 iterations for now
-    
-    # How exactly will instruction execution work?
-    # The scheduler needs to:
-    # 1) read out the current IP value
-    # 2) execute instruction at this IP value
-    # 3) increment IP by one if the previous instruction didn't change it,
-    # otherwise leave it
-    
-    # It's time to move to circular memory
+    # Let's make that infinite loop just, say, 52 iterations for now.
+    # Exactly the number of cycles needed for self-replication
+
     
     def schedule(self):
         
@@ -119,24 +101,35 @@ class World:
                     continue
                 
                 else:
-                    # If the next instruction to execute is HDivide:
-                    if isinstance(emulator.memory.get(emulator.instr_pointer.get()), SA.InstructionHDivide):
-                        
-                        
-                        print("\nIP IS AT: " + str(emulator.instr_pointer.get()) + "\n")
-                        
-                        # Grab the returned program,
-                        # pack it into a CPUEmulator
-                        # put it into the world at a random location
-                        
-                        program = SA.Program(emulator.execute_instruction())
-                        emulator = SA.CPUEmulator()
-                        emulator.load_program(program)
-                        self.place_cell(emulator,1)
                     
-                    # Otherwise, just execute as usual
-                    else:    
-                        emulator.execute_instruction()
+                    # Each emulator executes its metabolic_rate many instructions.
+                    
+                    rate = emulator.metabolic_rate.get()
+                    
+                    while rate > 0:
+                    
+                        # If the next instruction to execute is HDivide:
+                            if isinstance(emulator.memory.get(emulator.instr_pointer.get()), SA.InstructionHDivide):
+                        
+                                # Grab the returned program,
+                                # pack it into a CPUEmulator
+                                # put it into the world at the first free cell
+                                
+                                # If no free cells, kill the oldest organism and put it there
+                                
+                                
+                        
+                                program = SA.Program(emulator.execute_instruction())
+                                emulator = SA.CPUEmulator()
+                                emulator.load_program(program)
+                                self.place_cell(emulator,0)
+                            
+                            # Otherwise, just execute as usual
+                            else: 
+                                
+                                emulator.execute_instruction()
+                                
+                            rate -= 1
 
         
         
@@ -206,37 +199,12 @@ class Input:
     def init__(self,emulator):
         self.emulator = emulator
         
-#%%
-
-# Manually initialize a CPUEmulator, to be put in the CPUEmulator Pool
-
-p0 = SA.Program([11, 11, 11])
-emulator0 = SA.CPUEmulator()
-emulator0.load_program(p0)
-
-print(emulator0)
-
-p1 = SA.Program([12,12,12])
-emulator1 = SA.CPUEmulator()
-emulator1.load_program(p1)
-print(emulator1)
-
-# Create an Avida World with 2 emulator slots
-world = World(2)
-
-# Place the predefined emulator in a random spot
-world.place_cell(emulator0,0)
-world.place_cell(emulator1,1)
 
 #%%
 
-world.schedule()
-    
-#%%
+"""SELF-REPLICATION TEST"""
 
-# Now, let's try the self-replicating program, to see what happens
-
-
+# The default self-replicating program
 p2 = SA.Program([16,20,2,0,21,2,20,19,25,2,0,17,21,0,1])
 
 emulator2 = SA.CPUEmulator()
@@ -246,9 +214,27 @@ print(emulator2)
 
 world = World(2)
 
-world.place_cell(emulator2,0)
+world.place_cell(emulator2,1)
 
 world.schedule()
 
-print(emulator2)
+# Showing the parent and copy child emulator next to each other
 
+print(world.pool.get()[0])
+print(world.pool.get()[1])
+
+
+#%%
+
+# NEXT STEP: Have a 4-cell pool, 1 default self-replicating organism
+# Run the scheduler for the needed number of steps to fill out the pool (104 i believe)
+# What we'll achieve: A way to set the new replicated organism in any empty cell
+
+emulator = SA.CPUEmulator()
+emulator.load_program(p2)
+
+world = World(4)
+
+world.place_cell(emulator)
+
+world.schedule()
