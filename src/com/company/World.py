@@ -93,7 +93,7 @@ class World:
         
         emulators = self.pool.get()
         
-        for i in range(0,52):
+        for i in range(0,104):
         
             for emulator in emulators:
                 
@@ -113,16 +113,33 @@ class World:
                         
                                 # Grab the returned program,
                                 # pack it into a CPUEmulator
-                                # put it into the world at the first free cell
                                 
-                                # If no free cells, kill the oldest organism and put it there
-                                
-                                
-                        
                                 program = SA.Program(emulator.execute_instruction())
                                 emulator = SA.CPUEmulator()
                                 emulator.load_program(program)
-                                self.place_cell(emulator,0)
+                                
+                                # Put the new emulator in the first free cell
+                                # If no free cells, kill the oldest organism and put it there
+                                
+                                # Can also implement this functionality in the pool.put() function
+                                
+                                if 0 in self.pool.get():
+                                    self.place_cell(emulator,self.pool.get().index(0))
+                                    
+                                else:
+                                    
+                                    # Find the oldest emulator
+                                    
+                                    oldest = 0
+                                    for emulator in self.pool.get():
+                                        age = emulator.age
+                                        if age > oldest:
+                                            oldest = emulator
+                                            
+                                    # Replace the oldest emulator with the newly constructed one
+                                    
+                                    self.place_cell(emulator,self.pool.get().index(oldest))
+                                
                             
                             # Otherwise, just execute as usual
                             else: 
@@ -133,7 +150,20 @@ class World:
 
         
         
+    def __str__(self):
         
+        emulators = self.pool.get()
+        
+        for i in range(0,len(emulators)):
+            
+            if emulators[i] == 0:
+                continue
+            else:
+                print("Emulator " + str(i) + ": ")
+                print(emulators[i])
+        
+        return ""
+            
         
     def place_cell(self,emulator,position = "none"):
         self.pool.put(emulator,position)
@@ -202,39 +232,25 @@ class Input:
 
 #%%
 
-"""SELF-REPLICATION TEST"""
+"""A DEMONSTRATION OF SELF-REPLICATION:"""
 
 # The default self-replicating program
-p2 = SA.Program([16,20,2,0,21,2,20,19,25,2,0,17,21,0,1])
+p = SA.Program([16,20,2,0,21,2,20,19,25,2,0,17,21,0,1])
 
-emulator2 = SA.CPUEmulator()
-emulator2.load_program(p2)
-
-print(emulator2)
-
-world = World(2)
-
-world.place_cell(emulator2,1)
-
-world.schedule()
-
-# Showing the parent and copy child emulator next to each other
-
-print(world.pool.get()[0])
-print(world.pool.get()[1])
-
-
-#%%
-
-# NEXT STEP: Have a 4-cell pool, 1 default self-replicating organism
-# Run the scheduler for the needed number of steps to fill out the pool (104 i believe)
-# What we'll achieve: A way to set the new replicated organism in any empty cell
-
-emulator = SA.CPUEmulator()
-emulator.load_program(p2)
-
+# A world with a 4-slot pool
 world = World(4)
 
+# Manually creating the first CPUEmulator
+emulator = SA.CPUEmulator()
+
+# Loading the self-replicating program into the first emulator
+emulator.load_program(p)
+
+# Placing the emulator into a random position in the world
 world.place_cell(emulator)
 
+# Running it for 104 cycles (hard coded atm, for testing purposes)
 world.schedule()
+
+# Showing the resulting World Emulator Pool
+print(world)
