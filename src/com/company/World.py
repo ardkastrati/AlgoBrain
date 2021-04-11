@@ -4,7 +4,7 @@ Created on Fri Mar 26 17:40:52 2021
 
 @author: Tbuob
 """
-
+from queue import Queue
 import numpy as np
 import SimpleAvida as SA
 
@@ -168,17 +168,45 @@ class Mutation:
         self.time = time
         self.mutationfactor = factor
         
-    def mutation(cell):
+    def mutation(self):
         #TODO
         pass
 #%%
 """Class for the input that we send to the world, ie. what we want our programms
-to do """
-class Input:
+to do 
+When the IO operation in Avida is called, it takes an input from this class, does something and then 
+calls the output class below.
+IO operation has yet to be implemented!
+
+IO has been implemented, now access to the input_buffer is needed.
+"""
+class InOutput:
     
-    def init__(self,emulator):
+    def __init__(self,emulator):
         self.emulator = emulator
-    
+    def input(self):
+    #load our input queue for cell here
+        SA.CPUEmulator.input_buffer.put(null)
+    #output Queue from the cell
+    def output(self):
+        output = SA.CPUEmulator.output_buffer
+        while(output != null):
+            print(output.get())
+
+
+
+
+
+#%%
+""" In our Avida file we have a class IO. There we give the input arguments and it returns
+an output. We then analyze that output and depending on what it is, we can change it's
+fitness and other factors.
+Class IO yet has to be implemented -> How do we implement it, how does it work?
+"""
+class Output:
+    def __init__(self,emulator):
+        self.emulator = emulator
+
 #%%
 
 """A DEMONSTRATION OF SELF-REPLICATION:"""

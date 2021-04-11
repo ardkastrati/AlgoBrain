@@ -5,7 +5,6 @@
 # Keeping track of all the imports we'll need
 from queue import LifoQueue
 from queue import Queue
-
 # Should we define separate classes for Stacks and Buffers too maybe?
 # Probably.
 
@@ -191,6 +190,7 @@ class CPU:
         
         # The input and output buffers. Implemented as FIFO Queues
         self.input_buffer = Queue()
+
         self.output_buffer = Queue()
         
         # OPEN QUESTION: How to approach the task of the reward system?
@@ -641,9 +641,26 @@ class InstructionIO:
     
     def __init__(self,emulator):
         self.emulator = emulator
-    
+
     def execute(self):
-        pass
+        # put: place ?BX? instance in the output buffer and set register used to 0
+        if isinstance(next, InstructionNopA):
+            self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_a.read())
+            self.emulator.cpu.reg_a.write(0)
+
+        elif isinstance(next, InstructionNopC):
+            self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_c.read())
+            self.emulator.cpu.reg_c.write(0)
+        else:
+            self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_b.read())
+            self.emulator.cpu.reg_b.write(0)
+        # get: read the next value from the input buffer into ?CX?
+        if isinstance(next, InstructionNopA):
+            self.emulator.cpu.reg_a.write(self.emulator.cpu.input_buffer.get())
+        elif isinstance(next, InstructionNopB):
+            self.emulator.cpu.reg_b.write(self.emulator.cpu.input_buffer.get())
+        else:
+            self.emulator.cpu.reg_c.write(self.emulator.cpu.input_buffer.get())
     
 # Copy an instruction from the Read-Head to the Write-Head position
 # Increment both
