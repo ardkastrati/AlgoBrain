@@ -186,11 +186,11 @@ class InOutput:
         self.emulator = emulator
     def input(self):
     #load our input queue for cell here
-        SA.CPUEmulator.input_buffer.put(null)
+        SA.CPUEmulator.input_buffer.put(0)
     #output Queue from the cell
     def output(self):
         output = SA.CPUEmulator.output_buffer
-        while(output != null):
+        while(output.empty == False ):
             print(output.get())
 
 
