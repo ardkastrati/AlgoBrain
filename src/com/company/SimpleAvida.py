@@ -7,7 +7,7 @@ from queue import LifoQueue
 from queue import Queue
 # Should we define separate classes for Stacks and Buffers too maybe?
 # Probably.
-
+import World
 
 # %% The Program
 
@@ -60,7 +60,7 @@ class Register:
     
     def increment(self, a = 1):
         self.content += a
-        
+
     def decrement(self, b = 1):
         self.content -= b
         
@@ -122,7 +122,14 @@ class FlowControlHead:
         
     def get(self):
         return self.value
-    
+
+#%%  Class Notify()
+class Observer:
+    def __init__(self, observable) -> None:
+        observable.register_observer(self)
+
+    def notify(self, observable, *args, **kwargs) -> None:
+        print("Got", args, kwargs, "From", observable)
 # %% The Memory
 
 class MetabolicRate:
@@ -654,6 +661,10 @@ class InstructionIO:
         else:
             self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_b.read())
             self.emulator.cpu.reg_b.write(0)
+        subject = Observable()
+        observer = Observer(subject)
+        subject.notify_observers("test")
+
         # get: read the next value from the input buffer into ?CX?
         if isinstance(next, InstructionNopA):
             self.emulator.cpu.reg_a.write(self.emulator.cpu.input_buffer.get())
