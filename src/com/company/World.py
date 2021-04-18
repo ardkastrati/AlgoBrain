@@ -1,34 +1,22 @@
-# -*- coding: utf-8 -*-.
-"""
-Created on Fri Mar 26 17:40:52 2021
-
-@author: Tbuob
-"""
-from queue import Queue
+# %%
+# Necessary imports:
+    
 import numpy as np
 import SimpleAvida as SA
 
-"""Cell == Programm!"""
-"""Thinking about how to implement the Avida-World"""
-# %%
-"""Class World is the AvidaWorld, how big it is, calls the cpuemulator, counts 
-the time the cells are alive, gives them resources
-"""
+# %% The Organism Pool Class
 
-
-# %%
-
-# Let's define a separate class for the organism pool.
-# Who knows what advantages this may bring us in the future
-
-# The Pool obviously has to have a predefined defined size. Call it N.
+# The pool is a list of tuples. Each tuple contains in its first position
+# the CPUEmulator itself and in its second position the CPUEmulator's metabolic rate
 
 class Pool:
 
     def __init__(self, N):
 
-        # Just a list of length N
-        self.pool = [0 for element in range(0, N)]
+        # A list of tuples of length N
+        # The first element in the tuple is the CPUEmulator
+        # The second element in the tuple is its associated metabolic rate
+        self.pool = [(0,0) for element in range(0, N)]
 
     def put(self, emulator, position="none"):
 
@@ -37,71 +25,68 @@ class Pool:
             idx = np.random.randint(0, len(self.pool))
         else:
             idx = position
-        self.pool[idx] = emulator
+            
+        self.pool[idx] = (emulator, emulator.metabolic_rate.get())
 
     def size(self):
         return len(self.pool)
 
     def get(self):
         return self.pool
+    
+    def get_emulators(self):
+        return [emulator for (emulator,rate) in self.pool]
+    
+    def get_rates(self):
+        return [rate for (emulator,rate) in self.pool]
+    
+    def get_baseline(self):
+        return min([rate for (emulator,rate) in self.pool if rate > 0])
 
 
-# %%
+#%% The Scheduler Class
 
+# The Scheduler should have access to the Pool of the World
+# I think It's necessary to couple the Scheduler to the World
+# The World should still be the one containing the CPUEmulator pool
+# The Scheduler can access this Pool and run the CPUEmulators in it quasi-parallel
 
-# The class World
-
-# Has to have a pool of CPUEmulators. In the beginning only one,
-# the default self-replicating organism as per the Avida paper
-
-# Has to have a scheduler. The scheduler runs the instructions of the organisms
-# in the pool in a quasi-parallel fashion
-
-# For the beginning, implement the following:
-# A scheduler that will run one single predefined program once
-
-class World:
-
-    # N stands for the number of cells, as per reference paper
-    def __init__(self, N):
-
-        # Pool() will contain the set of CPUEmulators.
-        self.pool = Pool(N)
-
-        # Let metabolic rate in the emulator stand for how many cycles it has
-
-    # available for it in one scheduler iteration
-
-    # Scheduler structure:
-    # An infinite loop:
-    # A loop over all the emulators:
-    # In each iteration in the loop over emulators, execute
-    # emulator.metabolic_rate.get() many instructions
-
-    # Let's make that infinite loop just, say, 104 iterations for now.
-    # Exactly the number of cycles needed for two self-replications
-
+class Scheduler:
+    
+    def __init__(self,world):
+        self.pool = world.pool
+        
+    
     def schedule(self):
 
-        emulators = self.pool.get()
+        pool = self.pool.get()
 
-        for i in range(0, 104):
+        for i in range(0, 66):
+            
+            # The scheduler does indeed need to keep track of the baseline rate
+            # But does it make sense to have it access it in every iteration?
+            # It sure doesn't
+            # Let's see how we're gonna change that later
+            
+            baseline_rate = self.pool.get_baseline()
 
-            for emulator in emulators:
+            for (emulator, rate) in pool:
 
-                if not isinstance(emulator, SA.CPUEmulator):
+                if emulator == 0:
                     continue
 
                 else:
+                    
+                    temp = int(rate/baseline_rate)
 
-                    # Each emulator executes its metabolic_rate many instructions.
-
-                    rate = emulator.metabolic_rate.get()
-
-                    while rate > 0:
-
+                    while temp > 0:
+                        
+                        # NOTE: This isn't good as it is.
+                        # The scheduler should blindly run instructions,
+                        # it shouldn't have to check every single time whether the instruction is HDivide
+                        
                         # If the next instruction to execute is HDivide:
-                        if isinstance(emulator.memory.get(emulator.instr_pointer.get()), SA.InstructionHDivide):
+                        if isinstance(emulator.memory.get(emulator.instr_pointer.get() % emulator.memory.size()), SA.InstructionHDivide):
 
                             # Grab the returned program,
                             # pack it into a CPUEmulator
@@ -115,34 +100,53 @@ class World:
 
                             # Can also implement this functionality in the pool.put() function
 
-                            if 0 in self.pool.get():
-                                self.place_cell(emulator, self.pool.get().index(0))
+                            if 0 in self.pool.get_emulators():
+                                
+                                self.pool.put(emulator, self.pool.get_emulators().index(0))
 
                             else:
 
                                 # Find the oldest emulator
 
                                 oldest = 0
-                                for emulator in self.pool.get():
+                                
+                                for emulator in self.pool.get_emulators():
+                                    
                                     age = emulator.age
                                     if age > oldest:
                                         oldest = emulator
 
                                 # Replace the oldest emulator with the newly constructed one
 
-                                self.place_cell(emulator, self.pool.get().index(oldest))
-
+                                self.pool.put(emulator, self.pool.get().index(oldest))
 
                         # Otherwise, just execute as usual
+                        
+                        # This is really all that the scheduler should do
                         else:
 
                             emulator.execute_instruction()
 
-                        rate -= 1
+                        temp -= 1
+
+# %% The World Class
+
+# Contains a pool of CPUEmulators
+# Should respond to CPUEmulator events (One such obvious event is division)
+
+# Think, what should the World do?
+
+class World:
+
+    # N stands for the number of cells, as per reference paper
+    def __init__(self, N):
+
+        # Pool() will contain the set of CPUEmulators.
+        self.pool = Pool(N)
 
     def __str__(self):
 
-        emulators = self.pool.get()
+        emulators = self.pool.get_emulators()
 
         for i in range(0, len(emulators)):
 
@@ -156,8 +160,7 @@ class World:
 
     def place_cell(self, emulator, position="none"):
         self.pool.put(emulator, position)
-
-
+        
 # %%
 """Class mutation is responsible for every mutation factor of our programms 
 when they are replicating.
@@ -184,7 +187,6 @@ IO operation has yet to be implemented!
 
 IO has been implemented, now access to the input_buffer is needed.
 """
-
 
 class InOutput:
 
@@ -235,7 +237,7 @@ class Output:
 """A DEMONSTRATION OF SELF-REPLICATION:"""
 
 # The default self-replicating program
-p = SA.Program([16, 20, 3, 2, 0, 21, 2, 20, 19, 25, 2, 0, 6, 17, 21, 0, 1])
+p = SA.Program([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
 
 # A world with a 4-slot pool
 world = World(4)
@@ -249,8 +251,11 @@ emulator.load_program(p)
 # Placing the emulator into a random position in the world
 world.place_cell(emulator)
 
-# Running it for 104 cycles (hard coded atm, for testing purposes)
-world.schedule()
+# Create a scheduler based on the world
+scheduler = Scheduler(world)
+
+# Run this bad boy
+scheduler.schedule()
 
 # Showing the resulting World Emulator Pool
 print(world)
