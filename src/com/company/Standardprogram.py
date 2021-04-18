@@ -10,7 +10,7 @@ Created on Fri Mar 26 18:44:45 2021
 import SimpleAvida as SA
 #%%
 class Start:
-    list = [1,1,1,1,1,1,1,1,1,1,1,16,17,18]
+    list = [16, 20, 3, 2, 0, 21, 2, 20, 19, 25, 2, 0, 6, 17, 21, 0, 1]
     def __init__(self,list):
         self.list = list
     def startprogram(self,a,b):

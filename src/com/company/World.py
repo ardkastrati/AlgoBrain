@@ -6,7 +6,6 @@ Created on Fri Mar 26 17:40:52 2021
 """
 from queue import Queue
 import numpy as np
-import SimpleAvida
 import SimpleAvida as SA
 
 """Cell == Programm!"""
@@ -236,10 +235,8 @@ class Output:
 """A DEMONSTRATION OF SELF-REPLICATION:"""
 
 # The default self-replicating program
-p = SA.Program([16, 20, 18, 2, 0, 21, 2, 20, 19, 25, 2, 0, 18, 17, 21, 0, 1])
-subject = Observable()
-observer = SA.Observer(subject)
-subject.notify_observers("test")
+p = SA.Program([16, 20, 3, 2, 0, 21, 2, 20, 19, 25, 2, 0, 6, 17, 21, 0, 1])
+
 # A world with a 4-slot pool
 world = World(4)
 

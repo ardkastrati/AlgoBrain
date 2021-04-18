@@ -7,7 +7,7 @@ from queue import LifoQueue
 from queue import Queue
 # Should we define separate classes for Stacks and Buffers too maybe?
 # Probably.
-import World
+
 
 # %% The Program
 
@@ -165,8 +165,10 @@ class Memory:
         return len(self.content)
     
     def get(self,index):
-        return self.content[index]
-    
+        if len(self.content) > index:
+            return self.content[index]
+        else:
+            raise Exception("index out of Boundaries")
     def read(self):
         return self.content
     
@@ -199,7 +201,6 @@ class CPU:
         self.input_buffer = Queue()
 
         self.output_buffer = Queue()
-        
         # OPEN QUESTION: How to approach the task of the reward system?
         # We have no restrictions on the machines at the moment.
         
@@ -278,13 +279,13 @@ class InstructionIfNEq:
             if self.machine.reg_a.read() != self.machine.reg_b.read():
                 pass
             else:
-                self.machine.instr_pointer.increment(2)
+                self.emulator.instr_pointer.increment(2)
                 
         elif isinstance(next, InstructionNopC):
             if self.machine.reg_c.read() != self.machine.reg_a.read():
                 pass
             else:
-                self.machine.instr_pointer.increment(2)
+                self.emulator.instr_pointer.increment(2)
                 
         else:
             if self.machine.reg_b.read() != self.machine.reg_c.read():
@@ -312,19 +313,19 @@ class InstructionIfLess:
             if self.machine.reg_a.get() < self.machine.reg_b.get():
                 pass
             else:
-                self.machine.instr_pointer.increment(2)
-                
+                self.emulator.instr_pointer.increment(2)
+
         elif isinstance(next, InstructionNopC):
             if self.machine.reg_c.get() < self.machine.reg_a.get():
                 pass
             else:
-                self.machine.instr_pointer.increment(2)
+                self.emulator.instr_pointer.increment(2)
                 
         else:
             if self.machine.reg_b.get() < self.machine.reg_c.get():
                 pass
             else:
-                self.machine.instr_pointer.increment(2)
+                self.emulator.instr_pointer.increment(2)
         
         
         
