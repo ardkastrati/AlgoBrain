@@ -5,6 +5,12 @@
     
 from queue import LifoQueue
 from queue import Queue
+from Mediator import Mediator
+from abc import ABC
+
+# I think this is a bad idea, importing the scheduler in here
+# This should be able to exist on its own
+
 import Scheduler
 # %% The Program
 
@@ -141,12 +147,6 @@ class Memory:
     
     def __init__(self):
         self.content = []
-    
-    # Write, as of now, just fully replaces the memory with the argument of this function.
-    # A slower but maybe more reasonable implementation would iterate
-    # over a list that we'd pass here as an argument and write the elements of it one by one
-    def write(self,value):
-        self.content = value
         
     # Wipe the memory completely
     def wipe(self):
@@ -159,7 +159,7 @@ class Memory:
         if len(self.content) > index:
             return self.content[index]
         else:
-            raise Exception("index out of Boundaries")
+            raise Exception("Index out of boundaries")
             
     def read(self):
         return self.content
@@ -171,12 +171,8 @@ class Memory:
 
 class CPU:
     
-    # Should we define getters and setters for all of the components of the CPU
-    # or just acces them directly? For now, it's direct access
-    
     def __init__(self, a, b, c):
          
-        # The three registers:
         self.reg_a = Register(a)
         self.reg_b = Register(b)
         self.reg_c = Register(c)
@@ -205,7 +201,6 @@ class CPU:
             
         while not self.output_buffer.empty():
             self.output_buffer.get()
-        
 
 # %% The Instructions
 
@@ -309,12 +304,17 @@ class InstructionSwap:
         self.emulator = emulator
 
     def execute(self):
+        
+        # ???????
+        # Swap has nothing to do with the input buffer
+        
         """print("\n")
         print("here we check input_buffer")
         print("\n")
         print(self.emulator.cpu.input_buffer.get(1))
         print("\n")
         """
+        
         next = self.emulator.memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size())
 
         if isinstance(next, InstructionNopA):
@@ -558,8 +558,6 @@ class InstructionNand:
             
         return 0
         
-# Obsolete. Does nothing at all right now.
-# Kept it to stay consistent with the Avida Instruciton Set definition
 class InstructionHAlloc:
     
     def __init__(self, emulator):
@@ -592,22 +590,12 @@ class InstructionHDivide:
         # Fully reset the state of the emulator (except age)
         self.emulator.load_program(original)
         
-        """
-        # Reset emulator program memory to the one it had in the beginning, upon load_program(p)
-        self.emulator.program = self.emulator.original_program
         
-        # Reset emulator heads
-        self.emulator.write_head.set(self.emulator.memory.size())
-        self.emulator.read_head.set(0)
-        self.emulator.instr_pointer.set(0)
-        """
         #Mediator.notify(self, None, "A")
-        # I want the Emulator to somehow notify the world when it has run HDivide
         #print("here should be output")
         #Scheduler.Mediator.notify(self, "A", "A", result)
-        return list(result)
+        return Program(result)
         
-# Don't care right now. When we have an Avida world we'll test it
 class InstructionIO:
     
     def __init__(self,emulator):
@@ -644,7 +632,6 @@ class InstructionIO:
             
         return 0
     
-# Copy instruction from read head to child_program
 class InstructionHCopy:
     
     def __init__(self,emulator):
@@ -659,12 +646,6 @@ class InstructionHCopy:
         
         return 0
     
-# This one will search in the forward direction for the complement label
-# and set the flow control head to the end of the label.
-# The distance to the end of the label is placed into BX
-# The size of the label is put into CX
-# If a complement label is not found or no label
-# follows the instruction, set fchead to instruction-head
 class InstructionHSearch:
     
     def __init__(self,emulator):
@@ -723,10 +704,6 @@ class InstructionHSearch:
 
         return 0
         
-# Move the ?Instruction-Head? to the position of the Flow-Control-Head
-# A - instruction, default
-# B - read
-# C - write
 class InstructionMovHead:
     
     def __init__(self,emulator):
@@ -748,9 +725,6 @@ class InstructionMovHead:
             self.emulator.instr_pointer.set(temp )
             
         return 0
-
-# Advance the ?Instruction-Head? by CX positions, and set the
-# CX register to the initial position of the head.
 
 class InstructionJmpHead:
     
@@ -782,10 +756,6 @@ class InstructionJmpHead:
         
         return 0
 
-# Write the position of the ?Instruction-Head? into the CX register
-# A - instruction, default
-# B - read
-# C - write
 class InstructionGetHead:
     
     def __init__(self,emulator):
@@ -806,12 +776,6 @@ class InstructionGetHead:
             
         return 0
 
-# Set the ?Flow-Control-Head? to the address pointed to by the
-# ?CX? register.
-
-# A - instruction, default
-# B - read
-# C - write
 class InstructionSetFlow:
     
     def __init__(self,emulator):
@@ -829,15 +793,6 @@ class InstructionSetFlow:
             self.emulator.fc_head.set(self.emulator.cpu.reg_c)
             
         return 0
-
-# This implies that we have to keep track of the copied instructions
-
-# These can be accesed by reading the emulator.program list from the end of the
-# original memory to the write head
-
-# The instruction reads in the template that follows it.
-# If the most recent series of copied instructions is the complement
-# of this template, the next instruction is executed, otherwise it is skipped
 
 class InstructionIfLabel:
     
@@ -894,9 +849,6 @@ class InstructionIfLabel:
 
 class CPUEmulator:
     
-    # Update: Added Metabolic rate, to be used as a reward system.
-    # Upon initialization, set to 0
-    # Something to think about: Should be passed to the child (possibly)
     def __init__(self, a = 0, b = 0, c = 0):
         
         self.cpu = CPU(a,b,c)
@@ -905,6 +857,7 @@ class CPUEmulator:
         
         # Current program. Can be modified by h-alloc and h-copy
         self.program = []
+        
         # Originally loaded program. Used to return to start state after h-divide
         self.original_program = []
         
@@ -914,17 +867,15 @@ class CPUEmulator:
         self.fc_head = FlowControlHead()
         
         self.memory_size_child = 0
-        
-        # Metabolic rate
-        
+       
         self.metabolic_rate = MetabolicRate()
-        
-        # Age. Used by the scheduler to determine what the oldest emulator
-        # in the pool is. 
-        
-        # Defined here as the number of executed instructions
-        
+
         self.age = 0
+        
+        # The emulator needs to store a reference to the mediator object
+        # or rather, an abstract mediator object (the interface)
+        
+        self.mediator = Mediator()
         
     def clear(self):
         
@@ -937,13 +888,8 @@ class CPUEmulator:
         self.original_program = []
         self.cpu.clear()
         
-    # Parse a Program type instance, load it into the memory of the CPUEmulator
-    # as a list of Instruction type objects
     def load_program(self, p):
-        
-        # load_program will have the following functionality:
-        # When we load a program, the memory of the CPUEmulator is wiped
-        # All of the heads are set to zero
+
         
         self.clear()
         self.memory_size_child = len(p.instructions)
@@ -952,21 +898,9 @@ class CPUEmulator:
         if not isinstance(p, Program):
             raise NotImplementedError
             print("In Machine.read_program(p), p is not an instance of Program")
-            
-        #Check if the program we're trying to read doesn't exceed the memory size of the CPUEmulator
-        #if len(p.instructions) > self.memory_size:
-        #    raise Exception("Program length exceeds Emulator memory size")
-            
-        # Parsing
-        
+
         self.program = p.instructions.copy()
         self.original_program = p.instructions.copy()
-        
-        """
-        for element in p.instructions:
-            self.program.append(element)  
-            self.original_program.append(element)
-        """
 
         for instruction in self.program:
             
@@ -1055,6 +989,12 @@ class CPUEmulator:
         ip = self.instr_pointer.get()
         
         result_program = self.memory.get(ip).execute()
+        
+        # Here I want to check whether the executed instruction was HDivide
+        # If it was, I want to notify the world about it and give it the resulting child
+        
+        if isinstance(self.memory.get(ip),InstructionHDivide):
+            self.mediator.notify(self, event = "division", result = result_program)
     
         self.age += 1
         

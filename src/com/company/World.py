@@ -3,10 +3,20 @@
     
 import numpy as np
 import SimpleAvida as SA
+from Mediator import Mediator
+from abc import ABC
+
 # %% The Organism Pool Class
 
 # The pool is a list of tuples. Each tuple contains in its first position
 # the CPUEmulator itself and in its second position the CPUEmulator's metabolic rate
+
+# Maybe the world should be the one managing the pool fully
+
+# As in, the pool doesn't need to know that emulator has a metabolic_rate.get() method
+
+# Let's have the world act as mediator between SimpleAvida, Pool and Scheduler
+# Keep the implementations of SA,Pool and Scheduler separate
 
 class Pool:
 
@@ -24,7 +34,7 @@ class Pool:
             idx = np.random.randint(0, len(self.pool))
         else:
             idx = position
-            
+        
         self.pool[idx] = (emulator, emulator.metabolic_rate.get())
 
     def size(self):
@@ -56,16 +66,11 @@ class Scheduler:
         self.pool = world.pool
         
     
-    def schedule(self):
-
+    def schedule(self, N = 66, replacement_strategy = "oldest"):
+    
         pool = self.pool.get()
 
-        for i in range(0, 131):
-            
-            # The scheduler does indeed need to keep track of the baseline rate
-            # But does it make sense to have it access it in every iteration?
-            # It sure doesn't
-            # Let's see how we're gonna change that later
+        for i in range(0, N):
             
             baseline_rate = self.pool.get_baseline()
 
@@ -80,65 +85,61 @@ class Scheduler:
 
                     while temp > 0:
                         
-                        # NOTE: This isn't good as it is.
-                        # The scheduler should blindly run instructions,
-                        # it shouldn't have to check every single time whether the instruction is HDivide
-                        
-                        # If the next instruction to execute is HDivide:
-                        if isinstance(emulator.memory.get(emulator.instr_pointer.get() % emulator.memory.size()), SA.InstructionHDivide):
-
-                            # Grab the returned program,
-                            # pack it into a CPUEmulator
-
-                            program = SA.Program(emulator.execute_instruction())
-                            emulator = SA.CPUEmulator()
-                            emulator.load_program(program)
-
-                            # Put the new emulator in the first free cell
-                            # If no free cells, kill the oldest organism and put it there
-
-                            # Can also implement this functionality in the pool.put() function
-
-                            if 0 in self.pool.get_emulators():
-                                
-                                self.pool.put(emulator, self.pool.get_emulators().index(0))
-
-                            else:
-
-                                ages = [element.age for element in self.pool.get_emulators()]
-                                
-                                # Replace the oldest emulator with the newly constructed one
-
-                                self.pool.put(emulator, ages.index(max(ages)))
-
-                        # Otherwise, just execute as usual
-                        
-                        # This is really all that the scheduler should do
-                        else:
-
-                            emulator.execute_instruction()
+                        emulator.execute_instruction()
 
                         temp -= 1
 
 # %% The World Class
 
-# Contains a pool of CPUEmulators
-# Should respond to CPUEmulator events (One such obvious event is division)
+# It implements the Mediator interface, whose main and at the moment only part
+# is the notify() method
 
-# Think, what should the World do?
+# The World Class has knowledge of all of the other parts of the system and manages
+# the way they communicate with each other
 
-# Maybe the world itself should be the mediator between the pool and the emulators
-
-class World:
+class World(Mediator):
 
     # N stands for the number of cells, as per reference paper
-    def __init__(self, N):
+    def __init__(self, N, replacement_strategy = "oldest"):
 
         # Pool() will contain the set of CPUEmulators.
         self.pool = Pool(N)
-        self.mediator = 0
+        self.replacement_strategy = replacement_strategy
+    
+    def react_on_division(self, result):
         
+        program = result
+                
+        emulator = SA.CPUEmulator()
+        emulator.load_program(program)
+                
+        if 0 in self.pool.get_emulators():
+                
+            self.place_cell(emulator, self.pool.get_emulators().index(0))
 
+        else:
+                                
+            if self.replacement_strategy == "oldest":
+
+                ages = [element.age for element in self.pool.get_emulators()]
+                                
+                # Replace the oldest emulator with the newly constructed one
+
+                self.place_cell(emulator, ages.index(max(ages)))
+    
+    def notify(self,sender,event,result):
+
+        if event == "division":
+            
+            self.react_on_division(result)
+        
+    def place_cell(self, emulator, position="none"):
+        
+        emulator.mediator = self
+        self.pool.put(emulator, position)
+        
+    # A string representation of the world pool
+    
     def __str__(self):
 
         emulators = self.pool.get_emulators()
@@ -148,14 +149,10 @@ class World:
             if emulators[i] == 0:
                 continue
             else:
-                print("Emulator " + str(i) + ": ")
+                print("Emulator " + str(i+1) + ": ")
                 print(emulators[i])
 
         return ""
-
-    def place_cell(self, emulator, position="none"):
-        self.pool.put(emulator, position)
-
 
 # %%
 """Class mutation is responsible for every mutation factor of our programms 
@@ -237,7 +234,7 @@ class Output:
 p = SA.Program([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
 
 # A world with a 4-slot pool
-world = World(2)
+world = World(4)
 
 # Manually creating the first CPUEmulator
 emulator = SA.CPUEmulator()
@@ -253,8 +250,25 @@ scheduler = Scheduler(world)
 
 #%%
 
+# Checking execution time.
+
+# These execution times were recorded before defining world as mediator:
+    
+# 10k scheduler cycles takes around 0.7s
+# 100k scheduler cycles takes around 7s
+# 1 million scheduler cycles takes around 70s
+# Ok, as expected, the time grows linearly with the number of cycles
+
+# These execution times were recorded after defining world as mediator:
+    
+# 10k scheduler cycles take around 0.28s
+# 100k scheduler cycles take around 2.8s
+# 1 million scheduler cycles take around 28s
+
+%%time
+
 # Run this bad boy
-scheduler.schedule()
+scheduler.schedule(10000)
 
 #%%
 
