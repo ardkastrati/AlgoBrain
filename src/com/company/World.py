@@ -60,7 +60,7 @@ class Scheduler:
 
         pool = self.pool.get()
 
-        for i in range(0, 132):
+        for i in range(0, 131):
             
             # The scheduler does indeed need to keep track of the baseline rate
             # But does it make sense to have it access it in every iteration?
@@ -105,19 +105,11 @@ class Scheduler:
 
                             else:
 
-                                # Find the oldest emulator
-
-                                oldest = 0
+                                ages = [element.age for element in self.pool.get_emulators()]
                                 
-                                for emulator in self.pool.get_emulators():
-                                    
-                                    age = emulator.age
-                                    if age > oldest:
-                                        oldest = emulator
-
                                 # Replace the oldest emulator with the newly constructed one
 
-                                self.pool.put(emulator, self.pool.get().index(oldest))
+                                self.pool.put(emulator, ages.index(max(ages)))
 
                         # Otherwise, just execute as usual
                         
@@ -245,7 +237,7 @@ class Output:
 p = SA.Program([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
 
 # A world with a 4-slot pool
-world = World(4)
+world = World(2)
 
 # Manually creating the first CPUEmulator
 emulator = SA.CPUEmulator()
@@ -254,7 +246,7 @@ emulator = SA.CPUEmulator()
 emulator.load_program(p)
 
 # Placing the emulator into a random position in the world
-world.place_cell(emulator)
+world.place_cell(emulator,0)
 
 # Create a scheduler based on the world
 scheduler = Scheduler(world)
