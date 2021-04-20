@@ -259,8 +259,12 @@ world.place_cell(emulator)
 # Create a scheduler based on the world
 scheduler = Scheduler(world)
 
+#%%
+
 # Run this bad boy
 scheduler.schedule()
+
+#%%
 
 # Showing the resulting World Emulator Pool
 print(world)

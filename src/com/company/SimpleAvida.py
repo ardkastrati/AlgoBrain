@@ -586,8 +586,13 @@ class InstructionHDivide:
         
         while iterator < self.emulator.write_head.get():
             result.append(self.emulator.program[iterator])
-            iterator += 1
+            iterator += 1        
         
+        original = Program(self.emulator.original_program)
+        # Fully reset the state of the emulator (except age)
+        self.emulator.load_program(original)
+        
+        """
         # Reset emulator program memory to the one it had in the beginning, upon load_program(p)
         self.emulator.program = self.emulator.original_program
         
@@ -595,6 +600,7 @@ class InstructionHDivide:
         self.emulator.write_head.set(self.emulator.memory.size())
         self.emulator.read_head.set(0)
         self.emulator.instr_pointer.set(0)
+        """
         #Mediator.notify(self, None, "A")
         # I want the Emulator to somehow notify the world when it has run HDivide
         #print("here should be output")
@@ -907,10 +913,6 @@ class CPUEmulator:
         self.write_head = WriteHead()
         self.fc_head = FlowControlHead()
         
-        # Restricting memory size to 10. Hard coded at the moment,
-        # will be changed later
-        self.memory_size = 10
-        
         self.memory_size_child = 0
         
         # Metabolic rate
@@ -932,6 +934,7 @@ class CPUEmulator:
         self.write_head.set(0)
         self.fc_head.set(0)
         self.program = []
+        self.original_program = []
         self.cpu.clear()
         
     # Parse a Program type instance, load it into the memory of the CPUEmulator
@@ -956,13 +959,16 @@ class CPUEmulator:
             
         # Parsing
         
+        self.program = p.instructions.copy()
+        self.original_program = p.instructions.copy()
+        
+        """
         for element in p.instructions:
             self.program.append(element)  
             self.original_program.append(element)
+        """
 
-        for instruction in p.instructions:
-            
-            self.write_head.increment()
+        for instruction in self.program:
             
             if instruction == 0:
                 self.memory.append(InstructionNopA(self))
