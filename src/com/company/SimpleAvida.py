@@ -5,7 +5,7 @@
     
 from queue import LifoQueue
 from queue import Queue
-
+import Scheduler
 # %% The Program
 
 class Program:
@@ -581,7 +581,7 @@ class InstructionHDivide:
         self.emulator = emulator
     
     def execute(self):
-        
+
         own_program = self.emulator.program
         
         result = []
@@ -594,9 +594,10 @@ class InstructionHDivide:
         self.emulator.program = own_program
         self.emulator.write_head.set(self.emulator.memory.size())
         self.emulator.read_head.set(0)
-        
+        #Mediator.notify(self, None, "A")
         # I want the Emulator to somehow notify the world when it has run HDivide
-        
+        Scheduler.Mediator.notify(self, result, "A")
+        print("alpha_alpha")
         return list(result)
         
 # Don't care right now. When we have an Avida world we'll test it
@@ -620,9 +621,7 @@ class InstructionIO:
         else:
             self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_b.read())
             self.emulator.cpu.reg_b.write(0)
-        subject = Observable()
-        observer = Observer(subject)
-        subject.notify_observers("test")
+        Mediator.notify(self,"is Done")
 
         # get: read the next value from the input buffer into ?CX?
         if isinstance(next, InstructionNopA):
