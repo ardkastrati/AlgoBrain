@@ -60,7 +60,7 @@ class Scheduler:
 
         pool = self.pool.get()
 
-        for i in range(0, 66):
+        for i in range(0, 132):
             
             # The scheduler does indeed need to keep track of the baseline rate
             # But does it make sense to have it access it in every iteration?

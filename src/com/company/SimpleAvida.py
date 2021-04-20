@@ -303,8 +303,6 @@ class InstructionIfLess:
                 
         return 0
         
-        
-        
 class InstructionSwap:
     
     def __init__(self, emulator):
@@ -596,10 +594,11 @@ class InstructionHDivide:
         # Reset emulator heads
         self.emulator.write_head.set(self.emulator.memory.size())
         self.emulator.read_head.set(0)
+        self.emulator.instr_pointer.set(0)
         #Mediator.notify(self, None, "A")
         # I want the Emulator to somehow notify the world when it has run HDivide
-        print("here should be output")
-        Scheduler.Mediator.notify(self, "A", "A", result)
+        #print("here should be output")
+        #Scheduler.Mediator.notify(self, "A", "A", result)
         return list(result)
         
 # Don't care right now. When we have an Avida world we'll test it
