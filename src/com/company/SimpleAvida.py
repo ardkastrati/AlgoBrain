@@ -315,7 +315,12 @@ class InstructionSwap:
         self.emulator = emulator
 
     def execute(self):
-
+        """print("\n")
+        print("here we check input_buffer")
+        print("\n")
+        print(self.emulator.cpu.input_buffer.get(1))
+        print("\n")
+        """
         next = self.emulator.memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size())
 
         if isinstance(next, InstructionNopA):
@@ -596,8 +601,8 @@ class InstructionHDivide:
         self.emulator.read_head.set(0)
         #Mediator.notify(self, None, "A")
         # I want the Emulator to somehow notify the world when it has run HDivide
-        Scheduler.Mediator.notify(self, result, "A")
-        print("alpha_alpha")
+        print("here should be output")
+        Scheduler.Mediator.notify(self, "A", "A", result)
         return list(result)
         
 # Don't care right now. When we have an Avida world we'll test it
@@ -621,7 +626,11 @@ class InstructionIO:
         else:
             self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_b.read())
             self.emulator.cpu.reg_b.write(0)
-        Mediator.notify(self,"is Done")
+        print("output is :")
+        res = self.emulator.cpu.output_buffer.get()
+        print(res)
+        print("\n")
+        Scheduler.Mediator.notify(self, res, "output")# self.emulator.cpu.output_buffer.get(), "output")
 
         # get: read the next value from the input buffer into ?CX?
         if isinstance(next, InstructionNopA):

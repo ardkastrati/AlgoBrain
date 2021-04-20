@@ -3,6 +3,11 @@
 import numpy as np
 from abc import ABC
 import SimpleAvida as SA
+"""Read_me:
+    As we use the Mediator Scheme, so everything communicates with a Mediator and only with the Mediator,
+    We implement everything as a component of said Mediator. 
+    This means, we implement a our organism as a component"""
+
 
 class Component1:
     pass
@@ -19,7 +24,7 @@ class Mediator(ABC):
     pass the execution to other components.
     """
 
-    def notify(self, sender: object, event: str) -> None:
+    def notify(self, sender: object, event: str, parameter: object) -> None:
         pass
 
 
@@ -29,8 +34,13 @@ class ConcreteMediator(Mediator):
         self._component1.mediator = self
         self._component2 = component2
         self._component2.mediator = self
+    """ Our notifying Operations are defined here. We implement a notify-Option for h_divide and for io-operation
+    this means, organism does something with the two given values of the input_buffer, 
+    then calls io, which calls notify(self,"output"). This will call operation defined below, that calls a check 
+    function, and if working, puts new values into input_buffer for different operations.
+    self.component1.do_mut() will change the mutation factor, self.component1.do_eff() will change the metabolism"""
 
-    def notify(self, sender: object, event: str) -> None:
+    def notify(self, sender: object, event: str, result: object) -> None:
         if event == "A":
             print("Mediator reacts on A and triggers following operations:")
             self._component2.do_c()
@@ -38,7 +48,18 @@ class ConcreteMediator(Mediator):
             print("Mediator reacts on D and triggers following operations:")
             self._component1.do_b()
             self._component2.do_c()
-
+        elif event == "K":
+            print("Notified, that H_Divide has been succesfull")
+            #print(result)
+            self._component2.do_d()
+        elif event == "output":
+            print("Notified, that something is in outputbuffer")
+            if result == 1:
+                print("result is correct")
+                self._component2.do_input()
+            else:
+                print("result was wrong")
+                pass
 
 class BaseComponent:
     """
@@ -62,26 +83,46 @@ class BaseComponent:
 Concrete Components implement various functionality. They don't depend on other
 components. They also don't depend on any concrete mediator classes.
 """
-#%%
+
+
+# %%
 
 class Component1(BaseComponent):
-    def do_a(self) -> None:
-        print("Component 1 does A.")
-        self.mediator.notify(self, "A")
+    def do_a(self, emulator) -> None:
+        world = World(12)
+        world.place_cell(emulator)
+
+        # Create a scheduler based on the world
+        scheduler = Scheduler(world)
+        scheduler.schedule()
+        print("World places Organism.")
+        print(world)
+        self.mediator.notify(self, "K",None)
 
     def do_b(self) -> None:
         print("Component 1 does B.")
-        self.mediator.notify(self, "B")
+        self.mediator.notify(self, "B", None)
 
 
 class Component2(BaseComponent):
-    def do_c(self) -> None:
+    def do_c(self)->None:
         print("Component 2 does C.")
-        self.mediator.notify(self, "C")
+        self.mediator.notify(self, "C", None)
+    def do_emulator(self, program):
 
-    def do_d(self) -> None:
-        print("Component 2 does D.")
-        self.mediator.notify(self, "D")
+        emulator = SA.CPUEmulator()
+        emulator.cpu.input_buffer.put(1)
+        emulator.cpu.input_buffer.put(2)
+        # Loading the self-replicating program into the first emulator
+        emulator.load_program(program)
+        return emulator
+    def do_d(self)->None:
+        print("delete do_d")
+
+
+    def do_input(self)->None:
+        print("do_input has worked successfully")
+
 
 10  # %% The Organism Pool Class
 
@@ -124,7 +165,7 @@ class Pool:
         return min([rate for (emulator, rate) in self.pool if rate > 0])
 
 
-#%%
+# %%
 class World:
 
     # N stands for the number of cells, as per reference paper
@@ -149,6 +190,8 @@ class World:
 
     def place_cell(self, emulator, position="none"):
         self.pool.put(emulator, position)
+
+
 # %% The Scheduler Class
 
 # The Scheduler should have access to the Pool of the World
@@ -235,23 +278,26 @@ class Scheduler:
                         temp -= 1
 
 
-
-
 if __name__ == "__main__":
+    #the organism and everything needs to be defined here!
     # The client code.
+    # Startorganism
+    p = SA.Program([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
     c1 = Component1()
     c2 = Component2()
+    emulator = c2.do_emulator(p)
     mediator = ConcreteMediator(c1, c2)
 
     print("Client triggers operation A.")
-    c1.do_a()
+    c1.do_a(emulator)
 
     print("\n", end="")
 
-    print("Client triggers operation D.")
-    c2.do_d()
+    #print("Client triggers operation D.")
+    #c2.do_d()
+    #c2.do_input()
     # The default self-replicating program
-    p = SA.Program([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
+    """p = SA.Program([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
 
     # A world with a 4-slot pool
     world = World(4)
@@ -273,9 +319,8 @@ if __name__ == "__main__":
 
     # Showing the resulting World Emulator Pool
     print(world)
+    """
 # %%
-
-
 
 
 # %%
