@@ -100,13 +100,12 @@ class Scheduler:
 class World(Mediator):
 
     # N stands for the number of cells, as per reference paper
-    def __init__(self, N, replacement_strategy = "oldest"):
+    def __init__(self, N):
 
         # Pool() will contain the set of CPUEmulators.
         self.pool = Pool(N)
-        self.replacement_strategy = replacement_strategy
     
-    def react_on_division(self, result):
+    def react_on_division(self, result, replacement_strategy = "oldest"):
         
         program = result
                 
@@ -119,7 +118,7 @@ class World(Mediator):
 
         else:
                                 
-            if self.replacement_strategy == "oldest":
+            if replacement_strategy == "oldest":
 
                 ages = [element.age for element in self.pool.get_emulators()]
                                 

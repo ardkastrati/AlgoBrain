@@ -995,7 +995,7 @@ class CPUEmulator:
         
         if isinstance(self.memory.get(ip),InstructionHDivide):
             self.mediator.notify(self, event = "division", result = result_program)
-    
+        
         self.age += 1
         
         if self.instr_pointer.get() == ip:
