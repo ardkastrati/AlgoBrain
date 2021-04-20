@@ -3,7 +3,6 @@
     
 import numpy as np
 import SimpleAvida as SA
-
 # %% The Organism Pool Class
 
 # The pool is a list of tuples. Each tuple contains in its first position
@@ -136,6 +135,8 @@ class Scheduler:
 
 # Think, what should the World do?
 
+# Maybe the world itself should be the mediator between the pool and the emulators
+
 class World:
 
     # N stands for the number of cells, as per reference paper
@@ -143,6 +144,8 @@ class World:
 
         # Pool() will contain the set of CPUEmulators.
         self.pool = Pool(N)
+        self.mediator = 0
+        
 
     def __str__(self):
 
@@ -160,7 +163,8 @@ class World:
 
     def place_cell(self, emulator, position="none"):
         self.pool.put(emulator, position)
-        
+
+
 # %%
 """Class mutation is responsible for every mutation factor of our programms 
 when they are replicating.
@@ -168,6 +172,7 @@ when they are replicating.
 
 
 class Mutation:
+    
     def __init__(self, time, emulator, factor):
         self.emulator = emulator
         self.time = time

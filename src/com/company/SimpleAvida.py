@@ -31,9 +31,6 @@ class Program:
                 raise NotImplementedError
                 
             
-        # We can surely do this with assertions. Is it the optimal way to do it though?
-    
-    # The constructor
     def __init__(self, instr_list):
         
         self.check_Validity(instr_list)
@@ -44,7 +41,6 @@ class Program:
 
 class Register:
     
-    # Default initialization to 0
     def __init__(self,value = 0):
         self.content = value
         
@@ -582,8 +578,6 @@ class InstructionHDivide:
     
     def execute(self):
         
-        own_program = self.emulator.program
-        
         result = []
         iterator = self.emulator.read_head.get()
         
@@ -591,7 +585,10 @@ class InstructionHDivide:
             result.append(self.emulator.program[iterator])
             iterator += 1
         
-        self.emulator.program = own_program
+        # Reset emulator program memory to the one it had in the beginning, upon load_program(p)
+        self.emulator.program = self.emulator.original_program
+        
+        # Reset emulator heads
         self.emulator.write_head.set(self.emulator.memory.size())
         self.emulator.read_head.set(0)
         
@@ -893,7 +890,10 @@ class CPUEmulator:
         
         self.memory = Memory()
         
+        # Current program. Can be modified by h-alloc and h-copy
         self.program = []
+        # Originally loaded program. Used to return to start state after h-divide
+        self.original_program = []
         
         self.instr_pointer = InstructionPointer()
         self.read_head = ReadHead()
@@ -950,7 +950,8 @@ class CPUEmulator:
         # Parsing
         
         for element in p.instructions:
-            self.program.append(element)       
+            self.program.append(element)  
+            self.original_program.append(element)
 
         for instruction in p.instructions:
             
