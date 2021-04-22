@@ -1,10 +1,11 @@
 # %%
 # Necessary imports:
-    
+
 import numpy as np
 import SimpleAvida as SA
 from Mediator import Mediator
 from abc import ABC
+
 
 # %% The Organism Pool Class
 
@@ -25,7 +26,7 @@ class Pool:
         # A list of tuples of length N
         # The first element in the tuple is the CPUEmulator
         # The second element in the tuple is its associated metabolic rate
-        self.pool = [(0,0) for element in range(0, N)]
+        self.pool = [(0, 0) for element in range(0, N)]
 
     def put(self, emulator, position="none"):
 
@@ -34,7 +35,7 @@ class Pool:
             idx = np.random.randint(0, len(self.pool))
         else:
             idx = position
-        
+
         self.pool[idx] = (emulator, emulator.metabolic_rate.get())
 
     def size(self):
@@ -42,18 +43,18 @@ class Pool:
 
     def get(self):
         return self.pool
-    
+
     def get_emulators(self):
-        return [emulator for (emulator,rate) in self.pool]
-    
+        return [emulator for (emulator, rate) in self.pool]
+
     def get_rates(self):
-        return [rate for (emulator,rate) in self.pool]
-    
+        return [rate for (emulator, rate) in self.pool]
+
     def get_baseline(self):
-        return min([rate for (emulator,rate) in self.pool if rate > 0])
+        return min([rate for (emulator, rate) in self.pool if rate > 0])
 
 
-#%% The Scheduler Class
+# %% The Scheduler Class
 
 # The Scheduler should have access to the Pool of the World
 # I think It's necessary to couple the Scheduler to the World
@@ -61,17 +62,16 @@ class Pool:
 # The Scheduler can access this Pool and run the CPUEmulators in it quasi-parallel
 
 class Scheduler:
-    
-    def __init__(self,world):
+
+    def __init__(self, world):
         self.pool = world.pool
-        
-    
-    def schedule(self, N = 66, replacement_strategy = "oldest"):
-    
+
+    def schedule(self, N=66, replacement_strategy="oldest"):
+
         pool = self.pool.get()
 
         for i in range(0, N):
-            
+
             baseline_rate = self.pool.get_baseline()
 
             for (emulator, rate) in pool:
@@ -80,14 +80,14 @@ class Scheduler:
                     continue
 
                 else:
-                    
-                    temp = int(rate/baseline_rate)
+
+                    temp = int(rate / baseline_rate)
 
                     while temp > 0:
-                        
                         emulator.execute_instruction()
 
                         temp -= 1
+
 
 # %% The World Class
 
@@ -104,41 +104,61 @@ class World(Mediator):
 
         # Pool() will contain the set of CPUEmulators.
         self.pool = Pool(N)
-    
-    def react_on_division(self, result, replacement_strategy = "oldest"):
-        
+
+    def react_on_division(self, result, replacement_strategy="oldest"):
+
         program = result
-                
+
         emulator = SA.CPUEmulator()
         emulator.load_program(program)
-                
+
         if 0 in self.pool.get_emulators():
-                
+
             self.place_cell(emulator, self.pool.get_emulators().index(0))
 
         else:
-                                
-            if replacement_strategy == "oldest":
 
+            if replacement_strategy == "oldest":
                 ages = [element.age for element in self.pool.get_emulators()]
-                                
+
                 # Replace the oldest emulator with the newly constructed one
 
                 self.place_cell(emulator, ages.index(max(ages)))
-    
-    def notify(self,sender,event,result):
+    def react_on_IO_operation(self, result):
+        input_1 = self.emulator.cpu.input_buffer.get()
+        input_2 = self.emulator.cpu.input_buffer.get()
+        # TODO , implement IO operation checker
+        #addition
+        if (input_1+input_2) == result:
+            pass
+        if (input_1^input_2) == result:
+            pass
+        if (input_1*input_2) == result:
+            pass
+        if (input_1-input_2) == result:
+            pass
+        if (input_1 & input_2) == result:
+            pass
+        if (input_1 | input_2) == result:
+            pass
+
+    def notify(self, sender, event, result):
 
         if event == "division":
-            
             self.react_on_division(result)
-        
+
+        if event == "IO_operation":
+            # TODO implement react_on_operation
+
+            self.react_on_operation(result)
+
     def place_cell(self, emulator, position="none"):
-        
+
         emulator.mediator = self
         self.pool.put(emulator, position)
-        
+
     # A string representation of the world pool
-    
+
     def __str__(self):
 
         emulators = self.pool.get_emulators()
@@ -148,10 +168,11 @@ class World(Mediator):
             if emulators[i] == 0:
                 continue
             else:
-                print("Emulator " + str(i+1) + ": ")
+                print("Emulator " + str(i + 1) + ": ")
                 print(emulators[i])
 
         return ""
+
 
 # %%
 """Class mutation is responsible for every mutation factor of our programms 
@@ -160,7 +181,7 @@ when they are replicating.
 
 
 class Mutation:
-    
+
     def __init__(self, time, emulator, factor):
         self.emulator = emulator
         self.time = time
@@ -181,7 +202,8 @@ IO operation has yet to be implemented!
 IO has been implemented, now access to the input_buffer is needed.
 """
 
-class InOutput:
+
+class Check_Values:
 
     def __init__(self, emulator):
         self.emulator = emulator
@@ -197,40 +219,13 @@ class InOutput:
             print(output.get())
 
 
-# %% Class Update()
-""" Functions that's called from notify in SimpleAvida.py, so our World knows, when there
-is an output avaible of a cell"""
-
-
-class Observable:
-    def __init__(self) -> None:
-        self._observers = []
-
-    def register_observer(self, observer) -> None:
-        self._observers.append(observer)
-
-    def notify_observers(self, *args, **kwargs) -> None:
-        for observer in self._observers:
-            observer.notify(self, *args, **kwargs)
-# %%
-""" In our Avida file we have a class IO. There we give the input arguments and it returns
-an output. We then analyze that output and depending on what it is, we can change it's
-fitness and other factors.
-Class IO yet has to be implemented -> How do we implement it, how does it work?
-"""
-
-
-class Output:
-    def __init__(self, emulator):
-        self.emulator = emulator
-
 
 # %%
 
 """A DEMONSTRATION OF SELF-REPLICATION:"""
 
 # The default self-replicating program
-p = SA.Program([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
+p = SA.Program([16, 20, 2, 0, 21, 2, 20, 5, 19, 25, 2, 0, 17, 21, 0, 1])
 
 # A world with a 4-slot pool
 world = World(4)
@@ -238,38 +233,41 @@ world = World(4)
 # Manually creating the first CPUEmulator
 emulator = SA.CPUEmulator()
 
+# The first two inputs for our organism to work with
+emulator.cpu.input_buffer.put(1)
+emulator.cpu.input_buffer.put(2)
+
 # Loading the self-replicating program into the first emulator
 emulator.load_program(p)
 
 # Placing the emulator into a random position in the world
-world.place_cell(emulator,0)
-
+world.place_cell(emulator, 0)
 # Create a scheduler based on the world
 scheduler = Scheduler(world)
 
-#%%
+# %%
 
 # Checking execution time.
 
 # These execution times were recorded before defining world as mediator:
-    
+
 # 10k scheduler cycles takes around 0.7s
 # 100k scheduler cycles takes around 7s
 # 1 million scheduler cycles takes around 70s
 # Ok, as expected, the time grows linearly with the number of cycles
 
 # These execution times were recorded after defining world as mediator:
-    
+
 # 10k scheduler cycles take around 0.28s
 # 100k scheduler cycles take around 2.8s
 # 1 million scheduler cycles take around 28s
 
-%%time
+# %%time
 
 # Run this bad boy
 scheduler.schedule(10000)
 
-#%%
+# %%
 
 # Showing the resulting World Emulator Pool
 print(world)

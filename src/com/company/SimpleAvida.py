@@ -616,11 +616,13 @@ class InstructionIO:
         else:
             self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_b.read())
             self.emulator.cpu.reg_b.write(0)
-        print("output is :")
-        res = self.emulator.cpu.output_buffer.get()
-        print(res)
-        print("\n")
-        Scheduler.Mediator.notify(self, res, "output")# self.emulator.cpu.output_buffer.get(), "output")
+       # self.mediator.notify(self, event="IO_operation", result = self.emulator.output_buffer.get())
+
+#        print("output is :")
+#        res = self.emulator.cpu.output_buffer.get()
+#        print(res)
+#        print("\n")
+#        Scheduler.Mediator.notify(self, res, "output")# self.emulator.cpu.output_buffer.get(), "output")
 
         # get: read the next value from the input buffer into ?CX?
         if isinstance(next, InstructionNopA):
