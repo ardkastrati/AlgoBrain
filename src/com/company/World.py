@@ -97,6 +97,11 @@ class Scheduler:
 # The World Class has knowledge of all of the other parts of the system and manages
 # the way they communicate with each other
 
+# Maybe world can act like a scheduler factory
+
+# So, instead of creating a scheduler object and linking it to the world,
+# we can do world = World(), world.create_scheduler(), world.run() or something of the form
+
 class World(Mediator):
 
     # N stands for the number of cells, as per reference paper
@@ -104,11 +109,12 @@ class World(Mediator):
 
         # Pool() will contain the set of CPUEmulators.
         self.pool = Pool(N)
-
-    def react_on_division(self, result, replacement_strategy="oldest"):
-
-        program = result
-
+    
+    def react_on_division(self, result, replacement_strategy = "oldest"):
+        
+        program = SA.Program(result)
+                
+        
         emulator = SA.CPUEmulator()
         emulator.load_program(program)
 
@@ -124,6 +130,7 @@ class World(Mediator):
                 # Replace the oldest emulator with the newly constructed one
 
                 self.place_cell(emulator, ages.index(max(ages)))
+                
     def react_on_operation(self, cpu):
         # As we use lifo-queue, the world needs to know the input and not get it from the organism!
         input_1 = 1
@@ -161,6 +168,7 @@ class World(Mediator):
         else:
             print(result)
             pass
+        
     def notify(self, sender, event, result):
 
         if event == "division":
@@ -170,11 +178,13 @@ class World(Mediator):
             # TODO implement react_on_operation
 
             self.react_on_operation(result)
+            
     #at this position, we need a function, that put's stuff into the input_buffer
     """def load_input(self,emulator):
         emulator.mediator = self
         #emulator.cpu.input_buffer.put(1)
         #emulator.cpu.input_buffer.put(2)"""
+        
     def place_cell(self, emulator, position="none"):
 
         emulator.mediator = self
@@ -248,10 +258,28 @@ class Check_Values:
 """A DEMONSTRATION OF SELF-REPLICATION:"""
 
 # The default self-replicating program
-p = SA.Program([16, 20, 2, 0, 21, 2, 20, 5, 19, 25, 2, 0, 17, 21, 0, 1])
-#p = SA.Program([13,1,18,2,18,1,19,25,2,0,17,21,0,1])
-# A world with a 4-slot pool
-world = World(4)
+p = SA.Program([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
+
+# Some random program, no idea what it does really.
+# Just want to see if loading a completely random program is gonna break our system.
+# It shouldn't, but it may
+
+p1 = SA.Program([11,10,4,4,4,1,0,10,19,20,21,22,23,24,18,11,11,11])
+
+# Testing a program with all the instructions we have lol
+p2 = SA.Program(list(range(0,25)))
+
+# They all work. Whether they do anything, I can't comment, but at least
+# the system seems to be pretty stable
+
+p3 = SA.Program([0,1,4,6,7,22,21,16,17,2,2,2,3,4,5,6,7,8,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,1,1,0,1,11,11,11,11])
+
+
+# Why do the registers always end up being all 0?
+
+
+# A world with a 10-slot pool
+world = World(10)
 
 # Manually creating the first CPUEmulator
 emulator = SA.CPUEmulator()
@@ -261,7 +289,7 @@ emulator = SA.CPUEmulator()
 #emulator.cpu.input_buffer.put(2)
 
 # Loading the self-replicating program into the first emulator
-emulator.load_program(p)
+emulator.load_program(p3)
 
 # Placing the emulator into a random position in the world
 #world.load_input(emulator)
@@ -271,7 +299,7 @@ scheduler = Scheduler(world)
 
 # %%
 
-# Checking execution time.
+# Checking execution times for a 4-slot pool.
 
 # These execution times were recorded before defining world as mediator:
 
@@ -282,14 +310,16 @@ scheduler = Scheduler(world)
 
 # These execution times were recorded after defining world as mediator:
 
-# 10k scheduler cycles take around 0.28s
-# 100k scheduler cycles take around 2.8s
-# 1 million scheduler cycles take around 28s
+    
+# 10k scheduler cycles take around 0.3s
+# 100k scheduler cycles take around 3s
+# 1 million scheduler cycles take around 30s
+
 
 # %%time
 
 # Run this bad boy
-scheduler.schedule(10000)
+scheduler.schedule(100)
 
 # %%
 

@@ -6,12 +6,6 @@
 from queue import LifoQueue
 from queue import Queue
 from Mediator import Mediator
-from abc import ABC
-
-# I think this is a bad idea, importing the scheduler in here
-# This should be able to exist on its own
-
-import Scheduler
 # %% The Program
 
 class Program:
@@ -273,25 +267,24 @@ class InstructionIfLess:
         self.emulator = emulator
         self.machine = emulator.cpu
 
-    
-    def execute(self,machine):
+    def execute(self):
         
         next = self.emulator.memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size())
         
         if isinstance(next, InstructionNopA):
-            if self.machine.reg_a.get() < self.machine.reg_b.get():
+            if self.machine.reg_a.read() < self.machine.reg_b.read():
                 pass
             else:
                 self.emulator.instr_pointer.increment(2)
 
         elif isinstance(next, InstructionNopC):
-            if self.machine.reg_c.get() < self.machine.reg_a.get():
+            if self.machine.reg_c.read() < self.machine.reg_a.read():
                 pass
             else:
                 self.emulator.instr_pointer.increment(2)
                 
         else:
-            if self.machine.reg_b.get() < self.machine.reg_c.get():
+            if self.machine.reg_b.read() < self.machine.reg_c.read():
                 pass
             else:
                 self.emulator.instr_pointer.increment(2)
@@ -568,6 +561,8 @@ class InstructionHAlloc:
         for i in range(0, self.emulator.memory_size_child):
             self.emulator.program.append(0)
             
+        self.emulator.allocated = True
+            
         return 0
 
 # Split off the instructions between the Read-Head and the Write-Head
@@ -579,22 +574,34 @@ class InstructionHDivide:
     
     def execute(self):
         
-        result = []
-        iterator = self.emulator.read_head.get()
+        # If the parent has allocated memory division can happen
+        if self.emulator.allocated:
+            
+            result = []
+            iterator = self.emulator.read_head.get()
         
-        while iterator < self.emulator.write_head.get():
-            result.append(self.emulator.program[iterator])
-            iterator += 1        
+            while iterator < self.emulator.write_head.get():
+                result.append(self.emulator.program[iterator])
+                iterator += 1
+                
+            # Division should fail if the resulting organism would be of length < 10
+            if len(result) < 10:
+                
+                return []
+            
+            else: 
         
-        original = Program(self.emulator.original_program)
-        # Fully reset the state of the emulator (except age)
-        self.emulator.load_program(original)
+                original = Program(self.emulator.original_program)
+                # Fully reset the state of the emulator (except age)
+                self.emulator.load_program(original)
         
+                return result
         
-        #Mediator.notify(self, None, "A")
-        #print("here should be output")
-        #Scheduler.Mediator.notify(self, "A", "A", result)
-        return Program(result)
+        # Otherwise, nothing happens
+        else:
+            
+            return []
+            
         
 class InstructionIO:
     
@@ -602,7 +609,11 @@ class InstructionIO:
         self.emulator = emulator
 
     def execute(self):
-
+        
+        #IO doesn't work yet
+        
+        """
+>>>>>>> Stashed changes
         next = self.emulator.memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size())
         self.emulator.cpu.temp = next
         # put: place ?BX? instance in the output buffer and set register used to 0
@@ -617,18 +628,32 @@ class InstructionIO:
         else:
             self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_b.read())
             self.emulator.cpu.reg_b.write(0)
+<<<<<<< Updated upstream
             #self.emulator.cpu.reg_b.write(self.emulator.cpu.input_buffer.get())
         # we need a function that always gets called in the beginning, that can load in the input
         # into the inputbuffer of each new organism
         #print("writing into registry")
+=======
+            
+            
+        print("output is :")
+        res = self.emulator.cpu.output_buffer.get()
+        print(res)
+        print("\n")
+        Scheduler.Mediator.notify(self, res, "output")# self.emulator.cpu.output_buffer.get(), "output")
+
+>>>>>>> Stashed changes
         # get: read the next value from the input buffer into ?CX?
-        """if isinstance(next, InstructionNopA):
+        if isinstance(next, InstructionNopA):
             self.emulator.cpu.reg_a.write(self.emulator.cpu.input_buffer.get())
         elif isinstance(next, InstructionNopB):
             self.emulator.cpu.reg_b.write(self.emulator.cpu.input_buffer.get())
         else:
             self.emulator.cpu.reg_c.write(self.emulator.cpu.input_buffer.get())
+            
         """
+
+            
         return 0
 
 
@@ -768,7 +793,7 @@ class InstructionJmpHead:
             self.emulator.write_head.increment(temp)
                 
         else:
-            temp1 = self.machine.instr_pointer.get()
+            temp1 = self.emulator.instr_pointer.get()
             
             self.emulator.instr_pointer.increment(temp)
             
@@ -897,6 +922,10 @@ class CPUEmulator:
         
         self.mediator = Mediator()
         
+        # Divide needs to fail if the parent has not allocated memory
+        
+        self.allocated = False
+        
     def clear(self):
         
         self.memory.wipe()
@@ -1013,32 +1042,32 @@ class CPUEmulator:
         # Here I want to check whether the executed instruction was HDivide
         # If it was, I want to notify the world about it and give it the resulting child
         
-        if isinstance(self.memory.get(ip),InstructionHDivide):
+        if isinstance(self.memory.get(ip),InstructionHDivide) and self.allocated == True and len(result_program) >= 10:
             self.mediator.notify(self, event = "division", result = result_program)
+            
+        """    
         if isinstance(self.memory.get(ip), InstructionIO):
             self.mediator.notify(self, event="IO_operation", result=self.cpu)
             print("mediator has been notified")
             #is this even possible with the mediator system?
             Input(self)
+        """
 
         """if isinstance(self.memory.get)ip, IO_input):
                 self.mediator.notify(self,event="IO_operation", result = self.cpu)
-                """
+        """
+        
         self.age += 1
         
         if self.instr_pointer.get() == ip:
             self.instr_pointer.increment()
-            
-        if result_program == 0:
-            pass
-        else:
-            return result_program
+
+        
 
     # Obsolete
     def execute_program(self):
         
         while self.instr_pointer.get() < self.memory.size():
-            
             
             # Save current instruction pointer value to later check if it was explicitly changed by an instruction
             temp = self.instr_pointer.get()

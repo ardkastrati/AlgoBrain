@@ -17,7 +17,7 @@ class World implements Mediator:
             
             put the result program in the pool
             
-CPUEMulator should  Mediator
+CPUEMulator should implement Mediator
 
 In execute_instruction(), if the instruction to execute is HDivide,
 the CPUEmulator should notify()
