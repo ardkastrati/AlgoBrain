@@ -124,24 +124,43 @@ class World(Mediator):
                 # Replace the oldest emulator with the newly constructed one
 
                 self.place_cell(emulator, ages.index(max(ages)))
-    def react_on_IO_operation(self, result):
-        input_1 = self.emulator.cpu.input_buffer.get()
-        input_2 = self.emulator.cpu.input_buffer.get()
+    def react_on_operation(self, cpu):
+        # As we use lifo-queue, the world needs to know the input and not get it from the organism!
+        input_1 = 1
+        input_2 = 2
+        #calling result like this works, also passing the cpu works!
+        result = cpu.output_buffer.get()
+
         # TODO , implement IO operation checker
+        # if result is correct, multiply effiency coefficient with the given coefficient for each factor!
         #addition
+        #first call of IO is needed for loading in values! -> first result = 0;
+        if result == 0:
+            cpu.input_buffer.put(1)
+            cpu.input_buffer.put(2)
         if (input_1+input_2) == result:
-            pass
+            print("addition")
+            cpu.input_buffer.put(2)
+            cpu.input_buffer.put(4)
+            print("input_loaded")
+        # xor
         if (input_1^input_2) == result:
             pass
+        # multiplicatin
         if (input_1*input_2) == result:
             pass
+        # subtraction
         if (input_1-input_2) == result:
             pass
+        # and
         if (input_1 & input_2) == result:
             pass
+        # or
         if (input_1 | input_2) == result:
             pass
-
+        else:
+            print(result)
+            pass
     def notify(self, sender, event, result):
 
         if event == "division":
@@ -151,7 +170,11 @@ class World(Mediator):
             # TODO implement react_on_operation
 
             self.react_on_operation(result)
-
+    #at this position, we need a function, that put's stuff into the input_buffer
+    """def load_input(self,emulator):
+        emulator.mediator = self
+        #emulator.cpu.input_buffer.put(1)
+        #emulator.cpu.input_buffer.put(2)"""
     def place_cell(self, emulator, position="none"):
 
         emulator.mediator = self
@@ -226,7 +249,7 @@ class Check_Values:
 
 # The default self-replicating program
 p = SA.Program([16, 20, 2, 0, 21, 2, 20, 5, 19, 25, 2, 0, 17, 21, 0, 1])
-
+#p = SA.Program([13,1,18,2,18,1,19,25,2,0,17,21,0,1])
 # A world with a 4-slot pool
 world = World(4)
 
@@ -234,13 +257,14 @@ world = World(4)
 emulator = SA.CPUEmulator()
 
 # The first two inputs for our organism to work with
-emulator.cpu.input_buffer.put(1)
-emulator.cpu.input_buffer.put(2)
+#emulator.cpu.input_buffer.put(1)
+#emulator.cpu.input_buffer.put(2)
 
 # Loading the self-replicating program into the first emulator
 emulator.load_program(p)
 
 # Placing the emulator into a random position in the world
+#world.load_input(emulator)
 world.place_cell(emulator, 0)
 # Create a scheduler based on the world
 scheduler = Scheduler(world)

@@ -183,7 +183,7 @@ class CPU:
         
         self.input_buffer = Queue()
         self.output_buffer = Queue()
-        
+        self.temp = self.reg_b
     def clear(self):
         
         self.reg_a.write(0)
@@ -598,42 +598,59 @@ class InstructionHDivide:
         
 class InstructionIO:
     
-    def __init__(self,emulator):
+    def __init__(self, emulator):
         self.emulator = emulator
 
     def execute(self):
-        
+
         next = self.emulator.memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size())
-        
+        self.emulator.cpu.temp = next
         # put: place ?BX? instance in the output buffer and set register used to 0
         if isinstance(next, InstructionNopA):
             self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_a.read())
             self.emulator.cpu.reg_a.write(0)
-
+            #self.emulator.cpu.reg_a.write(self.emulator.cpu.input_buffer.get())
         elif isinstance(next, InstructionNopC):
             self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_c.read())
             self.emulator.cpu.reg_c.write(0)
+            #self.emulator.cpu.reg_c.write(self.emulator.cpu.input_buffer.get())
         else:
             self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_b.read())
             self.emulator.cpu.reg_b.write(0)
-       # self.mediator.notify(self, event="IO_operation", result = self.emulator.output_buffer.get())
-
-#        print("output is :")
-#        res = self.emulator.cpu.output_buffer.get()
-#        print(res)
-#        print("\n")
-#        Scheduler.Mediator.notify(self, res, "output")# self.emulator.cpu.output_buffer.get(), "output")
-
+            #self.emulator.cpu.reg_b.write(self.emulator.cpu.input_buffer.get())
+        # we need a function that always gets called in the beginning, that can load in the input
+        # into the inputbuffer of each new organism
+        #print("writing into registry")
         # get: read the next value from the input buffer into ?CX?
-        if isinstance(next, InstructionNopA):
+        """if isinstance(next, InstructionNopA):
             self.emulator.cpu.reg_a.write(self.emulator.cpu.input_buffer.get())
         elif isinstance(next, InstructionNopB):
             self.emulator.cpu.reg_b.write(self.emulator.cpu.input_buffer.get())
         else:
             self.emulator.cpu.reg_c.write(self.emulator.cpu.input_buffer.get())
-            
+        """
         return 0
-    
+
+
+class Input:
+
+    def __init__ (self, emulator):
+
+        self.emulator = emulator
+
+    def execute(self):
+        print("Input is being executed")
+        next = self.emulator.cpu.temp
+        if isinstance(self.cpu.next, InstructionNopA):
+            self.emulator.cpu.reg_a.write(self.emulator.cpu.input_buffer.get())
+            self.print("reg_a")
+        elif isinstance(next, InstructionNopB):
+            self.emulator.cpu.reg_b.write(self.emulator.cpu.input_buffer.get())
+            self.print("reg_b")
+        else:
+            self.emulator.cpu.reg_c.write(self.emulator.cpu.input_buffer.get())
+            self.print("reg_c")
+
 class InstructionHCopy:
     
     def __init__(self,emulator):
@@ -647,7 +664,8 @@ class InstructionHCopy:
         self.emulator.write_head.increment()
         
         return 0
-    
+
+
 class InstructionHSearch:
     
     def __init__(self,emulator):
@@ -997,7 +1015,15 @@ class CPUEmulator:
         
         if isinstance(self.memory.get(ip),InstructionHDivide):
             self.mediator.notify(self, event = "division", result = result_program)
-        
+        if isinstance(self.memory.get(ip), InstructionIO):
+            self.mediator.notify(self, event="IO_operation", result=self.cpu)
+            print("mediator has been notified")
+            #is this even possible with the mediator system?
+            Input(self)
+
+        """if isinstance(self.memory.get)ip, IO_input):
+                self.mediator.notify(self,event="IO_operation", result = self.cpu)
+                """
         self.age += 1
         
         if self.instr_pointer.get() == ip:
@@ -1007,7 +1033,7 @@ class CPUEmulator:
             pass
         else:
             return result_program
-        
+
     # Obsolete
     def execute_program(self):
         
