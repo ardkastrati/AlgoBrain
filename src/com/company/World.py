@@ -66,7 +66,7 @@ class Scheduler:
     def __init__(self, world):
         self.pool = world.pool
 
-    def schedule(self, N=66, replacement_strategy="oldest"):
+    def schedule(self, N=66):
 
         pool = self.pool.get()
 
@@ -105,6 +105,7 @@ class Scheduler:
 class World(Mediator):
 
     # N stands for the number of cells, as per reference paper
+    #
     def __init__(self, N):
 
         # Pool() will contain the set of CPUEmulators.
@@ -115,7 +116,7 @@ class World(Mediator):
         program = SA.Program(result)
                 
         
-        emulator = SA.CPUEmulator()
+        emulator = SA.CPUEmulator(mutation_prob = 0.8)
         emulator.load_program(program)
 
         if 0 in self.pool.get_emulators():
@@ -131,6 +132,7 @@ class World(Mediator):
 
                 self.place_cell(emulator, ages.index(max(ages)))
                 
+    
     def react_on_operation(self, cpu):
         # As we use lifo-queue, the world needs to know the input and not get it from the organism!
         input_1 = 1
@@ -173,10 +175,8 @@ class World(Mediator):
 
         if event == "division":
             self.react_on_division(result)
-
+            
         if event == "IO_operation":
-            # TODO implement react_on_operation
-
             self.react_on_operation(result)
             
     #at this position, we need a function, that put's stuff into the input_buffer
@@ -282,14 +282,14 @@ p3 = SA.Program([0,1,4,6,7,22,21,16,17,2,2,2,3,4,5,6,7,8,8,9,10,11,12,13,14,15,1
 world = World(10)
 
 # Manually creating the first CPUEmulator
-emulator = SA.CPUEmulator()
+emulator = SA.CPUEmulator(mutation_prob = 0.5)
 
 # The first two inputs for our organism to work with
 #emulator.cpu.input_buffer.put(1)
 #emulator.cpu.input_buffer.put(2)
 
 # Loading the self-replicating program into the first emulator
-emulator.load_program(p3)
+emulator.load_program(p)
 
 # Placing the emulator into a random position in the world
 #world.load_input(emulator)
@@ -319,7 +319,7 @@ scheduler = Scheduler(world)
 # %%time
 
 # Run this bad boy
-scheduler.schedule(100)
+scheduler.schedule(67)
 
 # %%
 

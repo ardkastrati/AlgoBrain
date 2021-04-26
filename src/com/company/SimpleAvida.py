@@ -6,6 +6,10 @@
 from queue import LifoQueue
 from queue import Queue
 from Mediator import Mediator
+
+# For the probability of random mutations
+from scipy.stats import bernoulli
+from random import randrange
 # %% The Program
 
 class Program:
@@ -594,7 +598,23 @@ class InstructionHDivide:
                 original = Program(self.emulator.original_program)
                 # Fully reset the state of the emulator (except age)
                 self.emulator.load_program(original)
-        
+                
+                # Random deletion on result
+                chance_del = bernoulli.rvs(self.emulator.deletion_prob, size=1)
+                
+                if chance_del == 0:
+                    pass
+                else:
+                    del(result[randrange(len(result))])
+                    
+                # Random insertion on result
+                chance_ins = bernoulli.rvs(self.emulator.deletion_prob, size=1)
+                
+                if chance_ins == 0:
+                    pass
+                else:
+                    result.insert(randrange(26),randrange(len(result)))
+    
                 return result
         
         # Otherwise, nothing happens
@@ -602,7 +622,9 @@ class InstructionHDivide:
             
             return []
             
-        
+# Do a put and get immediately after each other.
+# Working register is ?BX?
+
 class InstructionIO:
     
     def __init__(self, emulator):
@@ -611,6 +633,35 @@ class InstructionIO:
     def execute(self):
         
         #IO doesn't work yet
+        
+        next = self.emulator.memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size())
+        
+        # put: place ?BX? instance in the output buffer and set register used to 0
+        
+        if isinstance(next, InstructionNopA):
+            self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_a.read())
+            self.emulator.cpu.reg_a.write(0)
+            
+        elif isinstance(next, InstructionNopC):
+            self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_c.read())
+            self.emulator.cpu.reg_c.write(0)
+            
+        else:
+            self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_b.read())
+            self.emulator.cpu.reg_b.write(0)
+            
+        # Getting the value from the output buffer and notifying the world about it
+        res = self.emulator.cpu.output_buffer.get()
+        
+        # NOT FINISHED YET
+        
+        
+        
+        return 0
+            
+    
+        # What you did here actually looks pretty good, I just commented it out because I wanted to test some stuff without worrying about this
+            
         
         """
 >>>>>>> Stashed changes
@@ -683,10 +734,27 @@ class InstructionHCopy:
     
     def execute(self):
         
-        temp = self.emulator.program[self.emulator.read_head.get()]
-        self.emulator.program[self.emulator.write_head.get()] = temp
-        self.emulator.read_head.increment()
-        self.emulator.write_head.increment()
+        # To even start copying, we need to make sure that memory was allocated
+        # and that the read and write heads aren't pointing to some random invalid positions
+        
+        if not self.emulator.allocated:
+            pass
+        
+        else:
+        
+            # Random mutation happens with chance self.mutation_prob
+        
+            chance = bernoulli.rvs(self.emulator.mutation_prob, size=1)
+        
+            if chance == 1:
+                temp = randrange(26)
+            else:
+                temp = self.emulator.program[self.emulator.read_head.get()]
+            
+            
+            self.emulator.program[self.emulator.write_head.get()] = temp
+            self.emulator.read_head.increment()
+            self.emulator.write_head.increment()
         
         return 0
 
@@ -894,7 +962,7 @@ class InstructionIfLabel:
 
 class CPUEmulator:
     
-    def __init__(self, a = 0, b = 0, c = 0):
+    def __init__(self, a = 0, b = 0, c = 0, mutation_prob = 0, insertion_prob = 0, deletion_prob = 0):
         
         self.cpu = CPU(a,b,c)
         
@@ -925,6 +993,13 @@ class CPUEmulator:
         # Divide needs to fail if the parent has not allocated memory
         
         self.allocated = False
+        
+        # Probability of random mutation upon h_coopy
+        self.mutation_prob = mutation_prob
+        
+        # Probabilities of random insertion/deletion upon division
+        self.insertion_prob = insertion_prob
+        self.deletion_prob = deletion_prob
         
     def clear(self):
         
@@ -1045,16 +1120,18 @@ class CPUEmulator:
         if isinstance(self.memory.get(ip),InstructionHDivide) and self.allocated == True and len(result_program) >= 10:
             self.mediator.notify(self, event = "division", result = result_program)
             
+        if isinstance(self.memory.get(ip), InstructionIO):
+            self.mediator.notify(self, event="IO_operation", result = self.cpu.output_buffer.get())
+            
+        
+            
+        
         """    
         if isinstance(self.memory.get(ip), InstructionIO):
             self.mediator.notify(self, event="IO_operation", result=self.cpu)
             print("mediator has been notified")
             #is this even possible with the mediator system?
             Input(self)
-        """
-
-        """if isinstance(self.memory.get)ip, IO_input):
-                self.mediator.notify(self,event="IO_operation", result = self.cpu)
         """
         
         self.age += 1
