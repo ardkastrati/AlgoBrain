@@ -66,7 +66,7 @@ class Scheduler:
     def __init__(self, world):
         self.pool = world.pool
 
-    def schedule(self, N=66):
+    def schedule(self, N=129):
 
         pool = self.pool.get()
 
@@ -137,13 +137,16 @@ class World(Mediator):
         # As we use lifo-queue, the world needs to know the input and not get it from the organism!
         input_1 = 1
         input_2 = 2
-        #calling result like this works, also passing the cpu works!
         result = cpu.output_buffer.get()
+        #print(result)
+        #calling result like this works, also passing the cpu works!
+        #result = cpu.output_buffer.get()
 
         # TODO , implement IO operation checker
         # if result is correct, multiply effiency coefficient with the given coefficient for each factor!
         #addition
         #first call of IO is needed for loading in values! -> first result = 0;
+        cpu.input_buffer.put(3)
         if result == 0:
             cpu.input_buffer.put(1)
             cpu.input_buffer.put(2)
@@ -258,13 +261,13 @@ class Check_Values:
 """A DEMONSTRATION OF SELF-REPLICATION:"""
 
 # The default self-replicating program
-p = SA.Program([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
+p = SA.Program([13, 18, 2, 16, 20, 2, 11, 1,  21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
 
 # Some random program, no idea what it does really.
 # Just want to see if loading a completely random program is gonna break our system.
 # It shouldn't, but it may
 
-p1 = SA.Program([11,10,4,4,4,1,0,10,19,20,21,22,23,24,18,11,11,11])
+p1 = SA.Program([11,10,4,4,4,1,0,10,19,20,21,22,23,24,11,11,11])
 
 # Testing a program with all the instructions we have lol
 p2 = SA.Program(list(range(0,25)))
@@ -282,7 +285,7 @@ p3 = SA.Program([0,1,4,6,7,22,21,16,17,2,2,2,3,4,5,6,7,8,8,9,10,11,12,13,14,15,1
 world = World(10)
 
 # Manually creating the first CPUEmulator
-emulator = SA.CPUEmulator(mutation_prob = 0.5)
+emulator = SA.CPUEmulator()
 
 # The first two inputs for our organism to work with
 #emulator.cpu.input_buffer.put(1)
@@ -319,7 +322,7 @@ scheduler = Scheduler(world)
 # %%time
 
 # Run this bad boy
-scheduler.schedule(67)
+scheduler.schedule(130)
 
 # %%
 

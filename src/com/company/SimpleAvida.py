@@ -614,9 +614,11 @@ class InstructionHDivide:
                     pass
                 else:
                     result.insert(randrange(26),randrange(len(result)))
-    
+
+
+                self.emulator.mediator.notify(self, event="division", result=result)
                 return result
-        
+
         # Otherwise, nothing happens
         else:
             
@@ -635,7 +637,6 @@ class InstructionIO:
         #IO doesn't work yet
         
         next = self.emulator.memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size())
-        
         # put: place ?BX? instance in the output buffer and set register used to 0
         
         if isinstance(next, InstructionNopA):
@@ -649,83 +650,29 @@ class InstructionIO:
         else:
             self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_b.read())
             self.emulator.cpu.reg_b.write(0)
-            
+
         # Getting the value from the output buffer and notifying the world about it
-        res = self.emulator.cpu.output_buffer.get()
+        #res = self.emulator.cpu.output_buffer.get()
         
         # NOT FINISHED YET
-        
-        
-        
-        return 0
-            
-    
-        # What you did here actually looks pretty good, I just commented it out because I wanted to test some stuff without worrying about this
-            
-        
-        """
->>>>>>> Stashed changes
-        next = self.emulator.memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size())
-        self.emulator.cpu.temp = next
-        # put: place ?BX? instance in the output buffer and set register used to 0
+
+        self.emulator.mediator.notify(self, event="IO_operation", result=self.emulator.cpu)
+
+
         if isinstance(next, InstructionNopA):
-            self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_a.read())
-            self.emulator.cpu.reg_a.write(0)
-            #self.emulator.cpu.reg_a.write(self.emulator.cpu.input_buffer.get())
+            self.emulator.cpu.reg_a.write(self.emulator.cpu.input_buffer.get())
+
+
         elif isinstance(next, InstructionNopC):
-            self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_c.read())
-            self.emulator.cpu.reg_c.write(0)
-            #self.emulator.cpu.reg_c.write(self.emulator.cpu.input_buffer.get())
-        else:
-            self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_b.read())
-            self.emulator.cpu.reg_b.write(0)
-<<<<<<< Updated upstream
-            #self.emulator.cpu.reg_b.write(self.emulator.cpu.input_buffer.get())
-        # we need a function that always gets called in the beginning, that can load in the input
-        # into the inputbuffer of each new organism
-        #print("writing into registry")
-=======
-            
-            
-        print("output is :")
-        res = self.emulator.cpu.output_buffer.get()
-        print(res)
-        print("\n")
-        Scheduler.Mediator.notify(self, res, "output")# self.emulator.cpu.output_buffer.get(), "output")
-
->>>>>>> Stashed changes
-        # get: read the next value from the input buffer into ?CX?
-        if isinstance(next, InstructionNopA):
-            self.emulator.cpu.reg_a.write(self.emulator.cpu.input_buffer.get())
-        elif isinstance(next, InstructionNopB):
-            self.emulator.cpu.reg_b.write(self.emulator.cpu.input_buffer.get())
-        else:
             self.emulator.cpu.reg_c.write(self.emulator.cpu.input_buffer.get())
-            
-        """
 
-            
+        else:
+            self.emulator.cpu.reg_b.write(self.emulator.cpu.input_buffer.get())
+
+
+
         return 0
 
-
-class Input:
-
-    def __init__ (self, emulator):
-
-        self.emulator = emulator
-
-    def execute(self):
-        print("Input is being executed")
-        next = self.emulator.cpu.temp
-        if isinstance(self.cpu.next, InstructionNopA):
-            self.emulator.cpu.reg_a.write(self.emulator.cpu.input_buffer.get())
-            self.print("reg_a")
-        elif isinstance(next, InstructionNopB):
-            self.emulator.cpu.reg_b.write(self.emulator.cpu.input_buffer.get())
-            self.print("reg_b")
-        else:
-            self.emulator.cpu.reg_c.write(self.emulator.cpu.input_buffer.get())
-            self.print("reg_c")
 
 class InstructionHCopy:
     
@@ -1117,11 +1064,10 @@ class CPUEmulator:
         # Here I want to check whether the executed instruction was HDivide
         # If it was, I want to notify the world about it and give it the resulting child
         
-        if isinstance(self.memory.get(ip),InstructionHDivide) and self.allocated == True and len(result_program) >= 10:
-            self.mediator.notify(self, event = "division", result = result_program)
+
             
-        if isinstance(self.memory.get(ip), InstructionIO):
-            self.mediator.notify(self, event="IO_operation", result = self.cpu.output_buffer.get())
+        #if isinstance(self.memory.get(ip), InstructionIO):
+        #    self.mediator.notify(self, event="IO_operation", result = self.cpu.output_buffer.get())
             
         
             
