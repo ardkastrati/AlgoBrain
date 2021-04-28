@@ -305,12 +305,7 @@ class InstructionSwap:
         # ???????
         # Swap has nothing to do with the input buffer
         
-        """print("\n")
-        print("here we check input_buffer")
-        print("\n")
-        print(self.emulator.cpu.input_buffer.get(1))
-        print("\n")
-        """
+
         
         next = self.emulator.memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size())
 
@@ -1071,14 +1066,7 @@ class CPUEmulator:
             
         
             
-        
-        """    
-        if isinstance(self.memory.get(ip), InstructionIO):
-            self.mediator.notify(self, event="IO_operation", result=self.cpu)
-            print("mediator has been notified")
-            #is this even possible with the mediator system?
-            Input(self)
-        """
+
         
         self.age += 1
         
