@@ -10,6 +10,7 @@ from Mediator import Mediator
 # For the probability of random mutations
 from scipy.stats import bernoulli
 from random import randrange
+
 # %% The Program
 
 class Program:
@@ -24,7 +25,7 @@ class Program:
     # The only thing that needs to be checked at the construction of a new Program instance
     # is that all of the elements of the list of instructions are integers in range(0,26)
 
-     # Will check whether the passed list is a valid list of instructions.
+    # Will check whether the passed list is a valid list of instructions.
     def check_Validity(self, instr_list):
         i = 0
         for instruction in instr_list:
@@ -118,14 +119,6 @@ class FlowControlHead:
     def get(self):
         return self.value
 
-#%%  Class Notify()
-
-class Observer:
-    def __init__(self, observable) -> None:
-        observable.register_observer(self)
-
-    def notify(self, observable, *args, **kwargs) -> None:
-        print("Got", args, kwargs, "From", observable)
 # %% The Metabolic Rate
 
 class MetabolicRate:
@@ -182,6 +175,7 @@ class CPU:
         self.input_buffer = Queue()
         self.output_buffer = Queue()
         self.temp = self.reg_b
+        
     def clear(self):
         
         self.reg_a.write(0)
@@ -220,17 +214,15 @@ class InstructionNopB:
         pass
     
     def execute(self):
-        return 0
+        pass
     
-
 class InstructionNopC:
     
     def __init__(self,emulator):
         pass
     
     def execute(self):
-        return 0
-
+        pass
 
 class InstructionIfNEq:
     
@@ -260,9 +252,6 @@ class InstructionIfNEq:
                 pass
             else:
                 self.emulator.instr_pointer.increment(2)
-                
-        return 0
-            
 
 class InstructionIfLess:
     
@@ -292,8 +281,6 @@ class InstructionIfLess:
                 pass
             else:
                 self.emulator.instr_pointer.increment(2)
-                
-        return 0
         
 class InstructionSwap:
     
@@ -301,16 +288,6 @@ class InstructionSwap:
         self.emulator = emulator
 
     def execute(self):
-        
-        # ???????
-        # Swap has nothing to do with the input buffer
-        
-        """print("\n")
-        print("here we check input_buffer")
-        print("\n")
-        print(self.emulator.cpu.input_buffer.get(1))
-        print("\n")
-        """
         
         next = self.emulator.memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size())
 
@@ -328,8 +305,6 @@ class InstructionSwap:
             temp = self.emulator.cpu.reg_b.read()
             self.emulator.cpu.reg_b.write(self.emulator.cpu.reg_c.read())
             self.emulator.cpu.reg_c.write(temp)
-            
-        return 0
 
 class InstructionPop:
     
@@ -359,9 +334,7 @@ class InstructionPop:
                 
         else:
             self.machine.reg_b.write(temp)
-            
-        return 0
-        
+
 class InstructionPush:
     
     def __init__(self, emulator):
@@ -381,8 +354,6 @@ class InstructionPush:
             
         else:
             self.machine.active_stack.put(self.machine.reg_b.read())
-            
-        return 0
 
 class InstructionSwapStack:
 
@@ -398,8 +369,6 @@ class InstructionSwapStack:
             
         else:
             self.machine.active_stack = self.machine.stack0
-            
-        return 0
 
 class InstructionRightShift:
     
@@ -421,8 +390,6 @@ class InstructionRightShift:
         else:
             self.machine.reg_b.write(self.machine.reg_b.read() >> 1)
             
-        return 0
-            
 class InstructionLeftShift:
     
     def __init__(self, emulator):
@@ -442,8 +409,6 @@ class InstructionLeftShift:
                 
         else:
             self.machine.reg_b.write(self.machine.reg_b.read() << 1)
-            
-        return 0
         
 class InstructionInc:
     
@@ -462,8 +427,6 @@ class InstructionInc:
                 
         else:
             self.emulator.cpu.reg_b.increment()
-            
-        return 0
 
 class InstructionDec:
 
@@ -483,8 +446,6 @@ class InstructionDec:
                 
         else:
             self.emulator.cpu.reg_b.decrement()
-            
-        return 0
 
 class InstructionAdd:
     
@@ -506,8 +467,6 @@ class InstructionAdd:
                 
         else:
             self.machine.reg_b.write(sum)
-            
-        return 0
 
 class InstructionSub:
     
@@ -529,8 +488,6 @@ class InstructionSub:
                 
         else:
             self.machine.reg_b.write(diff)
-            
-        return 0
         
 class InstructionNand:
     
@@ -552,9 +509,7 @@ class InstructionNand:
                 
         else:
             self.machine.reg_b.write(nand)
-            
-        return 0
-        
+
 class InstructionHAlloc:
     
     def __init__(self, emulator):
@@ -566,8 +521,6 @@ class InstructionHAlloc:
             self.emulator.program.append(0)
             
         self.emulator.allocated = True
-            
-        return 0
 
 # Split off the instructions between the Read-Head and the Write-Head
 # and turn them into a new organism.
@@ -591,7 +544,7 @@ class InstructionHDivide:
             # Division should fail if the resulting organism would be of length < 10
             if len(result) < 10:
                 
-                return []
+                pass
             
             else: 
         
@@ -614,35 +567,30 @@ class InstructionHDivide:
                     pass
                 else:
                     result.insert(randrange(26),randrange(len(result)))
-
-
-                self.emulator.mediator.notify(self, event="division", result=result)
-                return result
+                
+                self.emulator.mediator.notify(self, event = "division", result = result)
 
         # Otherwise, nothing happens
         else:
             
-            return []
+            pass
             
 # Do a put and get immediately after each other.
 # Working register is ?BX?
-
 class InstructionIO:
     
     def __init__(self, emulator):
         self.emulator = emulator
 
     def execute(self):
-        
-        #IO doesn't work yet
-        
+
         next = self.emulator.memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size())
         # put: place ?BX? instance in the output buffer and set register used to 0
         
         if isinstance(next, InstructionNopA):
             self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_a.read())
             self.emulator.cpu.reg_a.write(0)
-            
+        
         elif isinstance(next, InstructionNopC):
             self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_c.read())
             self.emulator.cpu.reg_c.write(0)
@@ -653,8 +601,6 @@ class InstructionIO:
 
         # Getting the value from the output buffer and notifying the world about it
         #res = self.emulator.cpu.output_buffer.get()
-        
-        # NOT FINISHED YET
 
         self.emulator.mediator.notify(self, event="IO_operation", result=self.emulator.cpu)
 
@@ -668,12 +614,7 @@ class InstructionIO:
 
         else:
             self.emulator.cpu.reg_b.write(self.emulator.cpu.input_buffer.get())
-
-
-
-        return 0
-
-
+            
 class InstructionHCopy:
     
     def __init__(self,emulator):
@@ -702,9 +643,6 @@ class InstructionHCopy:
             self.emulator.program[self.emulator.write_head.get()] = temp
             self.emulator.read_head.increment()
             self.emulator.write_head.increment()
-        
-        return 0
-
 
 class InstructionHSearch:
     
@@ -762,8 +700,6 @@ class InstructionHSearch:
                 
                 distance += 1
 
-        return 0
-        
 class InstructionMovHead:
     
     def __init__(self,emulator):
@@ -783,8 +719,6 @@ class InstructionMovHead:
                 
         else:
             self.emulator.instr_pointer.set(temp )
-            
-        return 0
 
 class InstructionJmpHead:
     
@@ -813,8 +747,6 @@ class InstructionJmpHead:
             self.emulator.instr_pointer.increment(temp)
             
         self.emulator.cpu.reg_c.write(temp1)
-        
-        return 0
 
 class InstructionGetHead:
     
@@ -833,8 +765,6 @@ class InstructionGetHead:
             
         else:
             self.emulator.cpu.reg_c.write(self.emulator.instr_pointer.get())
-            
-        return 0
 
 class InstructionSetFlow:
     
@@ -851,8 +781,6 @@ class InstructionSetFlow:
             self.emulator.fc_head.set(self.emulator.cpu.reg_b)
         else:
             self.emulator.fc_head.set(self.emulator.cpu.reg_c)
-            
-        return 0
 
 class InstructionIfLabel:
     
@@ -902,9 +830,7 @@ class InstructionIfLabel:
         
             else:
                 self.emulator.instr_pointer.set((temp + len(to_match) + 2) % self.emulator.memory.size())
-                
-        return 0
-            
+  
 # %%
 
 class CPUEmulator:
@@ -1059,33 +985,12 @@ class CPUEmulator:
         
         ip = self.instr_pointer.get()
         
-        result_program = self.memory.get(ip).execute()
-        
-        # Here I want to check whether the executed instruction was HDivide
-        # If it was, I want to notify the world about it and give it the resulting child
-        
-
-            
-        #if isinstance(self.memory.get(ip), InstructionIO):
-        #    self.mediator.notify(self, event="IO_operation", result = self.cpu.output_buffer.get())
-            
-        
-            
-        
-        """    
-        if isinstance(self.memory.get(ip), InstructionIO):
-            self.mediator.notify(self, event="IO_operation", result=self.cpu)
-            print("mediator has been notified")
-            #is this even possible with the mediator system?
-            Input(self)
-        """
+        self.memory.get(ip).execute()
         
         self.age += 1
         
         if self.instr_pointer.get() == ip:
             self.instr_pointer.increment()
-
-        
 
     # Obsolete
     def execute_program(self):

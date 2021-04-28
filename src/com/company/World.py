@@ -6,7 +6,6 @@ import SimpleAvida as SA
 from Mediator import Mediator
 from abc import ABC
 
-
 # %% The Organism Pool Class
 
 # The pool is a list of tuples. Each tuple contains in its first position
@@ -104,8 +103,6 @@ class Scheduler:
 
 class World(Mediator):
 
-    # N stands for the number of cells, as per reference paper
-    #
     def __init__(self, N):
 
         # Pool() will contain the set of CPUEmulators.
@@ -114,9 +111,8 @@ class World(Mediator):
     def react_on_division(self, result, replacement_strategy = "oldest"):
         
         program = SA.Program(result)
-                
-        
-        emulator = SA.CPUEmulator(mutation_prob = 0.8)
+
+        emulator = SA.CPUEmulator()
         emulator.load_program(program)
 
         if 0 in self.pool.get_emulators():
@@ -126,12 +122,17 @@ class World(Mediator):
         else:
 
             if replacement_strategy == "oldest":
+                
                 ages = [element.age for element in self.pool.get_emulators()]
-
-                # Replace the oldest emulator with the newly constructed one
-
                 self.place_cell(emulator, ages.index(max(ages)))
                 
+    def react_on_IO(self, sender, result):
+        
+        to_input = np.randint(0,100)
+        
+        sender.cpu.input_buffer.put(to_input)
+        
+        
     
     def react_on_operation(self, cpu):
         # As we use lifo-queue, the world needs to know the input and not get it from the organism!
@@ -178,9 +179,9 @@ class World(Mediator):
 
         if event == "division":
             self.react_on_division(result)
-            
+        
         if event == "IO_operation":
-            self.react_on_operation(result)
+            self.react_on_IO(result)
             
     #at this position, we need a function, that put's stuff into the input_buffer
     """def load_input(self,emulator):
@@ -260,25 +261,11 @@ class Check_Values:
 
 """A DEMONSTRATION OF SELF-REPLICATION:"""
 
-# The default self-replicating program
 p = SA.Program([13, 18, 2, 16, 20, 2, 11, 1,  21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
 
-# Some random program, no idea what it does really.
-# Just want to see if loading a completely random program is gonna break our system.
-# It shouldn't, but it may
 
-p1 = SA.Program([11,10,4,4,4,1,0,10,19,20,21,22,23,24,11,11,11])
-
-# Testing a program with all the instructions we have lol
-p2 = SA.Program(list(range(0,25)))
-
-# They all work. Whether they do anything, I can't comment, but at least
-# the system seems to be pretty stable
-
-p3 = SA.Program([0,1,4,6,7,22,21,16,17,2,2,2,3,4,5,6,7,8,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,1,1,0,1,11,11,11,11])
-
-
-# Why do the registers always end up being all 0?
+# The default self-replicating program
+default = SA.Program([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
 
 
 # A world with a 10-slot pool
