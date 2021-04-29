@@ -65,7 +65,7 @@ class Scheduler:
     def __init__(self, world):
         self.pool = world.pool
 
-    def schedule(self, N=129):
+    def schedule(self, N=201):
 
         pool = self.pool.get()
 
@@ -100,6 +100,28 @@ class Scheduler:
 
 # So, instead of creating a scheduler object and linking it to the world,
 # we can do world = World(), world.create_scheduler(), world.run() or something of the form
+class Input:
+    def __init__ (self,x=0,y=0,i=0):
+        self.input_1 = x
+        self.input_2 = y
+        self.count = i
+    def update_input(self,input):
+        if self.count == 0:
+            self.input_1 = input
+            self.count = 1
+        else:
+            self.input_2 = input
+            self.count = 0
+    def get_input(self):
+        if self.count == 0:
+            temp = self.input_1
+            self.count = 1
+
+            return self.input_1
+        else:
+            temp = self.input_2
+            self.count = 0
+            return self.input_2
 
 class World(Mediator):
 
@@ -107,10 +129,11 @@ class World(Mediator):
 
         # Pool() will contain the set of CPUEmulators.
         self.pool = Pool(N)
-    
+
     def react_on_division(self, result, replacement_strategy = "oldest"):
-        
+
         program = SA.Program(result)
+
 
         emulator = SA.CPUEmulator()
         emulator.load_program(program)
@@ -122,23 +145,25 @@ class World(Mediator):
         else:
 
             if replacement_strategy == "oldest":
-                
+
                 ages = [element.age for element in self.pool.get_emulators()]
                 self.place_cell(emulator, ages.index(max(ages)))
-                
+
     def react_on_IO(self, sender, result):
-        
+
         to_input = np.randint(0,100)
-        
+
         sender.cpu.input_buffer.put(to_input)
-        
-        
-    
+
+
+
     def react_on_operation(self, cpu):
         # As we use lifo-queue, the world needs to know the input and not get it from the organism!
-        input_1 = 1
-        input_2 = 2
+        input_1 = Input.get_input(self)
+        input_2 = Input.get_input(self)
+
         result = cpu.output_buffer.get()
+
         #print(result)
         #calling result like this works, also passing the cpu works!
         #result = cpu.output_buffer.get()
@@ -172,23 +197,26 @@ class World(Mediator):
         if (input_1 | input_2) == result:
             pass
         else:
+            print("check_function else")
             print(result)
             pass
-        
+
     def notify(self, sender, event, result):
 
         if event == "division":
             self.react_on_division(result)
-        
+
         if event == "IO_operation":
+
             self.react_on_operation(result)
             
+
     #at this position, we need a function, that put's stuff into the input_buffer
     """def load_input(self,emulator):
         emulator.mediator = self
         #emulator.cpu.input_buffer.put(1)
         #emulator.cpu.input_buffer.put(2)"""
-        
+
     def place_cell(self, emulator, position="none"):
 
         emulator.mediator = self
@@ -212,7 +240,7 @@ class World(Mediator):
 
 
 # %%
-"""Class mutation is responsible for every mutation factor of our programms 
+"""Class mutation is responsible for every mutation factor of our programms
 when they are replicating.
 """
 
@@ -231,8 +259,8 @@ class Mutation:
 
 # %%
 """Class for the input that we send to the world, ie. what we want our programms
-to do 
-When the IO operation in Avida is called, it takes an input from this class, does something and then 
+to do
+When the IO operation in Avida is called, it takes an input from this class, does something and then
 calls the output class below.
 IO operation has yet to be implemented!
 
@@ -260,7 +288,9 @@ class Check_Values:
 
 """A DEMONSTRATION OF SELF-REPLICATION:"""
 
-p = SA.Program([13, 18, 2, 16, 20, 2, 11, 1,  21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
+# The default self-replicating program
+p5 = SA.Program([ 16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
+p = SA.Program([11,1,11,2,11,2,13,0,18,1, 16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
 
 
 # The default self-replicating program
@@ -300,7 +330,7 @@ scheduler = Scheduler(world)
 
 # These execution times were recorded after defining world as mediator:
 
-    
+
 # 10k scheduler cycles take around 0.3s
 # 100k scheduler cycles take around 3s
 # 1 million scheduler cycles take around 30s
@@ -309,7 +339,7 @@ scheduler = Scheduler(world)
 # %%time
 
 # Run this bad boy
-scheduler.schedule(130)
+scheduler.schedule(250)
 
 # %%
 
