@@ -181,7 +181,7 @@ class World(Mediator):
             self.react_on_division(result)
         
         if event == "IO_operation":
-            self.react_on_IO(result)
+            self.react_on_operation(result)
             
     #at this position, we need a function, that put's stuff into the input_buffer
     """def load_input(self,emulator):
@@ -256,7 +256,6 @@ class Check_Values:
             print(output.get())
 
 
-
 # %%
 
 """A DEMONSTRATION OF SELF-REPLICATION:"""
@@ -279,11 +278,12 @@ emulator = SA.CPUEmulator()
 #emulator.cpu.input_buffer.put(2)
 
 # Loading the self-replicating program into the first emulator
-emulator.load_program(p)
+emulator.load_program(default)
 
 # Placing the emulator into a random position in the world
 #world.load_input(emulator)
 world.place_cell(emulator, 0)
+
 # Create a scheduler based on the world
 scheduler = Scheduler(world)
 
