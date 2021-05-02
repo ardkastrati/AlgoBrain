@@ -1,5 +1,3 @@
-# TODO: DOCUMENT THE CODE BETTER.
-
 # %%
 # Necessary imports:
 
@@ -75,6 +73,8 @@ class InstructionPointer:
         self.value += a
 
     def set(self,a):
+        
+        assert isinstance(a,int)
         self.value = a
 
 class ReadHead:
@@ -206,7 +206,6 @@ class InstructionNopA:
 
     def execute(self):
         pass
-
 
 class InstructionNopB:
 
@@ -516,11 +515,19 @@ class InstructionHAlloc:
         self.emulator = emulator
 
     def execute(self):
+        
+        # An organism can only allocate memory once
 
-        for i in range(0, self.emulator.memory_size_child):
-            self.emulator.program.append(0)
+        if self.emulator.allocated == False:
+            
+            for i in range(0, self.emulator.memory.size()):
+                self.emulator.program.append(0)
 
-        self.emulator.allocated = True
+            self.emulator.allocated = True
+            
+        else:
+            
+            pass
 
 # Split off the instructions between the Read-Head and the Write-Head
 # and turn them into a new organism.
@@ -533,46 +540,39 @@ class InstructionHDivide:
 
         # If the parent has allocated memory division can happen
         if self.emulator.allocated:
+            
+            # Division may only happen if the write head is strictly larger than the read head
+            # and they are both at valid positions
+            
+            rh = self.emulator.read_head.get()
+            wh = self.emulator.write_head.get()
+            
+            if rh < wh:
 
-            result = []
-            iterator = self.emulator.read_head.get()
+                result = []
+                iterator = self.emulator.read_head.get()
 
-            while iterator < self.emulator.write_head.get():
-                result.append(self.emulator.program[iterator])
-                iterator += 1
-
-            # Division should fail if the resulting organism would be of length < 10
-            if len(result) < 10:
-
-                pass
-
-            else:
+                while iterator < self.emulator.write_head.get():
+                    result.append(self.emulator.program[iterator])
+                    iterator += 1
 
                 original = Program(self.emulator.original_program)
                 # Fully reset the state of the emulator (except age)
                 self.emulator.load_program(original)
-
-                # Random deletion on result
-                chance_del = bernoulli.rvs(self.emulator.deletion_prob, size=1)
-
-                if chance_del == 0:
-                    pass
-                else:
-                    del(result[randrange(len(result))])
-
-                # Random insertion on result
-                chance_ins = bernoulli.rvs(self.emulator.deletion_prob, size=1)
-
-                if chance_ins == 0:
-                    pass
-                else:
-                    result.insert(randrange(26),randrange(len(result)))
-
-                self.emulator.mediator.notify(self, event = "division", result = result)
-
-        # Otherwise, nothing happens
+                
+                if len(result) > 10 :
+                
+                    self.emulator.mediator.notify(sender = self.emulator, event = "division", result = result)
+                
+                self.emulator.allocated = False
+                
+            # Otherwise, division is ignored
+            
+            else:
+                
+                pass
+            
         else:
-
             pass
 
 # Do a put and get immediately after each other.
@@ -585,8 +585,8 @@ class InstructionIO:
     def execute(self):
 
         next = self.emulator.memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size())
+        
         # put: place ?BX? instance in the output buffer and set register used to 0
-
         if isinstance(next, InstructionNopA):
             self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_a.read())
             self.emulator.cpu.reg_a.write(0)
@@ -598,16 +598,13 @@ class InstructionIO:
         else:
             self.emulator.cpu.output_buffer.put(self.emulator.cpu.reg_b.read())
             self.emulator.cpu.reg_b.write(0)
+            
+        to_output = self.emulator.cpu.output_buffer.get()
 
-        # Getting the value from the output buffer and notifying the world about it
-        #res = self.emulator.cpu.output_buffer.get()
-
-        self.emulator.mediator.notify(self, event="IO_operation", result=self.emulator.cpu)
-
+        self.emulator.mediator.notify(sender = self.emulator, event = "IO_operation", result = to_output)
 
         if isinstance(next, InstructionNopA):
             self.emulator.cpu.reg_a.write(self.emulator.cpu.input_buffer.get())
-
 
         elif isinstance(next, InstructionNopC):
             self.emulator.cpu.reg_c.write(self.emulator.cpu.input_buffer.get())
@@ -621,28 +618,37 @@ class InstructionHCopy:
         self.emulator = emulator
 
     def execute(self):
-
         # To even start copying, we need to make sure that memory was allocated
         # and that the read and write heads aren't pointing to some random invalid positions
 
         if not self.emulator.allocated:
+            
             pass
 
         else:
-
-            # Random mutation happens with chance self.mutation_prob
-
-            chance = bernoulli.rvs(self.emulator.mutation_prob, size=1)
-
-            if chance == 1:
-                temp = randrange(26)
+            
+            # First we check if the read head and write head are even in their
+            # valid ranges.
+            
+            # If they are not, HCopy will be ignored.
+            
+            if self.emulator.read_head.get() < len(self.emulator.original_program) and self.emulator.write_head.get() < len(self.emulator.program):
+                
+                chance = bernoulli.rvs(self.emulator.mutation_prob, size=1)
+                
+                if chance == 1:
+                    temp = randrange(26)
+                else:
+                    temp = self.emulator.original_program[self.emulator.read_head.get()]
+            
+                self.emulator.program[self.emulator.write_head.get()] = temp
+                self.emulator.read_head.increment()
+                self.emulator.write_head.increment()
+                self.emulator.copied.append(temp)
+            
             else:
-                temp = self.emulator.program[self.emulator.read_head.get()]
-
-
-            self.emulator.program[self.emulator.write_head.get()] = temp
-            self.emulator.read_head.increment()
-            self.emulator.write_head.increment()
+                
+                pass
 
 class InstructionHSearch:
 
@@ -651,15 +657,14 @@ class InstructionHSearch:
 
     def execute(self):
 
-
         end_search_index = self.emulator.instr_pointer.get() % self.emulator.memory.size()
 
         iterator = (self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size()
 
         template = []
 
-        while self.emulator.program[iterator] == 0 or self.emulator.program[iterator] == 1 or self.emulator.program[iterator] == 2:
-            template.append(self.emulator.program[iterator])
+        while self.emulator.original_program[iterator] == 0 or self.emulator.original_program[iterator] == 1 or self.emulator.original_program[iterator] == 2:
+            template.append(self.emulator.original_program[iterator])
             iterator += 1
             iterator = iterator % self.emulator.memory.size()
 
@@ -686,8 +691,7 @@ class InstructionHSearch:
             while(iterator_index != end_search_index):
 
                 candidate_index = iterator_index + len(to_match) % self.emulator.memory.size()
-                candidate_template = [self.emulator.program[k % self.emulator.memory.size()] for k in range(iterator_index, iterator_index + len(to_match))]
-
+                candidate_template = [self.emulator.original_program[k % self.emulator.memory.size()] for k in range(iterator_index, iterator_index + len(to_match))]
 
                 if candidate_template == to_match:
 
@@ -712,13 +716,13 @@ class InstructionMovHead:
         temp = self.emulator.fc_head.get()
 
         if isinstance(next, InstructionNopB):
-            self.emulator.read_head.set(temp )
+            self.emulator.read_head.set(temp)
 
         elif isinstance(next, InstructionNopC):
-            self.emulator.write_head.set(temp )
+            self.emulator.write_head.set(temp)
 
         else:
-            self.emulator.instr_pointer.set(temp )
+            self.emulator.instr_pointer.set(temp)
 
 class InstructionJmpHead:
 
@@ -776,11 +780,11 @@ class InstructionSetFlow:
         next = self.emulator.memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.memory.size())
 
         if isinstance(next, InstructionNopA):
-            self.emulator.fc_head.set(self.emulator.cpu.reg_a)
+            self.emulator.fc_head.set(self.emulator.cpu.reg_a.read())
         elif isinstance(next, InstructionNopB):
-            self.emulator.fc_head.set(self.emulator.cpu.reg_b)
+            self.emulator.fc_head.set(self.emulator.cpu.reg_b.read())
         else:
-            self.emulator.fc_head.set(self.emulator.cpu.reg_c)
+            self.emulator.fc_head.set(self.emulator.cpu.reg_c.read())
 
 class InstructionIfLabel:
 
@@ -795,8 +799,8 @@ class InstructionIfLabel:
 
         template = []
 
-        while self.emulator.program[iterator] == 0 or self.emulator.program[iterator] == 1 or self.emulator.program[iterator] == 2:
-            template.append(self.emulator.program[iterator])
+        while self.emulator.original_program[iterator] == 0 or self.emulator.original_program[iterator] == 1 or self.emulator.original_program[iterator] == 2:
+            template.append(self.emulator.original_program[iterator])
             iterator += 1
             iterator = iterator % self.emulator.memory.size()
 
@@ -813,14 +817,22 @@ class InstructionIfLabel:
         # Otherwise:
         # Check if the most recent series of copied instructions is the
         # complement of this template.
+        
         else:
+            
             to_match = [(element + 1) % 3 for element in template]
+            
+            """
 
             start = self.emulator.write_head.get() - len(to_match)
 
             end = self.emulator.write_head.get()
 
             most_recent = self.emulator.program[start:end]
+            
+            """
+            
+            most_recent = self.emulator.copied[len(self.emulator.copied)-len(to_match):]
 
             temp = self.emulator.instr_pointer.get()
 
@@ -841,8 +853,11 @@ class CPUEmulator:
 
         self.memory = Memory()
 
-        # Current program. Can be modified by h-alloc and h-copy
+        # Current program. Can be modified by h-alloc and h-copy.
         self.program = []
+        
+        # Helper list. Contains the copied instructions. Used in If-label
+        self.copied = []
 
         # Originally loaded program. Used to return to start state after h-divide
         self.original_program = []
@@ -851,8 +866,6 @@ class CPUEmulator:
         self.read_head = ReadHead()
         self.write_head = WriteHead()
         self.fc_head = FlowControlHead()
-
-        self.memory_size_child = 0
 
         self.metabolic_rate = MetabolicRate()
 
@@ -867,7 +880,7 @@ class CPUEmulator:
 
         self.allocated = False
 
-        # Probability of random mutation upon h_coopy
+        # Probability of random mutation upon h_copy
         self.mutation_prob = mutation_prob
 
         # Probabilities of random insertion/deletion upon division
@@ -887,9 +900,7 @@ class CPUEmulator:
 
     def load_program(self, p):
 
-
         self.clear()
-        self.memory_size_child = len(p.instructions)
 
         # Check if what we're trying to read is an instance od type "Program"
         if not isinstance(p, Program):
@@ -987,18 +998,6 @@ class CPUEmulator:
 
         self.memory.get(ip).execute()
 
-        # Here I want to check whether the executed instruction was HDivide
-        # If it was, I want to notify the world about it and give it the resulting child
-
-
-
-        #if isinstance(self.memory.get(ip), InstructionIO):
-        #    self.mediator.notify(self, event="IO_operation", result = self.cpu.output_buffer.get())
-
-
-
-
-
         self.age += 1
 
         if self.instr_pointer.get() == ip:
@@ -1015,7 +1014,6 @@ class CPUEmulator:
             print("Executing instruction " + str(temp))
 
             self.memory.get(self.instr_pointer.get()).execute()
-
 
             # If the IP wasn't changed by an instruction, increase by 1, otherwise leave it
             if self.instr_pointer.get() == temp:
