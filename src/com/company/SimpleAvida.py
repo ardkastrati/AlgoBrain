@@ -170,11 +170,31 @@ class CPU:
 
         self.stack0 = LifoQueue()
         self.stack1 = LifoQueue()
+        self.input_1 = 0
+        self.input_2 = 0
+        self.count = 0
         self.active_stack = self.stack0
 
         self.input_buffer = Queue()
         self.output_buffer = Queue()
         self.temp = self.reg_b
+
+    def input_update(self, value):
+
+        if self.count == 0:
+            self.input_1 = value
+            self.count = 1
+        else:
+            self.input_2 = value
+            self.count = 0
+    def get_input(self):
+
+        if self.count == 0:
+            self.count = 1
+            return self.input_1
+        else:
+            self.count = 0
+            return self.input_2
 
     def clear(self):
 
@@ -577,6 +597,8 @@ class InstructionHDivide:
 
 # Do a put and get immediately after each other.
 # Working register is ?BX?
+
+
 class InstructionIO:
 
     def __init__(self, emulator):
@@ -604,13 +626,19 @@ class InstructionIO:
         self.emulator.mediator.notify(sender = self.emulator, event = "IO_operation", result = to_output)
 
         if isinstance(next, InstructionNopA):
-            self.emulator.cpu.reg_a.write(self.emulator.cpu.input_buffer.get())
+            self.emulator.cpu.input_update(self.emulator.cpu.input_buffer.get())
+            self.emulator.cpu.reg_a.write(self.emulator.cpu.get_input())
+            #self.emulator.cpu.reg_a.write(self.emulator.cpu.input_buffer.get())
 
         elif isinstance(next, InstructionNopC):
-            self.emulator.cpu.reg_c.write(self.emulator.cpu.input_buffer.get())
+            self.emulator.cpu.input_update(self.emulator.cpu.input_buffer.get())
+            self.emulator.cpu.reg_c.write(self.emulator.cpu.get_input())
+            #self.emulator.cpu.reg_c.write(self.emulator.cpu.input_buffer.get())
 
         else:
-            self.emulator.cpu.reg_b.write(self.emulator.cpu.input_buffer.get())
+            self.emulator.cpu.input_update(self.emulator.cpu.input_buffer.get())
+            self.emulator.cpu.reg_b.write(self.emulator.cpu.get_input())
+            #self.emulator.cpu.reg_b.write(self.emulator.cpu.input_buffer.get())
 
 class InstructionHCopy:
 

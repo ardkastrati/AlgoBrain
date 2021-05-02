@@ -18,6 +18,7 @@ from abc import ABC
 # Let's have the world act as mediator between SimpleAvida, Pool and Scheduler
 # Keep the implementations of SA,Pool and Scheduler separate
 
+
 class Pool:
 
     def __init__(self, N):
@@ -100,28 +101,6 @@ class Scheduler:
 
 # So, instead of creating a scheduler object and linking it to the world,
 # we can do world = World(), world.create_scheduler(), world.run() or something of the form
-class Input:
-    def __init__ (self,x=0,y=0,i=0):
-        self.input_1 = x
-        self.input_2 = y
-        self.count = i
-    def update_input(self,input):
-        if self.count == 0:
-            self.input_1 = input
-            self.count = 1
-        else:
-            self.input_2 = input
-            self.count = 0
-    def get_input(self):
-        if self.count == 0:
-            temp = self.input_1
-            self.count = 1
-
-            return self.input_1
-        else:
-            temp = self.input_2
-            self.count = 0
-            return self.input_2
 
 class World(Mediator):
 
@@ -159,8 +138,8 @@ class World(Mediator):
 
     def react_on_operation(self, cpu):
         # As we use lifo-queue, the world needs to know the input and not get it from the organism!
-        input_1 = Input.get_input(self)
-        input_2 = Input.get_input(self)
+        input_1 = cpu.get_input()
+        input_2 = cpu.get_input()
 
         result = cpu.output_buffer.get()
 
@@ -289,10 +268,11 @@ class Check_Values:
 """A DEMONSTRATION OF SELF-REPLICATION:"""
 
 # The default self-replicating program
+#%% Starting Program!
 p5 = SA.Program([ 16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
-p = SA.Program([11,1,11,2,11,2,13,0,18,1, 16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
+p = SA.Program([11,1,11,2, 18, 11,2,13,0,18,1, 16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
 
-
+#%%
 # The default self-replicating program
 default = SA.Program([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1])
 
@@ -308,7 +288,7 @@ emulator = SA.CPUEmulator()
 #emulator.cpu.input_buffer.put(2)
 
 # Loading the self-replicating program into the first emulator
-emulator.load_program(default)
+emulator.load_program(p)
 
 # Placing the emulator into a random position in the world
 #world.load_input(emulator)
