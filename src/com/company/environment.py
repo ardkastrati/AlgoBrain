@@ -92,8 +92,8 @@ class World(Mediator):
         
         self.place_custom([16, 20, 2, 0, 21] + [2]*36 + [20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
         
-    # Default per avida paper, with only 13 instructions
-    def place_default_13(self, position = None):
+    # Default per avida paper, with only 15 instructions
+    def place_default_15(self, position = None):
         
         self.place_custom([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
         
