@@ -42,5 +42,5 @@ from abc import ABC
 class Mediator(ABC):
     
     # Used by different concrete classes to notify the world of any relevant events
-    def notify(self,sender,event,result = 0):
+    def notify(self,sender,event,result = None):
         pass    
