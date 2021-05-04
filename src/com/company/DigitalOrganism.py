@@ -586,7 +586,6 @@ class InstructionHDivide:
         else:
             pass
     
-
 # Do a put and get immediately after each other.
 # Working register is ?BX?
 
@@ -613,7 +612,7 @@ class InstructionIO:
             self.emulator.cpu.reg_b.write(0)
             
         to_output = self.emulator.cpu.output_buffer.get()
-        
+
         # Notify the world about IO
         self.emulator.mediator.notify(sender = self.emulator, event = "IO_operation", result = to_output)
         

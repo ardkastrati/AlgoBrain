@@ -80,6 +80,7 @@ class World(Mediator):
         
         self.winner = None
         
+        self.result = None
 
     # The following method instantiates a default self-replicating organism
     # as a random location in the pool, unless location specified otherwise
@@ -333,9 +334,13 @@ class World(Mediator):
             
             if self.inputs[idx0][idx1] == ~result:
                 
+                self.input = self.inputs[idx0][idx1]
+                
                 self.winner = self.get((idx0,idx1))
                 
-                sys.exit("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED NOT\n")
+                self.result = result
+                
+                sys.exit("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED NOT\nINPUT: " + str(self.input) + "\nOUTPUT: " + str(self.result))
 
         # A random 32-bit number
         to_input = random.getrandbits(32)
@@ -412,3 +417,16 @@ world.place_default((29,15))
 world.place_default((29,29))
 
 world.schedule()
+
+#%%
+
+# World claims this organisms computed NOT:
+    
+not0 = [16, 20, 2, 0, 21, 2, 2, 12, 14, 18, 13, 16, 2, 5, 24, 25, 13, 2, 7, 19, 2, 21, 23, 2, 23, 2, 2, 17, 2, 17, 2, 8, 2, 2, 16, 2, 6, 2, 6, 7, 5, 25, 19, 25, 2, 0, 17, 21, 0, 1]
+
+not1 = [16, 20, 2, 0, 21, 2, 3, 15, 2, 2, 2, 2, 21, 2, 2, 2, 2, 2, 2, 18, 15, 2, 2, 24, 25, 2, 22, 2, 2, 2, 18, 2, 2, 2, 2, 2, 2, 2, 2, 23, 2, 20, 19, 23, 2, 0, 17, 21, 0, 1]
+
+not2 = [16, 20, 2, 0, 21, 2, 16, 13, 25, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 10, 2, 7, 2, 2, 2, 23, 4, 2, 6, 18, 15, 2, 2, 15, 2, 2, 18, 2, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1]
+
+#%%
+
