@@ -649,7 +649,9 @@ class InstructionHCopy:
             
             # If they are not, HCopy will be ignored.
             
-            if self.emulator.read_head.get() < len(self.emulator.original_program) and self.emulator.write_head.get() < len(self.emulator.program):
+            wh = self.emulator.write_head.get()
+            
+            if self.emulator.read_head.get() < len(self.emulator.original_program) and wh < len(self.emulator.program) and wh > 0:
                 
                 chance = bernoulli.rvs(self.emulator.mutation_prob, size=1)
                 
@@ -658,7 +660,7 @@ class InstructionHCopy:
                 else:
                     temp = self.emulator.original_program[self.emulator.read_head.get()]
             
-                self.emulator.program[self.emulator.write_head.get()] = temp
+                self.emulator.program[wh] = temp
                 self.emulator.read_head.increment()
                 self.emulator.write_head.increment()
                 self.emulator.copied.append(temp)

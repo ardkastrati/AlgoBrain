@@ -12,8 +12,6 @@ import sys
 #%% Helper class for breaking nested loops
 class BreakIt(Exception): pass
 
-
-
 #%% Pool simulates an NxN Petri dish
 # Avida organisms live in such a pool
 
@@ -79,6 +77,8 @@ class World(Mediator):
         
         self.ins_prob = ins_prob
         self.del_prob = del_prob
+        
+        self.winner = None
         
 
     # The following method instantiates a default self-replicating organism
@@ -163,7 +163,7 @@ class World(Mediator):
                  
                  if iterator == 10000:
                      # Shows that the whole thing is alive every 10k cycles
-                     print(self.ages)
+                     print("Still running")
                      iterator = 0
             
                  for i in range(self.pool.shape()[0]):
@@ -326,12 +326,14 @@ class World(Mediator):
         
         #
         if np.isnan(self.inputs[idx0][idx1]):
-            
+        
             pass
         
         else:
             
             if self.inputs[idx0][idx1] == ~result:
+                
+                self.winner = self.get((idx0,idx1))
                 
                 sys.exit("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED NOT\n")
 
@@ -392,13 +394,12 @@ class World(Mediator):
 
         return ""
 
-
 #%% Testing some stuff
 
 # First argument is world size
 # cm_prob is copy mutation probability
 # ins_prob and del_prob are insertion and deletion probabilities
-world = World(30, cm_prob = 0.0025, ins_prob = 0.05, del_prob = 0.05)
+world = World(30, cm_prob = 0.005, ins_prob = 0.05, del_prob = 0.05)
 
 world.place_default((0,0))
 world.place_default((0,15))
