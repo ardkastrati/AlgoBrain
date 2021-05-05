@@ -162,9 +162,17 @@ class World(Mediator):
                  baseline_rate = self.baseline_rate()
                  iterator += 1
                  
-                 if iterator == 10000:
+                 if iterator == 5000:
                      # Shows that the whole thing is alive every 10k cycles
-                     print("Still running")
+                     print("\nStill running")
+                     
+                     # Show a random organism from the pool
+                     
+                     position = (np.random.randint(0, self.pool.shape()[0]), np.random.randint(0, self.pool.shape()[1]))
+                     print(self.get(position))
+                     
+                     print("Program length: ")
+                     print(self.get(position).memory.size())
                      iterator = 0
             
                  for i in range(self.pool.shape()[0]):
@@ -382,6 +390,8 @@ class World(Mediator):
         
         return self.pool.get()
     
+    # Returns the emulator at the given position
+    
     def get(self,position):
         
         return self.pool.get()[position]
@@ -404,7 +414,7 @@ class World(Mediator):
 # First argument is world size
 # cm_prob is copy mutation probability
 # ins_prob and del_prob are insertion and deletion probabilities
-world = World(30, cm_prob = 0.005, ins_prob = 0.05, del_prob = 0.05)
+world = World(30, cm_prob = 0.01, ins_prob = 0.05, del_prob = 0.05)
 
 world.place_default((0,0))
 world.place_default((0,15))
