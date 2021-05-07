@@ -20,7 +20,7 @@ class Program:
 
     def check_validity(self, instr_list):
         for instruction in instr_list:
-            assert instruction in range(31)
+            assert instruction in range(26)
 
     def __init__(self, instr_list):
         self.check_validity(instr_list)
@@ -163,7 +163,8 @@ class CPU:
         self.input_buffer = Queue()
         self.output_buffer = Queue()
 
-        self.relationship_status = 0
+        self.status = 0
+        self.partner = 0
 
     def clear(self):
 
@@ -583,7 +584,7 @@ class InstructionHDivide:
                     chance = bernoulli.rvs(self.emulator.ins_prob, size=1)
 
                     if chance == 1:
-                        result.insert(random.randint(0, len(result)), randrange(31))
+                        result.insert(random.randint(0, len(result)), randrange(26))
                     else:
                         pass
 
@@ -683,7 +684,7 @@ class InstructionHCopy:
                 chance = bernoulli.rvs(self.emulator.mutation_prob, size=1)
 
                 if chance == 1:
-                    temp = randrange(31)
+                    temp = randrange(26)
                 else:
                     temp = self.emulator.original_program[self.emulator.read_head.get()]
 
@@ -906,7 +907,11 @@ class MoveUp:
         self.emulator = emulator
 
     def execute(self):
-        self.emulator.mediator.notify(sender=self.emulator, event="Moving", result='up')
+        if self.emulator.cpu.status != 0:
+            pass
+
+        else:
+            self.emulator.mediator.notify(sender=self.emulator, event="Moving", result='up')
 
 
 class MoveLeft:
@@ -915,44 +920,56 @@ class MoveLeft:
         self.emulator = emulator
 
     def execute(self):
-        self.emulator.mediator.notify(sender=self.emulator, event="Moving", result='left')
+        if self.emulator.cpu.status != 0:
+            self.emulator.cpu.partner = 1
+            pass
+        if self.emulator.cpu.partner == 1:
+            pass
+        else:
+            self.emulator.mediator.notify(sender=self.emulator, event="Moving", result='left')
 
 
 class MoveRight:
     def __init__(self, emulator):
         self.emulator = emulator
 
-    def execute(self):
-        self.emulator.mediator.notify(sender=self.emulator, event="Moving", result='right')
+        if self.emulator.cpu.status != 0:
+            self.emulator.cpu.partner = 1
+            pass
+        if self.emulator.cpu.partner == 1:
+            pass
+        else:
+            self.emulator.mediator.notify(sender=self.emulator, event="Moving", result='right')
 
 
 class MoveDown:
     def __init__(self, emulator):
         self.emulator = emulator
 
-    def execute(self):
-        self.emulator.mediator.notify(sender=self.emulator, event="Moving", result='down')
+        if self.emulator.cpu.status != 0:
+            self.emulator.cpu.partner = 1
+            pass
+        if self.emulator.cpu.partner == 1:
+            pass
+        else:
+            self.emulator.mediator.notify(sender=self.emulator, event="Moving", result='down')
 
 
 # %%
 
-class MeetnGreet:
+class MeetPartner:
 
     def __init__(self, emulator):
         self.emulator = emulator
 
     def execute(self):
-        if self.emulator.cpu.relationship_status == 0:
-            self.emulator.cpu.relationship_status = 1
-            self.emulator.mediator.notify(sender=self.emulator, event="Meeting", result="first")
-
-        if self.emulator.cpu.relationship_status == 1:
-            self.emulator.mediator.notify(sender=self.emulator, event="Meeting", result="second")
-            self.emulator.cpu.relationship_status = 2
-        if self.emulator.cpu.relationship_status == 2:
-            self.emulator.mediator.notify(sender=self.emulator, event="Meeting", result="marriage")
+        # self.mediator.notify(sender=self.emualor, event="Partner", result=np.nan)
+        if self.emulator.cpu.partner == 1:
+            self.emulator.mediator.notify(sender=self.emulator, event="Meeting", result="child")
         else:
             pass
+
+
 # %%
 
 class CPUEmulator:
@@ -1099,7 +1116,7 @@ class CPUEmulator:
 
             elif instruction == 25:
                 self.memory.append(InstructionIfLabel(self))
-            elif instruction == 26:
+            """elif instruction == 26:
                 self.memory.append(MoveUp(self))
             elif instruction == 27:
                 self.memory.append(MoveDown(self))
@@ -1108,9 +1125,9 @@ class CPUEmulator:
             elif instruction == 29:
                 self.memory.append(MoveRight(self))
             elif instruction == 30:
-                self.memory.append(MeetnGreet(self))
-            else:
-                pass
+                self.memory.append(MeetPartner(self))
+                """
+
 
     def execute_instruction(self):
 
