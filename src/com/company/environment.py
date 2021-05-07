@@ -59,7 +59,7 @@ class World(Mediator):
     
     # Default copy mutation probability is 0.0025
     
-    def __init__(self, N, replacement_strategy = "neighborhood", cm_prob = 0.0025, ins_prob = 0.05, del_prob = 0.05):
+    def __init__(self, N, replacement_strategy = "neighborhood", cm_prob = 0.0225, ins_prob = 0.05, del_prob = 0.05):
 
         # Pool() will contain the set of CPUEmulators.
         self.pool = Pool(N, dtype = DO.CPUEmulator)
@@ -68,9 +68,9 @@ class World(Mediator):
         
         self.ages = np.zeros((N,N), dtype = int)
         
-        self.inputs = np.empty((N,N))
+        self.inputs = np.empty((2,N,N))
         self.inputs[:] = np.nan
-        
+        self.inputcount = 0
         self.replacement_strategy = replacement_strategy
         
         self.cm_prob = cm_prob
@@ -89,14 +89,17 @@ class World(Mediator):
     # Default as per Avida-ED website and Nature paper. Contains 35 nop-c in the middle
     # In total 50 instructions
     
+    #def place_default(self, position = None):
+        
+    #    self.place_custom([16, 20, 2, 0, 21] + [2]*36 + [20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
     def place_default(self, position = None):
-        
-        self.place_custom([16, 20, 2, 0, 21] + [2]*36 + [20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
-        
+
+
+        self.place_custom([18, 16, 20, 2, 0, 21, 2, 16, 13, 25, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 10, 2, 7, 2, 2, 2, 23, 4, 2, 6, 18, 15, 2, 2, 15, 2, 2, 18, 2, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
     # Default per avida paper, with only 15 instructions
     def place_default_15(self, position = None):
         
-        self.place_custom([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
+        self.place_custom([16, 20, 18, 2, 0, 21, 2, 20, 20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
         
     # The following method instantiates a custom self-replicating organism
     # as a random location in the pool, unless location specified otherwise
@@ -174,6 +177,7 @@ class World(Mediator):
                      print("Program length: ")
                      print(self.get(position).memory.size())
                      iterator = 0
+
             
                  for i in range(self.pool.shape()[0]):
                      for j in range(self.pool.shape()[1]):
@@ -334,21 +338,28 @@ class World(Mediator):
         idx1 = np.where(self.pool.get() == sender)[1][0]
         
         #
-        if np.isnan(self.inputs[idx0][idx1]):
+        if np.isnan(self.inputs[0][idx0][idx1]):
         
             pass
         
         else:
             
-            if self.inputs[idx0][idx1] == ~result:
+            if self.inputs[0][idx0][idx1] == ~result:
+
+                    self.input = self.inputs[0][idx0][idx1]
                 
-                self.input = self.inputs[idx0][idx1]
+                    self.winner = self.get((idx0,idx1))
                 
-                self.winner = self.get((idx0,idx1))
-                
-                self.result = result
-                
-                sys.exit("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED NOT\nINPUT: " + str(self.input) + "\nOUTPUT: " + str(self.result))
+                    self.result = result
+                    sys.exit("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED NOT\nINPUT: " + str(
+                        self.input) + "\nOUTPUT: " + str(self.result))
+            if self.inputs[1][idx0][idx1] == ~result:
+                    self.input = self.inputs[1][idx0][idx1]
+
+                    self.winner = self.get((idx0, idx1))
+
+                    self.result = result
+                    sys.exit("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED NOT\nINPUT_2: " + str(self.input) + "\nOUTPUT: " + str(self.result))
 
         # A random 32-bit number
         to_input = random.getrandbits(32)
@@ -357,7 +368,12 @@ class World(Mediator):
         sender.cpu.input_buffer.put(to_input)
         
         # Update inputs array
-        self.inputs[idx0][idx1] = to_input
+        if self.inputcount == 0:
+            self.inputs[0][idx0][idx1] = to_input
+            self.inputcount = 1
+        else:
+            self.inputs[1][idx0][idx1] = to_input
+            self.inputcount = 0
 
     # Helper methods here:
         
