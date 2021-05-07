@@ -42,7 +42,6 @@ class Pool:
         self.pool[pos] = obj
 
 
-
 # %% World is a powerful class which has full knowledge of all of its components
 
 # World regulates everything
@@ -91,14 +90,14 @@ class World(Mediator):
     # Default as per Avida-ED website and Nature paper. Contains 35 nop-c in the middle
     # In total 50 instructions
 
-    #def place_default(self, position = None):
+    # def place_default(self, position = None):
 
     #    self.place_custom([16, 20, 2, 0, 21] + [2]*36 + [20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
     def place_default(self, position=None):
-    #
-       self.place_custom(
-           [16, 20, 2, 0, 21, 2, 16, 13, 25, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 10, 2, 7, 2, 2, 2, 23, 4, 2, 6, 18, 15,
-            2, 2, 15, 2, 2, 18, 2, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1], position=position)
+        #
+        self.place_custom(
+            [16, 20, 2, 0, 21, 2, 16, 13, 25, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 10, 2, 7, 2, 2, 2, 23, 4, 2, 6, 18, 15,
+             2, 2, 15, 2, 2, 18, 2, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1], position=position)
         # self.place_custom([18, 16, 20, 2, 0, 21, 2, 16, 13, 0, 2, 0, 2, 2, 13, 12, 13, 1, 2, 2, 10, 2, 7, 0, 2, 2, 23, 4, 2, 6, 18, 15, 2, 13, 15, 2, 2, 18, 2, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
 
     # Default per avida paper, with only 15 instructions
@@ -130,7 +129,7 @@ class World(Mediator):
 
         # Load program into emulator
         emulator.load_program(default_program)
-        self.pool.set_fitness(1)
+
         # Create random valid position or check if given position valid
         if position == None:
 
@@ -225,6 +224,13 @@ class World(Mediator):
 
             self.react_on_IO(sender, result)
 
+        elif event == "Move":
+
+            self.react_on_moving(sender, result)
+
+        elif event == "Meeting":
+
+            self.react_on_meeting(sender, result)
     # The methods below define how the world reacts to different notifications
 
     # Here how the world reacts upon organism division
@@ -373,7 +379,8 @@ class World(Mediator):
                 pass
             else:
                 # Nand:
-                if ~(self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(np.int64)) == result:
+                if ~(self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(
+                        np.int64)) == result:
                     input_1 = self.inputs[0][idx0][idx1]
                     input_2 = self.inputs[1][idx0][idx1]
                     self.winner = self.get((idx0, idx1))
@@ -384,7 +391,8 @@ class World(Mediator):
                         self.rates[idx0][idx1] = 2 * self.rates[idx0][idx1]
                         self.fitness_factor[1] = 1
                 # And:
-                if (self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(np.int64)) == result:
+                if (self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(
+                        np.int64)) == result:
                     input_1 = self.inputs[0][idx0][idx1]
                     input_2 = self.inputs[1][idx0][idx1]
                     self.winner = self.get((idx0, idx1))
@@ -395,7 +403,8 @@ class World(Mediator):
                         self.rates[idx0][idx1] = 4 * self.rates[idx0][idx1]
                         self.fitness_factor[2] = 1
                 # OR_N:
-                if (self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(np.int64)) == result:
+                if (self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(
+                        np.int64)) == result:
                     input_1 = self.inputs[0][idx0][idx1]
                     input_2 = self.inputs[1][idx0][idx1]
                     self.winner = self.get((idx0, idx1))
@@ -405,7 +414,8 @@ class World(Mediator):
                     if self.fitness_factor[3] == 0:
                         self.rates[idx0][idx1] = 4 * self.rates[idx0][idx1]
                         self.fitness_factor[3] = 1
-                if (~self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(np.int64)) == result:
+                if (~self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(
+                        np.int64)) == result:
                     input_1 = self.inputs[0][idx0][idx1]
                     input_2 = self.inputs[1][idx0][idx1]
                     self.winner = self.get((idx0, idx1))
@@ -416,7 +426,8 @@ class World(Mediator):
                         self.rates[idx0][idx1] = 4 * self.rates[idx0][idx1]
                         self.fitness_factor[3] = 1
                 # OR
-                if (self.inputs[0][idx0][idx1].astype(np.int64) | self.inputs[1][idx0][idx1].astype(np.int64)) == result:
+                if (self.inputs[0][idx0][idx1].astype(np.int64) | self.inputs[1][idx0][idx1].astype(
+                        np.int64)) == result:
                     input_1 = self.inputs[0][idx0][idx1]
                     input_2 = self.inputs[1][idx0][idx1]
                     self.winner = self.get((idx0, idx1))
@@ -427,7 +438,8 @@ class World(Mediator):
                         self.rates[idx0][idx1] = 8 * self.rates[idx0][idx1]
                         self.fitness_factor[4] = 1
                 # And_N
-                if (self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(np.int64)) == result:
+                if (self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(
+                        np.int64)) == result:
                     input_1 = self.inputs[0][idx0][idx1]
                     input_2 = self.inputs[1][idx0][idx1]
                     self.winner = self.get((idx0, idx1))
@@ -437,7 +449,8 @@ class World(Mediator):
                     if self.fitness_factor[5] == 0:
                         self.rates[idx0][idx1] = 8 * self.rates[idx0][idx1]
                         self.fitness_factor[5] = 1
-                if (~self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(np.int64)) == result:
+                if (~self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(
+                        np.int64)) == result:
                     input_1 = self.inputs[0][idx0][idx1]
                     input_2 = self.inputs[1][idx0][idx1]
                     self.winner = self.get((idx0, idx1))
@@ -448,7 +461,8 @@ class World(Mediator):
                         self.rates[idx0][idx1] = 8 * self.rates[idx0][idx1]
                         self.fitness_factor[5] = 1
                 # NOR
-                if (~self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(np.int64)) == result:
+                if (~self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(
+                        np.int64)) == result:
                     input_1 = self.inputs[0][idx0][idx1]
                     input_2 = self.inputs[1][idx0][idx1]
                     self.winner = self.get((idx0, idx1))
@@ -461,7 +475,8 @@ class World(Mediator):
 
                 # XOR
                 if ((self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(np.int64)) | (
-                        ~self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(np.int64))) == result:
+                        ~self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(
+                    np.int64))) == result:
                     input_1 = self.inputs[0][idx0][idx1]
                     input_2 = self.inputs[1][idx0][idx1]
                     self.winner = self.get((idx0, idx1))
@@ -472,7 +487,9 @@ class World(Mediator):
                         self.rates[idx0][idx1] = 16 * self.rates[idx0][idx1]
                         self.fitness_factor[7] = 1
                 # EQU
-                if ((self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(np.int64)) | (~self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(np.int64))) == result:
+                if ((self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(np.int64)) | (
+                        ~self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(
+                        np.int64))) == result:
                     input_1 = self.inputs[0][idx0][idx1]
                     input_2 = self.inputs[1][idx0][idx1]
                     self.winner = self.get((idx0, idx1))
@@ -497,6 +514,42 @@ class World(Mediator):
             self.inputs[1][idx0][idx1] = to_input
             self.inputcount = 0
 
+    # Moving notifier
+
+
+    def react_on_moving(self, sender, direction):
+        # TODO:
+        idx0 = np.where(self.pool.get() == sender)[0][0]
+        idx1 = np.where(self.pool.get() == sender)[1][0]
+        if direction == 'up':
+            if np.isnan(self.pool[idx0+1][idx1]):
+                self.pool.put(sender, [idx0+1][idx1])
+                self.pool.put(np.nan, [idx][idx1])
+
+        if direction == 'down':
+            if np.isnan(self.pool[idx0-1][idx1]):
+                self.pool.put(sender, [idx0 - 1][idx1])
+                self.pool.put(np.nan, [idx0][idx1])
+
+        if direction == 'left':
+            if np.isnan(self.pool[idx0][idx-1]):
+                self.pool.put(sender, [idx0][idx1-1])
+                self.pool.put(np.nan, [idx0][idx1])
+        if direction == 'right':
+            if np.isnan(self.pool[idx0][idx+1]):
+                self.pool.put(sender, [idx0 + 1][idx1])
+                self.pool.put(np.nan, [idx0][idx1])
+
+    def react_on_meeting(self, sender, status):
+        if status == "first":
+            print("Two Organisms have met")
+            pass
+        if status == "second":
+            print("Two Organisms are ready to exchange information")
+            pass
+        else:
+            print("Two Organisms are ready to have a child")
+            pass
     # Helper methods here:
 
     def oldest_position(self):
