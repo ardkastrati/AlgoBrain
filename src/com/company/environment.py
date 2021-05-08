@@ -620,7 +620,7 @@ class World(Mediator):
                             self.fitness_factor[8] = 1
 
         # A random 32-bit number
-        to_input = random.getrandbits(31)
+        to_input = random.getrandbits(32)
 
         # Put the randomly generated number into the input buffer of the emulator
         sender.cpu.input_buffer.put(to_input)
