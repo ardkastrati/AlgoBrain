@@ -900,7 +900,7 @@ class InstructionIfLabel:
 
 
 # %%
-
+"""
 class MoveUp:
 
     def __init__(self, emulator):
@@ -969,7 +969,7 @@ class MeetPartner:
         else:
             pass
 
-
+"""
 # %%
 
 class CPUEmulator:

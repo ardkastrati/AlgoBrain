@@ -80,7 +80,7 @@ class World(Mediator):
 
     # Default copy mutation probability is 0.0025
 
-    def __init__(self, N, replacement_strategy="neighborhood", cm_prob=0.5, ins_prob=.1, del_prob=.1):
+    def __init__(self, N, replacement_strategy="kill_oldest", cm_prob=0.5, ins_prob=.1, del_prob=.1):
 
         # Pool() will contain the set of CPUEmulators.
         self.pool = Pool(N, dtype=DO.CPUEmulator)
@@ -642,7 +642,7 @@ class World(Mediator):
 
     # Moving notifier
 
-
+    """
     def react_on_moving(self, sender, direction):
         # TODO:
         idx0 = np.where(self.pool.get() == sender)[0][0]
@@ -673,15 +673,15 @@ class World(Mediator):
             if np.isnan(self.pool[idx0][idx1+1]):
                 self.pool.put(sender, [idx0 + 1][idx1])
                 self.pool.put(np.nan, [idx0][idx1])
-
-    def react_on_meeting(self, sender, status):
+    """
+    """def react_on_meeting(self, sender, status):
         if status == "child":
             print("Two Organisms have met")
             pass
 
         else:
 
-            pass
+            pass"""
     # Helper methods here:
 
     def oldest_position(self):
