@@ -109,13 +109,13 @@ class World(Mediator):
     # Default as per Avida-ED website and Nature paper. Contains 35 nop-c in the middle
     # In total 50 instructions
 
-    # def place_default(self, position = None):
+    def place_default(self, position = None):
 
-    #    self.place_custom([16, 20, 2, 0, 21] + [2]*36 + [20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
-    def place_default(self, position=None):
+        self.place_custom([16, 20, 2, 0, 21] + [2]*36 + [20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
+   # def place_default(self, position=None):
         #
-        self.place_custom([16, 20, 2, 0, 21, 2, 3, 15, 2, 2, 2, 2, 21, 2, 2, 2, 2, 2, 2, 18, 15, 2, 2, 24, 25, 2, 22, 2, 2, 2, 18, 2, 2, 2,
-        2, 2, 2, 2, 2, 23, 2, 20, 19, 23, 2, 0, 17, 21, 0, 1], position=position)
+   #     self.place_custom([16, 20, 2, 0, 21, 2, 3, 15, 2, 2, 2, 2, 21, 2, 2, 2, 2, 2, 2, 18, 15, 2, 2, 24, 25, 2, 22, 2, 2, 2, 18, 2, 2, 2,
+   #     2, 2, 2, 2, 2, 23, 2, 20, 19, 23, 2, 0, 17, 21, 0, 1], position=position)
 
         # self.place_custom([18, 16, 20, 2, 0, 21, 2, 16, 13, 0, 2, 0, 2, 2, 13, 12, 13, 1, 2, 2, 10, 2, 7, 0, 2, 2, 23, 4, 2, 6, 18, 15, 2, 13, 15, 2, 2, 18, 2, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
 
@@ -132,7 +132,7 @@ class World(Mediator):
 
         # Create program
         default_program = DO.Program(program)
-
+        logger2.critical(program)
         # Create a new emulator
         emulator = DO.CPUEmulator()
 
@@ -187,16 +187,16 @@ class World(Mediator):
                 baseline_rate = self.baseline_rate()
                 iterator += 1
 
-                if iterator == 5000:
+                #if iterator == 5000:
                     # Shows that the whole thing is alive every 10k cycles
-                    print("\nStill running")
+                    #print("\nStill running")
 
                     # Show a random organism from the pool
 
-                    position = (np.random.randint(0, self.pool.shape()[0]), np.random.randint(0, self.pool.shape()[1]))
-                    print(self.get(position))
+                    #position = (np.random.randint(0, self.pool.shape()[0]), np.random.randint(0, self.pool.shape()[1]))
+                    #print(self.get(position))
 
-                    iterator = 0
+                    #iterator = 0
 
                 for i in range(self.pool.shape()[0]):
                     for j in range(self.pool.shape()[1]):
@@ -265,7 +265,8 @@ class World(Mediator):
         # Create a new emulator and load the resulting program in it
         emulator = DO.CPUEmulator()
         emulator.load_program(program)
-
+        logger2.debug(result)
+        logger2.debug(emulator.program)
         # Link self as the new emulator's mediator
         emulator.mediator = self
 
@@ -374,10 +375,8 @@ class World(Mediator):
         #    pass
         else:
 
-            if self.inputs[0][idx0][idx1] == ~(np.uint(result)):
-                if result == 0:
-                    pass
-                else:
+            if self.inputs[0][idx0][idx1] == ~result:
+
                     self.input = self.inputs[0][idx0][idx1]
 
                     self.winner = self.get((idx0, idx1))
@@ -394,12 +393,13 @@ class World(Mediator):
                     else:
                         pass
             if self.inputs[1][idx0][idx1] == ~result:
-                if result == 0:
-                    pass
-                else:
+
+
                     self.input = self.inputs[1][idx0][idx1]
                     self.winner = self.get((idx0, idx1))
                     self.result = result
+                    logger.info('Not on input 2: ~{} = {}'.format(self.input, self.result))
+                    logger2.info(sender.program)
                     #print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED NOT\nINPUT_2: " + str(
                     #   self.input) + "\nOUTPUT: " + str(self.result))
                     if self.fitness_factor[0] == 0:
@@ -410,35 +410,71 @@ class World(Mediator):
                 # All operations that need two inputs:
             if np.isnan(self.inputs[1][idx0][idx1]):
                 pass
+            elif self.inputs[0][idx0][idx1] == ~np.int(self.inputs[1][idx0][idx1]):
+                pass
+            elif ~np.int(self.inputs[0][idx0][idx1]) == np.int(self.inputs[1][idx0][idx1]):
+                pass
+            elif np.int(self.inputs[0][idx0][idx1]) & ~np.int(self.inputs[1][idx0][idx1]) == np.int(
+                    self.inputs[0][idx0][idx1]):
+                pass
+            elif (~np.int(self.inputs[0][idx0][idx1]) & np.int(self.inputs[1][idx0][idx1])) == np.int(
+                    self.inputs[1][idx0][idx1]):
+                pass
+            elif np.int(self.inputs[0][idx0][idx1]) & ~np.int(self.inputs[1][idx0][idx1]) == np.int(
+                    self.inputs[1][idx0][idx1]):
+                pass
+            elif ~np.int(self.inputs[0][idx0][idx1]) & np.int(self.inputs[1][idx0][idx1]) == np.int(
+                    self.inputs[0][idx0][idx1]):
+                pass
+            elif np.int(self.inputs[0][idx0][idx1]) | np.int(self.inputs[1][idx0][idx1]) == np.int(
+                    self.inputs[0][idx0][idx1]):
+                pass
+            elif np.int(self.inputs[0][idx0][idx1]) | np.int(self.inputs[1][idx0][idx1]) == np.int(
+                    self.inputs[1][idx0][idx1]):
+                pass
+            elif np.int(self.inputs[0][idx0][idx1]) | ~np.int(self.inputs[1][idx0][idx1]) == np.int(
+                    self.inputs[0][idx0][idx1]):
+                pass
+            elif np.int(self.inputs[0][idx0][idx1]) | ~np.int(self.inputs[1][idx0][idx1]) == np.int(
+                    self.inputs[1][idx0][idx1]):
+                pass
+            elif ~np.int(self.inputs[0][idx0][idx1]) | np.int(self.inputs[1][idx0][idx1]) == np.int(
+                    self.inputs[0][idx0][idx1]):
+                pass
+            elif ~np.int(self.inputs[0][idx0][idx1]) | np.int(self.inputs[1][idx0][idx1]) == np.int(
+                    self.inputs[1][idx0][idx1]):
+                pass
             else:
                 # TODO: exclude 0 as a solution, as the organism will cheat and just ask for inputs until one has 0 as the result
                 #
                 # Nand:
-                if ~(self.inputs[0][idx0][idx1].astype(np.byte) & self.inputs[1][idx0][idx1].astype(
-                        np.byte)) == result:
+                if ~(np.int(self.inputs[0][idx0][idx1]) & np.int(self.inputs[1][idx0][idx1])) == result:
                     if result == 0:
                         pass
+
                     else:
                         input_1 = self.inputs[0][idx0][idx1]
                         input_2 = self.inputs[1][idx0][idx1]
                         self.winner = self.get((idx0, idx1))
-                        self.result = result
+                        result = result
+                        logger.info('NAND : ~({} & {}) = {}'.format(input_1, input_2, result))
+                        logger2.info(sender.program)
                         #logger.info('NAND: ~({} & {})  = {}'.format(input_1,input_2,result))
 
                         if self.fitness_factor[1] == 0:
                             self.rates[idx0][idx1] = 2 * self.rates[idx0][idx1]
                             self.fitness_factor[1] = 1
                 # And:
-                if (self.inputs[0][idx0][idx1].astype(np.byte) & self.inputs[1][idx0][idx1].astype(
-                        np.byte)) == result:
+                if np.int(self.inputs[0][idx0][idx1]) & np.int(self.inputs[1][idx0][idx1]) == result:
                     if result == 0:
                         pass
                     else:
                         input_1 = self.inputs[0][idx0][idx1]
                         input_2 = self.inputs[1][idx0][idx1]
                         self.winner = self.get((idx0, idx1))
-                        self.result = result
-
+                        result = result
+                        logger.info('AND : {} & {} = {}'.format(input_1, input_2, result))
+                        logger2.info(sender.program)
                         #logging.debug(print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED AND\nINPUT_1: " + str(
                         #    input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result)))
 
@@ -446,89 +482,92 @@ class World(Mediator):
                             self.rates[idx0][idx1] = 4 * self.rates[idx0][idx1]
                             self.fitness_factor[2] = 1
                 # OR_N:
-                if (self.inputs[0][idx0][idx1].astype(np.byte) | ~(self.inputs[1][idx0][idx1].astype(
-                        np.byte))) == result:
+                if np.int(self.inputs[0][idx0][idx1]) | ~np.int(self.inputs[1][idx0][idx1]) == result:
                     if result == 0:
                         pass
                     else:
                         input_1 = self.inputs[0][idx0][idx1]
                         input_2 = self.inputs[1][idx0][idx1]
                         self.winner = self.get((idx0, idx1))
-                        self.result = result
+                        result = result
+                        logger.info('OR_N : {} | ~{} = {}'.format(input_1, input_2, result))
+                        logger2.info(sender.program)
                         print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED OR_n\nINPUT_1: " + str(
-                            input_1) + "\n not "+"Input_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                            input_1) + "\n not "+"Input_2: " + str(input_2) + "\nOUTPUT: " + str(result))
                         if self.fitness_factor[3] == 0:
                             self.rates[idx0][idx1] = 4 * self.rates[idx0][idx1]
                             self.fitness_factor[3] = 1
 
 
-                if (~self.inputs[0][idx0][idx1].astype(np.byte)|self.inputs[1][idx0][idx1].astype(np.byte))==result:
+                if ~np.int(self.inputs[0][idx0][idx1])|np.int(self.inputs[1][idx0][idx1])==result:
                     if result == 0:
                         pass
                     else:
                         input_1 = self.inputs[0][idx0][idx1]
                         input_2 = self.inputs[1][idx0][idx1]
                         self.winner = self.get((idx0, idx1))
-                        self.result = result
+                        result = result
+                        logger.info('OR_N : ~{} | {} = {}'.format(input_1, input_2, result))
+                        logger2.info(sender.program)
                         print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED OR_n "+"\n not INPUT_1: " + str(
-                            input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                            input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(result))
                         if self.fitness_factor[3] == 0:
                             self.rates[idx0][idx1] = 4 * self.rates[idx0][idx1]
                             self.fitness_factor[3] = 1
 
                 # OR
-                if (self.inputs[0][idx0][idx1].astype(np.byte)|self.inputs[1][idx0][idx1].astype(np.byte)) == result:
+                if (np.int(self.inputs[0][idx0][idx1])|np.int(self.inputs[1][idx0][idx1])) == result:
                     if result == 0:
                         pass
                     else:
                         input_1 = self.inputs[0][idx0][idx1]
                         input_2 = self.inputs[1][idx0][idx1]
                         self.winner = self.get((idx0, idx1))
-                        self.result = result
+                        result = result
+                        logger.info('OR : {} | {} = {}'.format(input_1, input_2, result))
+                        logger2.info(sender.program)
                         print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED OR\nINPUT_1: " + str(
-                            input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                            input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(result))
                         if self.fitness_factor[4] == 0:
                             self.rates[idx0][idx1] = 8 * self.rates[idx0][idx1]
                             self.fitness_factor[4] = 1
-                        print("\n" + "Program that did the calculation:" + "\n")
-                        p = []
-                        p = sender.program
-                        print(p)
-                        print("\n")
-                        sys.exit()
+
                 # And_N
-                if (self.inputs[0][idx0][idx1].astype(np.byte) & ~self.inputs[1][idx0][idx1].astype(
-                        np.byte)) == result:
+                if np.int(self.inputs[0][idx0][idx1]) & ~np.int(self.inputs[1][idx0][idx1]) == result:
                     if result == 0:
                         pass
                     else:
                         input_1 = self.inputs[0][idx0][idx1]
                         input_2 = self.inputs[1][idx0][idx1]
                         self.winner = self.get((idx0, idx1))
-                        self.result = result
+                        result = result
+                        logger.info('AND_N : {} & ~{} = {}'.format(input_1, input_2, result))
+                        logger2.info(sender.program)
                         #logger.info('NAND: ~({} & {})  = {}'.format(input_1, input_2, result))
                         print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED And_n " +"\n"+"INPUT_1: " + str(
-                            input_1) + "\n not "+"Input_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                            input_1) + "\n not "+"Input_2: " + str(input_2) + "\nOUTPUT: " + str(result))
                         if self.fitness_factor[5] == 0:
                             self.rates[idx0][idx1] = 8 * self.rates[idx0][idx1]
                             self.fitness_factor[5] = 1
 
-                if (~self.inputs[0][idx0][idx1].astype(np.byte) & self.inputs[1][idx0][idx1].astype(np.byte)) == result:
+                if (~np.int(self.inputs[0][idx0][idx1])& np.int(self.inputs[1][idx0][idx1])) == result:
                     if result == 0:
                         pass
                     else:
                         input_1 = self.inputs[0][idx0][idx1]
                         input_2 = self.inputs[1][idx0][idx1]
                         self.winner = self.get((idx0, idx1))
-                        self.result = result
+                        result = result
+                        logger.info('AND_N : ~{} & {} = {}'.format(input_1, input_2, result))
+                        logger2.info(sender.program)
                         print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED And_n "+"not"+"\n"+"INPUT_1: " + str(
-                            input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                            input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(result))
                         if self.fitness_factor[5] == 0:
                             self.rates[idx0][idx1] = 8 * self.rates[idx0][idx1]
                             self.fitness_factor[5] = 1
 
                 # NOR
-                if (~int(self.inputs[0][idx0][idx1])& ~int(self.inputs[1][idx0][idx1])) == result:
+                if (~np.int(self.inputs[0][idx0][idx1])& ~np.int(self.inputs[1][idx0][idx1])) == result:
                     if result == 0:
                         pass
                     else:
@@ -536,6 +575,8 @@ class World(Mediator):
                         input_2 = self.inputs[1][idx0][idx1]
                         self.winner = self.get((idx0, idx1))
                         self.result = result
+                        logger.info('AND_N : ~{} & ~{} = {}'.format(input_1, input_2, result))
+                        logger2.info(sender.program)
                         print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED NOR\nINPUT_1: " + str(
                             input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
                         if self.fitness_factor[6] == 0:
@@ -543,8 +584,8 @@ class World(Mediator):
                             self.fitness_factor[6] = 1
 
                 # XOR
-                if ((int(self.inputs[0][idx0][idx1]) & ~int(self.inputs[1][idx0][idx1])) | (
-                        ~int(self.inputs[0][idx0][idx1]) & int(self.inputs[1][idx0][idx1]))) == result:
+                if ((np.int(self.inputs[0][idx0][idx1]) & ~np.int(self.inputs[1][idx0][idx1])) | (
+                        ~np.int(self.inputs[0][idx0][idx1]) & np.int(self.inputs[1][idx0][idx1]))) == result:
                     if result == 0:
                         pass
                     else:
@@ -554,14 +595,15 @@ class World(Mediator):
                         self.result = result
                         print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED XOR\nINPUT_1: " + str(
                             input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
-
+                        logger.info('XOR : {} & ~{} or ~{} & {} = {}'.format(input_1,input_2,(input_1), input_2, result))
+                        logger2.info(sender.program)
                         if self.fitness_factor[7] == 0:
                             self.rates[idx0][idx1] = 16 * self.rates[idx0][idx1]
                             self.fitness_factor[7] = 1
 
                 # EQU
-                if ((int(self.inputs[0][idx0][idx1]) & int(self.inputs[1][idx0][idx1])) | (
-                        ~int(self.inputs[0][idx0][idx1]) & ~int(self.inputs[1][idx0][idx1]))) == result:
+                if ((np.int(self.inputs[0][idx0][idx1]) & np.int(self.inputs[1][idx0][idx1])) | (
+                        ~np.int(self.inputs[0][idx0][idx1]) & ~np.int(self.inputs[1][idx0][idx1]))) == result:
                     if result == 0:
                         pass
                     else:
@@ -569,6 +611,8 @@ class World(Mediator):
                         input_2 = self.inputs[1][idx0][idx1]
                         self.winner = self.get((idx0, idx1))
                         self.result = result
+                        logger.critical('EQU : {} & {} or ~{} & ~{} = {}'.format(input_1,input_2,input_1, input_2, result))
+                        logger2.critical(sender.program)
                         print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED EQU\nINPUT_1: " + str(
                             input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
                         if self.fitness_factor[8] == 0:
@@ -576,7 +620,7 @@ class World(Mediator):
                             self.fitness_factor[8] = 1
 
         # A random 32-bit number
-        to_input = random.getrandbits(32)
+        to_input = random.getrandbits(31)
 
         # Put the randomly generated number into the input buffer of the emulator
         sender.cpu.input_buffer.put(to_input)
@@ -686,8 +730,9 @@ class World(Mediator):
 # First argument is world size
 # cm_prob is copy mutation probability
 # ins_prob and del_prob are insertion and deletion probabilities
-world = World(30, cm_prob=0.01, ins_prob=0.05, del_prob=0.05)
 
+world = World(30, cm_prob=0.1, ins_prob=0.5, del_prob=0.5)
+logger.info('New World is placed here')
 world.place_default((0, 0))
 world.place_default((0, 15))
 world.place_default((0, 29))
