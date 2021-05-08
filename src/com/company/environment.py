@@ -15,7 +15,8 @@ logger2 = logging.getLogger(__name__)
 formatter_1 = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
 formatter_2 = logging.Formatter('%(asctime)s:%(message)s')
 formatter_3 = logging.Formatter('%(relativeCreated)d')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
+
 file_handler = logging.FileHandler('Function.log')
 file_handler.setFormatter(formatter_1)#,formatter_2,formatter_3
 stream_handler = logging.StreamHandler()
@@ -25,7 +26,7 @@ file_handler_2.setFormatter(formatter_3)
 logger.addHandler(stream_handler)
 logger.addHandler(file_handler)
 logger2.addHandler(file_handler_2)
-logger2.setLevel(logging.INFO)
+logger2.setLevel(logging.DEBUG)
 
 # %% Helper class for breaking nested loops
 class BreakIt(Exception): pass
@@ -79,7 +80,7 @@ class World(Mediator):
 
     # Default copy mutation probability is 0.0025
 
-    def __init__(self, N, replacement_strategy="neighborhood", cm_prob=0.1225, ins_prob=0.20, del_prob=0.20):
+    def __init__(self, N, replacement_strategy="neighborhood", cm_prob=0.5, ins_prob=.1, del_prob=.1):
 
         # Pool() will contain the set of CPUEmulators.
         self.pool = Pool(N, dtype=DO.CPUEmulator)
@@ -110,14 +111,15 @@ class World(Mediator):
     # In total 50 instructions
 
     def place_default(self, position = None):
-
-        self.place_custom([16, 20, 2, 0, 21] + [2]*36 + [20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
-   # def place_default(self, position=None):
+    #[16,20,2,0,21]+[2]*36+[20,19,25,2,0,17,21,0,1]
+        self.place_custom([16, 20, 2, 0, 21, 2, 16, 13, 25, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 10, 2, 7, 2, 2, 2, 23, 4, 2, 6, 18, 15, 2, 2,
+        15, 2, 2, 18, 2, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
+    def place_default2(self, position=None):
         #
-   #     self.place_custom([16, 20, 2, 0, 21, 2, 3, 15, 2, 2, 2, 2, 21, 2, 2, 2, 2, 2, 2, 18, 15, 2, 2, 24, 25, 2, 22, 2, 2, 2, 18, 2, 2, 2,
-   #     2, 2, 2, 2, 2, 23, 2, 20, 19, 23, 2, 0, 17, 21, 0, 1], position=position)
-
-        # self.place_custom([18, 16, 20, 2, 0, 21, 2, 16, 13, 0, 2, 0, 2, 2, 13, 12, 13, 1, 2, 2, 10, 2, 7, 0, 2, 2, 23, 4, 2, 6, 18, 15, 2, 13, 15, 2, 2, 18, 2, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
+        self.place_custom([16, 20, 2, 0, 21, 18, 18, 15, 2, 2, 2, 2, 18, 2, 2, 2, 2, 16, 2, 18, 15, 2, 2, 24, 25, 2, 22, 2, 2, 2, 18, 2, 2, 2,
+        2, 2, 2, 2, 2, 23, 2, 20, 19, 23, 2, 0, 17, 21, 0, 1], position=position)
+    def place_default3(self,position= None):
+         self.place_custom([18, 16, 20, 2, 0, 21, 2, 16, 13, 0, 2, 0, 2, 2, 13, 12, 13, 1, 2, 2, 10, 2, 7, 0, 2, 2, 23, 4, 2, 6, 18, 15, 2, 13, 15, 2, 2, 18, 2, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
 
     # Default per avida paper, with only 15 instructions
     def place_default_15(self, position=None):
@@ -187,16 +189,16 @@ class World(Mediator):
                 baseline_rate = self.baseline_rate()
                 iterator += 1
 
-                #if iterator == 5000:
+                if iterator == 5000:
                     # Shows that the whole thing is alive every 10k cycles
-                    #print("\nStill running")
+                    print("\nStill running")
 
                     # Show a random organism from the pool
 
-                    #position = (np.random.randint(0, self.pool.shape()[0]), np.random.randint(0, self.pool.shape()[1]))
-                    #print(self.get(position))
+                    position = (np.random.randint(0, self.pool.shape()[0]), np.random.randint(0, self.pool.shape()[1]))
+                    print(self.get(position))
 
-                    #iterator = 0
+                    iterator = 0
 
                 for i in range(self.pool.shape()[0]):
                     for j in range(self.pool.shape()[1]):
@@ -265,8 +267,9 @@ class World(Mediator):
         # Create a new emulator and load the resulting program in it
         emulator = DO.CPUEmulator()
         emulator.load_program(program)
-        logger2.debug(result)
-        logger2.debug(emulator.program)
+        logger.critical(result)
+        logger2.critical(result)
+        logger2.critical(emulator.program)
         # Link self as the new emulator's mediator
         emulator.mediator = self
 
@@ -315,8 +318,10 @@ class World(Mediator):
                 for i in range(max(idx0 - 1, 0), min(idx0 + 2, width)):
                     for j in range(max(idx1 - 1, 0), min(idx1 + 2, height)):
                         if self.ages[i][j] >= oldest:
+
                             oldest = self.ages[i][j]
                             position = (i, j)
+
 
         # Define kill_oldest replacement strategy as:
         # If there is a free spot in the pool, put child there
@@ -409,6 +414,8 @@ class World(Mediator):
                         pass
                 # All operations that need two inputs:
             if np.isnan(self.inputs[1][idx0][idx1]):
+                pass
+            elif result < 9:
                 pass
             elif self.inputs[0][idx0][idx1] == ~np.int(self.inputs[1][idx0][idx1]):
                 pass
@@ -731,17 +738,17 @@ class World(Mediator):
 # cm_prob is copy mutation probability
 # ins_prob and del_prob are insertion and deletion probabilities
 
-world = World(30, cm_prob=0.1, ins_prob=0.5, del_prob=0.5)
+world = World(30, cm_prob=0.8, ins_prob=0.2, del_prob=0.2)
 logger.info('New World is placed here')
 world.place_default((0, 0))
 world.place_default((0, 15))
-world.place_default((0, 29))
-world.place_default((15, 0))
+world.place_default3((0, 22))
+world.place_default2((15, 0))
 world.place_default((15, 15))
 world.place_default((15, 29))
-world.place_default((29, 0))
-world.place_default((29, 15))
-world.place_default((29, 29))
+world.place_default2((24, 0))
+world.place_default((24, 15))
+world.place_default3((23, 22))
 
 world.schedule()
 
