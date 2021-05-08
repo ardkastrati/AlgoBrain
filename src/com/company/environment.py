@@ -8,10 +8,24 @@ import DigitalOrganism as DO
 from Mediator import Mediator
 import random
 import sys
-import logging
 #%%
-logging.basicConfig(format='%(asctime)s %(message)s')
-logging.warning('is when this event was logged. ')
+import logging
+logger = logging.getLogger( __name__ )
+logger2 = logging.getLogger(__name__)
+formatter_1 = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
+formatter_2 = logging.Formatter('%(asctime)s:%(message)s')
+formatter_3 = logging.Formatter('%(relativeCreated)d')
+logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler('Function.log')
+file_handler.setFormatter(formatter_1)#,formatter_2,formatter_3
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter_2)
+file_handler_2 = logging.FileHandler('Function.log')
+file_handler_2.setFormatter(formatter_3)
+logger.addHandler(stream_handler)
+logger.addHandler(file_handler)
+logger2.addHandler(file_handler_2)
+logger2.setLevel(logging.INFO)
 
 # %% Helper class for breaking nested loops
 class BreakIt(Exception): pass
@@ -33,8 +47,7 @@ class Pool:
             self.pool = np.zeros((N, N), dtype=dtype)
     def size(self):
 
-        return N
-
+        return self.size
     def shape(self):
 
         return self.pool.shape
@@ -66,7 +79,7 @@ class World(Mediator):
 
     # Default copy mutation probability is 0.0025
 
-    def __init__(self, N, replacement_strategy="neighborhood", cm_prob=0.0225, ins_prob=0.05, del_prob=0.05):
+    def __init__(self, N, replacement_strategy="neighborhood", cm_prob=0.1225, ins_prob=0.20, del_prob=0.20):
 
         # Pool() will contain the set of CPUEmulators.
         self.pool = Pool(N, dtype=DO.CPUEmulator)
@@ -101,9 +114,9 @@ class World(Mediator):
     #    self.place_custom([16, 20, 2, 0, 21] + [2]*36 + [20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
     def place_default(self, position=None):
         #
-        self.place_custom(
-            [16, 20, 2, 21, 21, 2, 12, 4, 25, 2, 2, 19, 12, 2, 2, 2, 24, 19, 2, 2, 9, 2, 7, 2, 2, 22, 0, 4, 0, 6, 18, 15, 2, 2, 15, 2, 20, 18, 25, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1 ]
-            , position=position)
+        self.place_custom([16, 20, 2, 0, 21, 2, 3, 15, 2, 2, 2, 2, 21, 2, 2, 2, 2, 2, 2, 18, 15, 2, 2, 24, 25, 2, 22, 2, 2, 2, 18, 2, 2, 2,
+        2, 2, 2, 2, 2, 23, 2, 20, 19, 23, 2, 0, 17, 21, 0, 1], position=position)
+
         # self.place_custom([18, 16, 20, 2, 0, 21, 2, 16, 13, 0, 2, 0, 2, 2, 13, 12, 13, 1, 2, 2, 10, 2, 7, 0, 2, 2, 23, 4, 2, 6, 18, 15, 2, 13, 15, 2, 2, 18, 2, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
 
     # Default per avida paper, with only 15 instructions
@@ -355,187 +368,215 @@ class World(Mediator):
         #
         if np.isnan(self.inputs[0][idx0][idx1]):
 
+            #logging.warning("No Input".count("log",0,2))
             pass
-
+        #elif result == 0:
+        #    pass
         else:
 
-            if self.inputs[0][idx0][idx1] == ~result:
-
-                self.input = self.inputs[0][idx0][idx1]
-
-                self.winner = self.get((idx0, idx1))
-
-                self.result = result
-                #print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED NOT\nINPUT: " + str(
-                #    self.input) + "\nOUTPUT: " + str(self.result))
-                if self.fitness_factor[0] == 0:
-                    self.rates[idx0][idx1] = 2 * self.rates[idx0][idx1]
-                    self.fitness_factor[0] = 1
-                else:
+            if self.inputs[0][idx0][idx1] == ~(np.uint(result)):
+                if result == 0:
                     pass
+                else:
+                    self.input = self.inputs[0][idx0][idx1]
+
+                    self.winner = self.get((idx0, idx1))
+
+                    self.result = result
+                    logger.info('Not on input 1: ~{} = {}'.format(self.input,self.result))
+                    logger2.info(sender.program)
+                    #logger.info(' NOT: ~({}  {})  = {}'.format(input, None, result))
+                    #print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED NOT\nINPUT: " + str(
+                    #    self.input) + "\nOUTPUT: " + str(self.result))
+                    if self.fitness_factor[0] == 0:
+                        self.rates[idx0][idx1] = 2 * self.rates[idx0][idx1]
+                        self.fitness_factor[0] = 1
+                    else:
+                        pass
             if self.inputs[1][idx0][idx1] == ~result:
-                self.input = self.inputs[1][idx0][idx1]
-
-                self.winner = self.get((idx0, idx1))
-
-                self.result = result
-                #print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED NOT\nINPUT_2: " + str(
-                 #   self.input) + "\nOUTPUT: " + str(self.result))
-                if self.fitness_factor[0] == 0:
-                    self.rates[idx0][idx1] = 2 * self.rates[idx0][idx1]
-                    self.fitness_factor[0] = 1
-                else:
+                if result == 0:
                     pass
-            # All operations that need two inputs:
+                else:
+                    self.input = self.inputs[1][idx0][idx1]
+                    self.winner = self.get((idx0, idx1))
+                    self.result = result
+                    #print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED NOT\nINPUT_2: " + str(
+                    #   self.input) + "\nOUTPUT: " + str(self.result))
+                    if self.fitness_factor[0] == 0:
+                        self.rates[idx0][idx1] = 2 * self.rates[idx0][idx1]
+                        self.fitness_factor[0] = 1
+                    else:
+                        pass
+                # All operations that need two inputs:
             if np.isnan(self.inputs[1][idx0][idx1]):
                 pass
             else:
+                # TODO: exclude 0 as a solution, as the organism will cheat and just ask for inputs until one has 0 as the result
+                #
                 # Nand:
-                if ~(self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(
-                        np.int64)) == result:
-                    input_1 = self.inputs[0][idx0][idx1]
-                    input_2 = self.inputs[1][idx0][idx1]
-                    self.winner = self.get((idx0, idx1))
-                    self.result = result
-                    """print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED NAND\nINPUT_1: " + str(
-                        input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                if ~(self.inputs[0][idx0][idx1].astype(np.byte) & self.inputs[1][idx0][idx1].astype(
+                        np.byte)) == result:
+                    if result == 0:
+                        pass
+                    else:
+                        input_1 = self.inputs[0][idx0][idx1]
+                        input_2 = self.inputs[1][idx0][idx1]
+                        self.winner = self.get((idx0, idx1))
+                        self.result = result
+                        #logger.info('NAND: ~({} & {})  = {}'.format(input_1,input_2,result))
 
-                    print("\n" + "Program that did the calculation:" + "\n")
-                    p = []
-                    p = sender.program
-                    print(p)
-                    print("\n")
-                    sys.exit()"""
-                    if self.fitness_factor[1] == 0:
-                        self.rates[idx0][idx1] = 2 * self.rates[idx0][idx1]
-                        self.fitness_factor[1] = 1
+                        if self.fitness_factor[1] == 0:
+                            self.rates[idx0][idx1] = 2 * self.rates[idx0][idx1]
+                            self.fitness_factor[1] = 1
                 # And:
-                if (self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(
-                        np.int64)) == result:
-                    input_1 = self.inputs[0][idx0][idx1]
-                    input_2 = self.inputs[1][idx0][idx1]
-                    self.winner = self.get((idx0, idx1))
-                    self.result = result
+                if (self.inputs[0][idx0][idx1].astype(np.byte) & self.inputs[1][idx0][idx1].astype(
+                        np.byte)) == result:
+                    if result == 0:
+                        pass
+                    else:
+                        input_1 = self.inputs[0][idx0][idx1]
+                        input_2 = self.inputs[1][idx0][idx1]
+                        self.winner = self.get((idx0, idx1))
+                        self.result = result
 
-                    print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED AND\nINPUT_1: " + str(
-                        input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                        #logging.debug(print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED AND\nINPUT_1: " + str(
+                        #    input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result)))
 
-                    if self.fitness_factor[2] == 0:
-                        self.rates[idx0][idx1] = 4 * self.rates[idx0][idx1]
-                        self.fitness_factor[2] = 1
+                        if self.fitness_factor[2] == 0:
+                            self.rates[idx0][idx1] = 4 * self.rates[idx0][idx1]
+                            self.fitness_factor[2] = 1
                 # OR_N:
-                if (self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(
-                        np.int64)) == result:
-                    input_1 = self.inputs[0][idx0][idx1]
-                    input_2 = self.inputs[1][idx0][idx1]
-                    self.winner = self.get((idx0, idx1))
-                    self.result = result
-                    print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED OR_n\nINPUT_1: " + str(
-                        input_1) + "not"+"\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
-                    if self.fitness_factor[3] == 0:
-                        self.rates[idx0][idx1] = 4 * self.rates[idx0][idx1]
-                        self.fitness_factor[3] = 1
+                if (self.inputs[0][idx0][idx1].astype(np.byte) | ~(self.inputs[1][idx0][idx1].astype(
+                        np.byte))) == result:
+                    if result == 0:
+                        pass
+                    else:
+                        input_1 = self.inputs[0][idx0][idx1]
+                        input_2 = self.inputs[1][idx0][idx1]
+                        self.winner = self.get((idx0, idx1))
+                        self.result = result
+                        print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED OR_n\nINPUT_1: " + str(
+                            input_1) + "\n not "+"Input_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                        if self.fitness_factor[3] == 0:
+                            self.rates[idx0][idx1] = 4 * self.rates[idx0][idx1]
+                            self.fitness_factor[3] = 1
 
 
-                if (~self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(
-                        np.int64)) == result:
-                    input_1 = self.inputs[0][idx0][idx1]
-                    input_2 = self.inputs[1][idx0][idx1]
-                    self.winner = self.get((idx0, idx1))
-                    self.result = result
-                    print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED OR_n\nINPUT_1: " + str(
-                        input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
-                    if self.fitness_factor[3] == 0:
-                        self.rates[idx0][idx1] = 4 * self.rates[idx0][idx1]
-                        self.fitness_factor[3] = 1
+                if (~self.inputs[0][idx0][idx1].astype(np.byte)|self.inputs[1][idx0][idx1].astype(np.byte))==result:
+                    if result == 0:
+                        pass
+                    else:
+                        input_1 = self.inputs[0][idx0][idx1]
+                        input_2 = self.inputs[1][idx0][idx1]
+                        self.winner = self.get((idx0, idx1))
+                        self.result = result
+                        print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED OR_n "+"\n not INPUT_1: " + str(
+                            input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                        if self.fitness_factor[3] == 0:
+                            self.rates[idx0][idx1] = 4 * self.rates[idx0][idx1]
+                            self.fitness_factor[3] = 1
 
                 # OR
-                if (self.inputs[0][idx0][idx1].astype(np.int64) | self.inputs[1][idx0][idx1].astype(
-                        np.int64)) == result:
-                    input_1 = self.inputs[0][idx0][idx1]
-                    input_2 = self.inputs[1][idx0][idx1]
-                    self.winner = self.get((idx0, idx1))
-                    self.result = result
-                    print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED OR\nINPUT_1: " + str(
-                        input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
-                    if self.fitness_factor[4] == 0:
-                        self.rates[idx0][idx1] = 8 * self.rates[idx0][idx1]
-                        self.fitness_factor[4] = 1
-                    print("\n" + "Program that did the calculation:" + "\n")
-                    p = []
-                    p = sender.program
-                    print(p)
-                    print("\n")
-                    sys.exit()
+                if (self.inputs[0][idx0][idx1].astype(np.byte)|self.inputs[1][idx0][idx1].astype(np.byte)) == result:
+                    if result == 0:
+                        pass
+                    else:
+                        input_1 = self.inputs[0][idx0][idx1]
+                        input_2 = self.inputs[1][idx0][idx1]
+                        self.winner = self.get((idx0, idx1))
+                        self.result = result
+                        print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED OR\nINPUT_1: " + str(
+                            input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                        if self.fitness_factor[4] == 0:
+                            self.rates[idx0][idx1] = 8 * self.rates[idx0][idx1]
+                            self.fitness_factor[4] = 1
+                        print("\n" + "Program that did the calculation:" + "\n")
+                        p = []
+                        p = sender.program
+                        print(p)
+                        print("\n")
+                        sys.exit()
                 # And_N
-                if (self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(
-                        np.int64)) == result:
-                    input_1 = self.inputs[0][idx0][idx1]
-                    input_2 = self.inputs[1][idx0][idx1]
-                    self.winner = self.get((idx0, idx1))
-                    self.result = result
-                    print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED And_n " +"\n"+"INPUT_1: " + str(
-                        input_1) + "not "+"\n"+"Input_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
-                    if self.fitness_factor[5] == 0:
-                        self.rates[idx0][idx1] = 8 * self.rates[idx0][idx1]
-                        self.fitness_factor[5] = 1
+                if (self.inputs[0][idx0][idx1].astype(np.byte) & ~self.inputs[1][idx0][idx1].astype(
+                        np.byte)) == result:
+                    if result == 0:
+                        pass
+                    else:
+                        input_1 = self.inputs[0][idx0][idx1]
+                        input_2 = self.inputs[1][idx0][idx1]
+                        self.winner = self.get((idx0, idx1))
+                        self.result = result
+                        #logger.info('NAND: ~({} & {})  = {}'.format(input_1, input_2, result))
+                        print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED And_n " +"\n"+"INPUT_1: " + str(
+                            input_1) + "\n not "+"Input_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                        if self.fitness_factor[5] == 0:
+                            self.rates[idx0][idx1] = 8 * self.rates[idx0][idx1]
+                            self.fitness_factor[5] = 1
 
-                if ((~self.inputs[0][idx0][idx1].astype(np.int64)) &( self.inputs[1][idx0][idx1].astype(
-                        np.int64))) == result:
-                    input_1 = self.inputs[0][idx0][idx1]
-                    input_2 = self.inputs[1][idx0][idx1]
-                    self.winner = self.get((idx0, idx1))
-                    self.result = result
-                    print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED And_n "+"not"+"\n"+"INPUT_1: " + str(
-                        input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
-                    if self.fitness_factor[5] == 0:
-                        self.rates[idx0][idx1] = 8 * self.rates[idx0][idx1]
-                        self.fitness_factor[5] = 1
+                if (~self.inputs[0][idx0][idx1].astype(np.byte) & self.inputs[1][idx0][idx1].astype(np.byte)) == result:
+                    if result == 0:
+                        pass
+                    else:
+                        input_1 = self.inputs[0][idx0][idx1]
+                        input_2 = self.inputs[1][idx0][idx1]
+                        self.winner = self.get((idx0, idx1))
+                        self.result = result
+                        print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED And_n "+"not"+"\n"+"INPUT_1: " + str(
+                            input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                        if self.fitness_factor[5] == 0:
+                            self.rates[idx0][idx1] = 8 * self.rates[idx0][idx1]
+                            self.fitness_factor[5] = 1
 
                 # NOR
-                if (~self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(
-                        np.int64)) == result:
-                    input_1 = self.inputs[0][idx0][idx1]
-                    input_2 = self.inputs[1][idx0][idx1]
-                    self.winner = self.get((idx0, idx1))
-                    self.result = result
-                    print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED NOR\nINPUT_1: " + str(
-                        input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
-                    if self.fitness_factor[6] == 0:
-                        self.rates[idx0][idx1] = 16 * self.rates[idx0][idx1]
-                        self.fitness_factor[6] = 1
+                if (~int(self.inputs[0][idx0][idx1])& ~int(self.inputs[1][idx0][idx1])) == result:
+                    if result == 0:
+                        pass
+                    else:
+                        input_1 = self.inputs[0][idx0][idx1]
+                        input_2 = self.inputs[1][idx0][idx1]
+                        self.winner = self.get((idx0, idx1))
+                        self.result = result
+                        print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED NOR\nINPUT_1: " + str(
+                            input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                        if self.fitness_factor[6] == 0:
+                            self.rates[idx0][idx1] = 16 * self.rates[idx0][idx1]
+                            self.fitness_factor[6] = 1
 
                 # XOR
-                if ((self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(np.int64)) | (
-                        ~self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(
-                    np.int64))) == result:
-                    input_1 = self.inputs[0][idx0][idx1]
-                    input_2 = self.inputs[1][idx0][idx1]
-                    self.winner = self.get((idx0, idx1))
-                    self.result = result
-                    print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED XOR\nINPUT_1: " + str(
-                        input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                if ((int(self.inputs[0][idx0][idx1]) & ~int(self.inputs[1][idx0][idx1])) | (
+                        ~int(self.inputs[0][idx0][idx1]) & int(self.inputs[1][idx0][idx1]))) == result:
+                    if result == 0:
+                        pass
+                    else:
+                        input_1 = self.inputs[0][idx0][idx1]
+                        input_2 = self.inputs[1][idx0][idx1]
+                        self.winner = self.get((idx0, idx1))
+                        self.result = result
+                        print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED XOR\nINPUT_1: " + str(
+                            input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
 
-                    if self.fitness_factor[7] == 0:
-                        self.rates[idx0][idx1] = 16 * self.rates[idx0][idx1]
-                        self.fitness_factor[7] = 1
+                        if self.fitness_factor[7] == 0:
+                            self.rates[idx0][idx1] = 16 * self.rates[idx0][idx1]
+                            self.fitness_factor[7] = 1
 
                 # EQU
-                if ((self.inputs[0][idx0][idx1].astype(np.int64) & self.inputs[1][idx0][idx1].astype(np.int64)) | (
-                        ~self.inputs[0][idx0][idx1].astype(np.int64) & ~self.inputs[1][idx0][idx1].astype(
-                        np.int64))) == result:
-                    input_1 = self.inputs[0][idx0][idx1]
-                    input_2 = self.inputs[1][idx0][idx1]
-                    self.winner = self.get((idx0, idx1))
-                    self.result = result
-                    print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED EQU\nINPUT_1: " + str(
-                        input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
-                    if self.fitness_factor[8] == 0:
-                        self.rates[idx0][idx1] = 32 * self.rates[idx0][idx1]
-                        self.fitness_factor[8] = 1
+                if ((int(self.inputs[0][idx0][idx1]) & int(self.inputs[1][idx0][idx1])) | (
+                        ~int(self.inputs[0][idx0][idx1]) & ~int(self.inputs[1][idx0][idx1]))) == result:
+                    if result == 0:
+                        pass
+                    else:
+                        input_1 = self.inputs[0][idx0][idx1]
+                        input_2 = self.inputs[1][idx0][idx1]
+                        self.winner = self.get((idx0, idx1))
+                        self.result = result
+                        print("\nEMULATOR AT POSITION " + str((idx0, idx1)) + " COMPUTED EQU\nINPUT_1: " + str(
+                            input_1) + "\nInput_2: " + str(input_2) + "\nOUTPUT: " + str(self.result))
+                        if self.fitness_factor[8] == 0:
+                            self.rates[idx0][idx1] = 32 * self.rates[idx0][idx1]
+                            self.fitness_factor[8] = 1
 
         # A random 32-bit number
-        to_input = random.getrandbits(31)
+        to_input = random.getrandbits(32)
 
         # Put the randomly generated number into the input buffer of the emulator
         sender.cpu.input_buffer.put(to_input)
@@ -558,7 +599,7 @@ class World(Mediator):
         if direction == 'up':
             if np.isnan(self.pool[idx0+1][idx1]):
                 self.pool.put(sender, [idx0+1][idx1])
-                self.pool.put(np.nan, [idx][idx1])
+                self.pool.put(np.nan, [idx0][idx1])
             elif 0 <= self.pool[idx0+1][idx1] < self.pool.size:
                 emulator_2 = World.get(World, [idx0+1][idx1])
                 emulator_2.cpu.status = 1
@@ -574,11 +615,11 @@ class World(Mediator):
                 self.pool.put(np.nan, [idx0][idx1])
 
         if direction == 'left':
-            if np.isnan(self.pool[idx0][idx-1]):
+            if np.isnan(self.pool[idx0][idx1-1]):
                 self.pool.put(sender, [idx0][idx1-1])
                 self.pool.put(np.nan, [idx0][idx1])
         if direction == 'right':
-            if np.isnan(self.pool[idx0][idx+1]):
+            if np.isnan(self.pool[idx0][idx1+1]):
                 self.pool.put(sender, [idx0 + 1][idx1])
                 self.pool.put(np.nan, [idx0][idx1])
 

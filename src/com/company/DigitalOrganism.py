@@ -9,7 +9,7 @@ from Mediator import Mediator
 from scipy.stats import bernoulli
 from random import randrange
 import random
-
+import numpy as np
 
 # %% The Program
 
