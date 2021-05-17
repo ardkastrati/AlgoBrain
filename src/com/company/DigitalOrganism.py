@@ -370,13 +370,13 @@ class InstructionRightShift:
         next_ = self.emulator.instruction_memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.instruction_memory.size())
 
         if isinstance(next_, InstructionNopA):
-            self.machine.reg_a.write(self.machine.reg_a.read() >> 1)
+            self.machine.reg_a.write(int(self.machine.reg_a.read()) >> 1)
 
         elif isinstance(next_, InstructionNopC):
-            self.machine.reg_c.write(self.machine.reg_c.read() >> 1)
+            self.machine.reg_c.write(int(self.machine.reg_c.read()) >> 1)
 
         else:
-            self.machine.reg_b.write(self.machine.reg_b.read() >> 1)
+            self.machine.reg_b.write(int(self.machine.reg_b.read()) >> 1)
 
 class InstructionLeftShift:
 
@@ -390,13 +390,13 @@ class InstructionLeftShift:
         next_ = self.emulator.instruction_memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.instruction_memory.size())
 
         if isinstance(next_, InstructionNopA):
-            self.machine.reg_a.write(self.machine.reg_a.read() << 1)
+            self.machine.reg_a.write(int(self.machine.reg_a.read()) << 1)
 
         elif isinstance(next_, InstructionNopC):
-            self.machine.reg_c.write(self.machine.reg_c.read() << 1)
+            self.machine.reg_c.write(int(self.machine.reg_c.read()) << 1)
 
         else:
-            self.machine.reg_b.write(self.machine.reg_b.read() << 1)
+            self.machine.reg_b.write(int(self.machine.reg_b.read()) << 1)
 
 class InstructionInc:
 
@@ -486,7 +486,7 @@ class InstructionNand:
 
         next_ = self.emulator.instruction_memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.instruction_memory.size())
 
-        nand = ~(self.machine.reg_b.read() & self.machine.reg_c.read())
+        nand = ~(np.int(self.machine.reg_b.read()) & np.int(self.machine.reg_c.read()))
 
         if isinstance(next_, InstructionNopA):
             self.machine.reg_a.write(nand)
@@ -568,10 +568,12 @@ class InstructionHDivide:
                     chance = bernoulli.rvs(self.emulator.ins_prob, size=1)
 
                     if chance == 1:
+
                         result.insert(random.randint(0, len(result)), randrange(26))
                     else:
                         pass
-
+                    # TODO : -> change this
+                    # TODO COME UP WITH A BETTER WAY FOR MUTATING!
                     # Deletion mutations
                     chance = bernoulli.rvs(self.emulator.del_prob, size=1)
 
