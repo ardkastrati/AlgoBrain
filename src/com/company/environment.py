@@ -16,23 +16,23 @@ formatter_2 = logging.Formatter('%(asctime)s:%(message)s')
 formatter_3 = logging.Formatter('%(relativeCreated)d')
 formatter_4 = logging.Formatter('%(message)s')
 logger.setLevel(logging.INFO)
-file_handler = logging.FileHandler('Function5.log')
-file_handler.setFormatter(formatter_1)#,formatter_2,formatter_3
+#file_handler = logging.FileHandler('Function7.log')
+#file_handler.setFormatter(formatter_1)#,formatter_2,formatter_3
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter_2)
 stream_handler_program = logging.StreamHandler()
 stream_handler_program.setFormatter(formatter_4)
-file_handler_2 = logging.FileHandler('Function_5.log')
-file_handler_3 = logging.FileHandler('Organism_5.log')
+#file_handler_2 = logging.FileHandler('Function_7.log')
+file_handler_3 = logging.FileHandler('Organism_log.log')
 file_handler_3.setFormatter(formatter_4)
-file_handler_2.setFormatter(formatter_3)
-#logger.addHandler(stream_handler)
-logger.addHandler(file_handler)
+#file_handler_2.setFormatter(formatter_3)
+logger.addHandler(stream_handler)
+#logger.addHandler(file_handler)
 #logger.addHandler(stream_handler_program)
-logger2.addHandler(file_handler_2)
-logger3.addHandler(stream_handler_program)
-logger2.setLevel(logging.INFO)
-logger3.setLevel(logging.INFO)
+#logger2.addHandler(file_handler_2)
+#logger3.addHandler(stream_handler_program)
+#logger2.setLevel(logging.INFO)
+#logger3.setLevel(logging.INFO)
 logger4.addHandler(file_handler_3)
 logger4.setLevel(logging.DEBUG)
 
@@ -126,13 +126,20 @@ class World(Mediator):
 
         #self.place_custom([16, 20, 2, 0, 21] + [2]*36 + [20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
         #not
-        self.place_custom([16, 20, 2, 0, 21, 2, 2, 2, 2, 2, 2, 2, 2, 7, 2, 5, 2, 7, 2, 1, 10, 2, 2, 18, 1, 19, 2, 2, 15, 2, 2, 2, 2, 2, 2, 2, 2, 2, 15, 2, 17, 18, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
+        self.place_custom([16, 20, 2, 0, 21, 2, 3, 16, 23, 12, 2, 1, 11, 13, 3, 2, 20, 12, 19, 5, 7, 5, 12, 0, 6, 18, 3, 19, 25, 4, 2, 8, 6, 2, 17, 14, 7, 3, 14, 5, 4, 12, 24, 16, 17, 15, 7, 5, 18, 2, 6, 15, 2, 3, 25, 16, 4, 19, 15, 1, 7, 7, 8, 5, 25, 2, 24, 18, 18, 2, 15, 18, 8, 2, 15, 2, 6, 5, 13, 11, 15, 18, 23, 20, 19, 16, 19, 25, 2, 0, 17, 21, 0, 1],position= position)
+
+        #self.place_custom([0, 0, 0, 12, 25, 16, 20, 2, 0, 21, 2, 8, 3, 12, 11, 2, 2, 6, 15, 7, 12, 12, 9, 8, 8, 12, 15, 25, 6, 19, 3, 18, 3, 25, 18, 12, 2, 6, 2, 14, 3, 8, 2, 16, 14, 2, 14, 12, 24, 2, 15, 7, 5, 18, 2, 6, 15, 2, 25, 1, 18, 2, 19, 7, 15, 7, 25, 25, 2, 6, 7, 18, 4, 16, 3, 18, 2, 15, 18, 1, 5, 15, 2, 16, 6, 15, 18, 11, 5, 16, 5, 5, 23, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
+        #self.place_custom([24, 16, 20, 2, 0, 21, 2, 1, 3, 12, 5, 19, 10, 10, 17, 20, 18, 0, 5, 6, 1, 16, 3, 2, 9, 2, 6, 4, 18, 19, 14, 1, 23, 20, 5, 15, 18, 2, 25, 14, 2, 19, 3, 2, 5, 0, 18, 15, 7, 18, 15, 15, 13, 2, 4, 8, 2, 7, 18, 11, 2, 18, 17, 5, 2, 16, 6, 19, 15, 18, 4, 6, 2, 1, 14, 18, 15, 3, 3, 3, 18, 1, 17, 16, 16, 14, 16, 8, 13, 25, 20, 19, 25, 2, 0, 17, 21, 23, 0, 1],position = position)
+        #self.place_custom([16, 20, 2, 0, 21] + [2]*18 + [18,1] + [2]*70,position = position)#[20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
+        #self.place_custom([24, 16, 20, 2, 0, 21, 2, 1, 3, 12, 5, 19, 10, 10, 17, 20, 18, 0, 5, 6, 1, 16, 3, 2, 9, 2, 6, 4, 18, 19, 14, 1, 23, 20, 5, 15, 18, 2, 25, 14, 2, 19, 3, 2, 5, 0, 18, 15, 7, 18, 15, 15, 13, 2, 4, 8, 2, 7, 18, 11, 2, 18, 17, 5, 2, 16, 6, 19, 15, 18, 4, 6, 2, 1, 14, 18, 15, 3, 3, 3, 18, 1, 17, 16, 16, 14, 16, 8, 13, 25, 20, 19, 25, 2, 0, 17, 21, 23, 0, 1, 24, 16, 20, 2, 0, 21, 0, 1],position=position)
+        #self.place_custom([16, 20, 2, 0, 21, 2, 2, 2, 2, 2, 2, 2, 2, 7, 2, 5, 2, 7, 2, 1, 10, 2, 2, 18, 1, 19, 2, 2, 15, 2, 2, 2, 2, 2, 2, 2, 2, 2, 15, 2, 17, 18, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
     # Default per avida paper, with only 15 instructions
     def place_default_15(self, position = None):
         
         #self.place_custom([16, 20, 2, 0, 21, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
-        self.place_custom([16, 20, 2, 0, 21, 2, 2, 2, 2, 2, 2, 2, 2, 7, 2, 5, 2, 7, 2, 1, 10, 2, 2, 18, 1, 19, 2, 2, 15, 2, 2, 2, 2, 2, 2, 2, 2, 2, 15, 2, 17, 18, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
-
+        #self.place_custom([16, 20, 2, 0, 21, 2, 2, 2, 2, 2, 2, 2, 2, 7, 2, 5, 2, 7, 2, 1, 10, 2, 2, 18, 1, 19, 2, 2, 15, 2, 2, 2, 2, 2, 2, 2, 2, 2, 15, 2, 17, 18, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
+        #self.place_custom([13, 24, 16, 20, 2, 0, 21, 2, 0, 25, 5, 21, 2, 19, 19, 2, 20, 24, 19, 24, 24, 4, 1, 9, 3, 24, 7, 19, 3, 19, 7, 14, 7, 8, 20, 17, 7, 15, 18, 2, 8, 7, 4, 19, 16, 17, 5, 0, 18, 15, 17, 18, 15, 15, 13, 2, 4, 7, 4, 16, 7, 18, 11, 2, 18, 16, 5, 2, 6, 19, 15, 18, 1, 17, 6, 13, 25, 7, 16, 11, 18, 13, 7, 9, 18, 17, 7, 2, 1, 14, 1, 3, 13, 25, 20, 19, 25, 2, 0, 17, 21, 0, 1],position=position)
+        self.place_custom([5, 16, 18, 20, 2, 0, 21, 2, 2, 23, 23, 14, 11, 11, 19, 3, 16, 11, 6, 6, 11, 25, 7, 10, 7, 23, 9, 23, 2, 16, 23, 24, 15, 17, 19, 20, 8, 15, 18, 2, 25, 14, 2, 19, 19, 8, 5, 0, 18, 15, 17, 18, 15, 15, 13, 2, 16, 7, 16, 7, 18, 11, 2, 18, 14, 5, 2, 17, 6, 25, 19, 15, 18, 6, 13, 25, 8, 11, 18, 8, 15, 7, 4, 3, 18, 8, 8, 3, 1, 0, 14, 1, 25, 14, 13, 25, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
     # Almost the same as the original default, only initialized with two IO operations
     # before the center nop-c cluster
     def place_def_io(self, position = None):
@@ -140,7 +147,10 @@ class World(Mediator):
          12, 0, 25, 24, 2, 2, 2, 9, 2, 18, 2, 3, 2, 3, 15, 19, 25, 2, 0, 17, 21, 0, 1, 16, 20, 0, 0, 0, 0, 0, 0, 0, 0,
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
          0, 0, 0, 0, 0, 0, 0, 0]"""
-        self.place_custom([16, 20, 2, 0, 21, 2, 23, 2, 13, 13, 16, 2, 19, 2, 10, 1, 18, 2, 8, 9, 13, 5, 16, 15, 2, 18, 4, 2, 15, 4, 2, 24, 2, 2, 2, 11, 17, 8, 7, 13, 11, 2, 16, 12, 0, 18, 24,13, 18, 2, 18, 15, 2,23, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
+        #self.place_custom([5, 16, 20, 2, 0, 21, 2, 2, 8, 17, 25, 7, 19, 17, 4, 6, 2, 17, 18, 17, 19, 9, 7, 5, 0, 19, 1, 7, 25, 5, 20, 15, 18, 2, 25, 16, 19, 5, 0, 18, 15, 17, 18, 15, 15, 13, 2, 2, 7, 1, 7, 18, 11, 2, 5, 2, 6, 19, 15, 18, 6, 13, 16, 16, 11, 18, 3, 6, 3, 3, 18, 18, 4, 14, 17, 13, 25, 20, 19, 25, 2, 0, 17, 21, 4, 0, 1],position = position)
+        #self.place_custom([13, 24, 16, 20, 2, 0, 21, 2, 0, 25, 5, 21, 2, 19, 19, 2, 20, 24, 19, 24, 24, 4, 1, 9, 3, 24, 7, 19, 3, 19, 7, 14, 7, 8, 20, 17, 7, 15, 18, 2, 8, 7, 4, 19, 16, 17, 5, 0, 18, 15, 17, 18, 15, 15, 13, 2, 4, 7, 4, 16, 7, 18, 11, 2, 18, 16, 5, 2, 6, 19, 15, 18, 1, 17, 6, 13, 25, 7, 16, 11, 18, 13, 7, 9, 18, 17, 7, 2, 1, 14, 1, 3, 13, 25, 20, 19, 25, 2, 0, 17, 21, 0, 1],position=position)
+        #self.place_custom([10, 16, 20, 2, 0, 21, 2, 1, 9, 8, 9, 19, 3, 11, 20, 20, 6, 17, 11, 17, 2, 2, 13, 3, 12, 11, 5, 17, 19, 20, 1, 8, 17, 5, 20, 7, 15, 18, 2, 3, 16, 19, 3, 5, 0, 18, 15, 11, 18, 15, 15, 13, 2, 3, 7, 1, 16, 7, 18, 11, 2, 14, 5, 2, 6, 19, 15, 18, 6, 13, 25, 16, 11, 18, 15, 17, 8, 2, 18, 18, 4, 8, 16, 14, 1, 17, 13, 25, 20, 19, 25, 2, 0, 17, 21, 0, 1],position =position)
+        #self.place_custom([16, 20, 2, 0, 21, 2, 23, 2, 13, 13, 16, 2, 19, 2, 10, 1, 18, 2, 8, 9, 13, 5, 16, 15, 2, 18, 4, 2, 15, 4, 2, 24, 2, 2, 2, 11, 17, 8, 7, 13, 11, 2, 16, 12, 0, 18, 24,13, 18, 2, 18, 15, 2,23, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
         #self.place_custom([16, 20, 2, 0, 21, 2, 23, 2, 13, 13, 16, 2, 19, 2, 10, 1, 18, 2, 8, 9, 13, 5, 16, 15, 2, 18, 4, 2, 15, 4, 2, 24, 2, 2, 2, 11, 17, 8, 7, 13, 11, 2, 16, 12, 0, 18, 24, 2, 2, 2, 10, 2, 2, 2, 14, 2, 11, 15, 2, 1, 5, 18, 7, 13, 13, 2, 1, 3, 18, 21, 6, 2, 8, 7, 9, 20, 19, 25, 2, 0, 17, 11, 0, 1],position = position)
         #self.place_custom([16, 20, 2, 0, 21, 2, 23, 2, 13, 13, 16, 2, 19, 2, 10, 1, 18, 2, 8, 9, 13, 5, 16, 15, 2, 18, 4, 2, 15, 4, 2, 24, 2, 2, 2, 11, 17, 8, 7, 13, 11, 2, 16, 12, 0, 18, 24, 2, 2, 2, 15, 2, 2, 2, 14, 2, 3, 15, 2, 1, 5, 18, 7, 13, 18, 2, 1, 3, 18, 21, 6,2 ,8 ,7 ,9, 20, 19, 25, 2, 0, 17, 11, 0, 1, 21],position = position )
         #self.place_custom([16, 20, 2, 0, 21, 2, 23, 2, 2, 13, 16, 2, 19, 2, 10, 1, 18, 2, 18, 9, 13, 5, 16, 15, 2, 18, 2, 2, 15, 4, 2, 24, 2, 2, 2, 11, 17, 8, 7, 13, 11, 2, 1, 12, 0, 18, 24, 2, 2, 2, 2, 2, 2, 2, 18, 2, 3, 15 , 2, 1 ,5, 18, 7, 13, 20, 19, 25, 2, 0, 17, 21, 0, 1, 16, 20, 2, 0, 21, 2],position = position )
@@ -148,7 +158,20 @@ class World(Mediator):
         #self.place_custom([16, 2, 25, 2, 10, 2, 19, 15, 4, 2, 14, 2, 2, 2, 11, 17, 8, 7, 13, 4, 2, 1, 23, 0, 18, 24, 11, 2, 22, 2, 17, 12, 2, 18, 2, 3, 15, 19, 25, 2, 0, 17, 21, 0, 1, 14, 20, 0, 21, 2 ,23, 2 ,2 ,9], position = position)
         #self.place_custom([16,20,  2, 0, 21, 2, 2, 2, 2, 11, 2, 2, 2, 2, 2, 2, 2, 2, 18, 2, 2, 2, 2, 18, 1, 2, 12, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],position = position)
         #self.place_custom([16, 20, 2, 0, 21, 2, 0, 25, 20, 1, 18, 16, 2, 12, 2, 3, 22, 6, 3, 4, 9, 25, 2, 5, 18, 11, 17, 7, 13, 24, 11, 13, 4, 12, 0, 25, 13, 2, 19, 2, 9, 2, 18, 2, 17, 18, 15, 15, 17, 1, 16, 18, 20, 19, 25, 2, 0, 17, 21, 0, 1, 16,20, 19, 25, 2, 0, 17, 21, 0, 1] ,position = position)
-        #self.place_custom([16, 20, 2, 0, 21] + [2]*18 +[2,11,13, 8, 7, 13,11,2,1,12,0]+ [18,1] + [2]*10 + [20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
+        #good for nothing
+        #self.place_custom([5, 16, 18, 20, 2, 0, 21, 2, 2, 23, 23, 14, 11, 11, 19, 3, 16, 11, 6, 6, 11, 25, 7, 10, 7, 23, 9, 23, 2, 16, 23, 24, 15, 17, 19, 20, 8, 15, 18, 2, 25, 14, 2, 19, 19, 8, 5, 0, 18, 15, 17, 18, 15, 15, 13, 2, 16, 7, 16, 7, 18, 11, 2, 18, 14, 5, 2, 17, 6, 25, 19, 15, 18, 6, 13, 25, 8, 11, 18, 8, 15, 7, 4, 3, 18, 8, 8, 3, 1, 0, 14, 1, 25, 14, 13, 25, 20, 19, 25, 2, 0, 17, 21, 0, 1],position=position)
+        #able to calculate xor
+        self.place_custom([16, 20, 2, 0, 21, 2, 3, 16, 12, 12, 1, 23, 6, 19, 2, 24, 25, 20, 5, 7, 25, 6, 17, 24, 1, 4, 11, 18, 6, 18, 7, 5, 4, 12, 24, 16, 17, 15, 7, 5, 16, 18, 2, 6, 15, 2, 3, 25, 4, 3, 2, 15, 3, 7, 19, 8, 5, 25, 2, 7, 18, 18, 2, 15, 1, 18, 8, 2, 15, 2, 6, 5, 13, 11, 15, 18, 3, 20, 0, 5, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
+        #this should be the godprogramm according to avida
+
+        #self.place_custom([16, 20, 2, 0, 21, 2, 3, 16, 23, 12, 2, 1, 11, 13, 3, 2, 20, 12, 19, 5, 7, 5, 12, 0, 6, 18, 3, 19, 25, 4, 2, 8, 6, 2, 17, 14, 7, 3, 14, 5, 4, 12, 24, 16, 17, 15, 7, 5, 18, 2, 6, 15, 2, 3, 25, 16, 4, 19, 15, 1, 7, 7, 8, 5, 25, 2, 24, 18, 18, 2, 15, 18, 8, 2, 15, 2, 6, 5, 13, 11, 15, 18, 23, 20, 19, 16, 19, 25, 2, 0, 17, 21, 0, 1],position= position)
+        #self.place_custom([24, 16, 20, 2, 0, 21, 2, 1, 3, 12, 5, 19, 10, 10, 17, 20, 18, 0, 5, 6, 1, 16, 3, 2, 9, 2, 6, 4, 18, 19, 14, 1, 23, 20, 5, 15, 18, 2, 25, 14, 2, 19, 3, 2, 5, 0, 18, 15, 7, 18, 15, 15, 13, 2, 4, 8, 2, 7, 18, 11, 2, 18, 17, 5, 2, 16, 6, 19, 15, 18, 4, 6, 2, 1, 14, 18, 15, 3, 3, 3, 18, 1, 17, 16, 16, 14, 16, 8, 13, 25, 20, 19, 25, 2, 0, 17, 21, 23, 0, 1],position=position)
+        #self.place_custom([7, 16, 20, 2, 0, 21, 2, 0, 3, 9, 16, 5, 19, 10, 10, 9, 20, 18, 0, 20, 12, 1, 15, 3, 2, 9, 20, 10, 6, 19, 10, 5, 23, 20, 5, 15, 18, 2, 25, 14, 2, 19, 3, 0, 5, 0, 18, 15, 3, 18, 15, 15, 13, 2, 2, 4, 8, 16, 7, 18, 11, 2, 18, 13, 5, 2, 16, 6, 19, 15, 18, 4, 6, 2, 16, 18, 15, 3, 3, 18, 1, 17, 0, 14, 16, 8, 13, 25, 20, 19, 25, 2, 0, 17, 21, 23, 0, 1],position=position)
+        #self.place_custom([16, 20, 2, 0, 21] + [2]*18 + [18,1] + [2]*18 + [20, 19, 25, 2, 0, 17, 21, 0, 1], position = position)
+        #self.place_custom([16, 18, 5, 12, 14, 18, 24, 15, 4, 0, 5, 0, 25, 15, 0, 4, 11, 13, 18, 17, 15, 3, 25, 2, 9, 15, 15, 18, 3, 23, 7, 24, 7, 20, 2, 0, 5, 21, 2, 11, 9, 10, 16, 20, 20, 9, 25, 11, 20, 20, 5, 10, 11, 10, 8, 15, 20, 19, 10, 12, 11, 25, 24, 4, 10, 4, 7, 6, 16, 12, 18, 2, 7, 6, 14, 25, 25, 17, 7, 3, 23, 18, 2, 4, 7, 16, 15, 2, 0, 19, 0, 25, 0, 15, 24, 7, 8, 18, 2, 15, 2, 4, 14, 19, 8, 15, 25, 6, 15, 2, 1, 15, 18, 2, 1, 12, 14, 16, 11, 18, 6, 3, 20, 19, 25, 2, 0, 24, 21, 0, 1],position = position)
+        #organism that can compute not,nand,or_not,or,and_not,nor
+        #self.place_custom([0,0,24,2,6,18,24,5,13,7,3,24,15,8,2,0,0,18,15,3,11,13,10,18,25,24,12,11,15,14,13,16,18,7,8,13,20,2,0,12,21,2,23,2,10,23,18,15,8,15,25,22,15,15,12,4,6,11,1,0,15,12,4,25,18,15,1,9,0,14,5,15,18,2,7,3,15,5,2,7,2,18,2,4,7,17,16,7,15,2,2,25,17,24,6,3,17,19,7,18,2,2,2,24,15,2,25,25,1,7,24,2,0,19,15,2,6,15,24,18,2,12,14,16,11,24,18,5,20,19,24,2,0,17,21,0,1], position = position)
+        #self.place_custom([16, 18, 5, 12, 14, 18, 24, 15, 4, 0, 5, 0, 25, 15, 0, 4, 11, 13, 18, 17, 15, 3, 25, 2, 9, 15, 15, 18, 3, 23, 7, 24, 7, 20, 2, 0, 5, 21, 2, 11, 9, 10, 16, 20, 20, 9, 25, 11, 20, 20, 5, 10, 11, 10, 8, 15, 20, 19, 10, 12, 11, 25, 24, 4, 10, 4, 7, 6, 16, 12, 18, 2, 7, 6, 14, 25, 25, 17, 7, 3, 23, 18, 2, 4, 7, 16, 15, 2, 0, 19, 0, 25, 0, 15, 24, 7, 8, 18, 2, 15, 2, 4, 14, 19, 8, 15, 25, 6, 15, 2, 1, 15, 18, 2, 1, 12, 14, 16, 11, 18, 6, 3, 20, 19, 25, 2, 0, 24, 21, 0, 1],position=position)
         #self.place_custom([16, 20, 2, 0, 21, 2, 23, 2, 2, 2, 16, 2, 19, 2, 10,1,18,2,18,9,13,5,16,15,2,18, 2, 2, 15, 4, 2, 14, 2, 2, 2, 11, 17, 8, 7, 13, 11, 2, 1, 12, 0, 18, 24, 2, 2, 2, 2, 2, 2, 2, 18, 2, 3, 15, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
         #self.place_custom([16, 20, 2, 0, 21, 2, 23, 2, 2, 13, 16, 2, 19, 2, 10, 1, 18, 2, 18, 9, 13, 5, 16, 15, 2, 18, 2, 2, 15, 4, 2, 24, 2, 2, 2, 11, 17, 8, 7, 13, 11, 2, 1, 12, 0, 18, 24, 2, 2, 2, 2, 2, 2, 2, 18, 2, 3, 15, 19, 25, 2, 0, 17, 21, 0, 1, 16, 20, 2, 0, 21, 2],position=position)
         #self.place_custom([16, 20, 2, 0, 21, 2, 2, 2,  18, 9, 24, 2, 2, 2, 18, 21, 20, 5, 10, 7, 2, 11, 10, 2, 25, 12, 3, 19, 1, 2, 15, 1, 2, 20, 3, 2, 7, 14, 17, 2, 18,1,2, 17, 18, 2, 2, 20, 19, 25, 2, 0, 17, 21, 0, 1],position = position)
@@ -200,8 +223,8 @@ class World(Mediator):
         # Per default, upon any organism instantiation, the metabolic rate is
         # equal to its memory length
         
-        self.rates[position] = emulator.instruction_memory.size()
-        
+        #self.rates[position] = emulator.instruction_memory.size()
+        self.rates[position] = len(program)
         # Pull out the age of the organism
         
         self.ages[position] = emulator.age
@@ -401,9 +424,11 @@ class World(Mediator):
         idx1 = np.where(self.pool.get() == sender)[1][0]
         
         # If the most recent input is none, do nothing
+
         if self.inputs[idx0][idx1][0] == 0:
             pass
-
+        elif -2 < result < 2:
+            pass
         elif self.inputs[idx0][idx1][0] == ~self.inputs[idx0][idx1][1]:
             pass
         elif ~self.inputs[idx0][idx1][0] == self.inputs[idx0][idx1][1]:
@@ -431,12 +456,12 @@ class World(Mediator):
         # If the most recent input isn't none, but the second most recent is, check if not was computed
         elif self.inputs[idx0][idx1][0] != 0 and self.inputs[idx0][idx1][1] == 0:
             
-            if self.inputs[idx0][idx1][0] == ~result:
+            if self.inputs[idx0][idx1][0] == ~result and sender.fun_not == False:
                 
                 # Save input, result and the organism that computed it
                 input_ = self.inputs[idx0][idx1][0]
                 #logger.info('Not on input 1: ~{} = {}'.format(input_, result))
-                #logger4.info("organism computed NOT : {} at {} \n".format(sender.memory, str((idx0, idx1))))
+                logger4.info("organism computed NOT on input 1: ~{} = {} and {} at {} \n".format(input_,result, sender.memory, str((idx0, idx1))))
                 #logger.info(sender.memory)
                 # Notify us about what happened
                 #"\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED NOT\nINPUT:  " + str(input_) + "\nOUTPUT: " + str(result))
@@ -446,11 +471,11 @@ class World(Mediator):
                 if sender.fun_not == False:
                     sender.fun_not = True
                     sender.child_rate *= 2
-                    
+                    self.rates[idx0][idx1] *=2
                     # Slow down with those mutations now
                     # It takes a while to slow down to stable 0.0100
                     if self.cm_prob > 0.002500:
-                        self.cm_prob*= 0.99999999999999999
+                        self.cm_prob*=1.0
                 
                 # If yes, ignore
                 else:
@@ -461,12 +486,12 @@ class World(Mediator):
             
             # If a NOT was computed
             
-            if result == ~self.inputs[idx0][idx1][0]:
+            if result == ~self.inputs[idx0][idx1][0] and sender.fun_not == False:
                 
                 # Save input, result and the organism that computed it
                 input_ = self.inputs[idx0][idx1]
                 #logger.info('Not on input 2: ~{} = {}'.format(input_[1], result))
-                #logger4.info("organism computed NOT : {} at {} \n {} \n".format(sender.memory, str((idx0, idx1)),self.baseline_rate()))
+                logger4.info("organism computed NOT : ~{} = {} and {} at Position {} \n {} \n".format(input_[1], result,sender.memory, str((idx0, idx1)),self.baseline_rate()))
                 #logger.info(sender.memory)
                 # Notify us about what happened
                 #print("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED NOT\nINPUT:  " + str(input_[0]) + "\nOUTPUT: " + str(result))
@@ -477,23 +502,23 @@ class World(Mediator):
                 if sender.fun_not == False:
                     sender.fun_not = True
                     sender.child_rate *= 2
-                    
+                    self.rates[idx0][idx1] *= 2
                     # Slow down with those mutations now
                     # It takes a while to slow down to stable 0.0100
                     if self.cm_prob > 0.025:
-                        self.cm_prob*= 0.999999
+                        self.cm_prob*=1.0
                 
                 # If yes, ignore
                 else:
                     pass
             
             # If a NAND was computed
-            elif result == ~(self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1]):
+            elif result == ~(self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1]) and sender.fun_nand == False:
                 
                 # Save input, result and the organism that computed it
                 input_ = self.inputs[idx0][idx1]
                 #logger.info('NAND : ~({} & {}) = {}'.format(input_[0], input_[1], result))
-                #logger4.info("organism computed NAND: {} at {} \n {} \n".format(sender.memory, str((idx0, idx1)), self.baseline_rate()))
+                logger4.info("organism computed NAND: ~({} & {}) = {}' and {} at Position {} \n {} \n".format(input_[0], input_[1], result,sender.memory, str((idx0, idx1)), self.baseline_rate()))
                 #logger.info(sender.memory)
                 # Notify us about what happened
                 #print("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED NAND\nINPUT: " + str(input_) + "\nOUTPUT:  " + str(result))
@@ -503,23 +528,23 @@ class World(Mediator):
                 if sender.fun_nand == False:
                     sender.fun_nand = True
                     sender.child_rate *= 2
-                    
+                    self.rates[idx0][idx1] *= 2
                     # Slow down with those mutations now
                     # It takes a while to slow down to stable 0.002500
                     if self.cm_prob > 0.002500:
-                        self.cm_prob*= 0.99
+                        self.cm_prob*=1.
                 
                 # If yes, ignore
                 else:
                     pass
                 
             # If an AND was computed
-            elif result == self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1]:
+            elif result == self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1] and sender.fun_and == False:
                 
                 # Save input, result and the organism that computed it
                 input_ = self.inputs[idx0][idx1]
-                logger.info('AND : {} & {} = {}'.format(input_[0], input_[1], result))
-                logger4.info("organism computed AND: {} at {} \n".format(sender.memory, str((idx0, idx1))))
+                #logger.info('AND : {} & {} = {}'.format(input_[0], input_[1], result))
+                logger4.info("organism computed AND: {} & {} = {} and {} at Position {} \n".format(input_[0], input_[1], result,sender.memory, str((idx0, idx1))))
                 #logger.info(sender.memory)
                 # Notify us about what happened
                 #print("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED AND\nINPUT: " + str(input_) + "\nOUTPUT:  " + str(result))
@@ -529,27 +554,27 @@ class World(Mediator):
                 if sender.fun_and == False:
                     sender.fun_and = True
                     sender.child_rate *= 4
-                    
+                    self.rates[idx0][idx1] *= 4
                     # Slow down with those mutations now
                     # It takes a while to slow down to stable 0.002500
                     if self.cm_prob > 0.002500:
-                        self.cm_prob*= 0.99
+                        self.cm_prob*=1.
                 
                 # If yes, ignore
                 else:
                     pass
                 
             # If an OR_N was computed
-            elif result == self.inputs[idx0][idx1][0] | ~self.inputs[idx0][idx1][1] or result == ~self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1]:
+            elif result == self.inputs[idx0][idx1][0] | ~self.inputs[idx0][idx1][1] or result == ~self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] and sender.fun_or_n == False and sender.fun_or_n == False:
 
                 input_ = self.inputs[idx0][idx1]
                 if (result == self.inputs[idx0][idx1][0] | ~self.inputs[idx0][idx1][1]):
-                    logger.info('OR_N : {} | ~{} = {}'.format(input_[0], input_[1], result))
-                    logger4.info('organism computed OR_n: {} at {} \n'.format(sender.memory, str((idx0, idx1))))
+                    #logger.info('OR_N : {} | ~{} = {}'.format(input_[0], input_[1], result))
+                    logger4.info('organism computed OR_n: {} | ~{} = {} and {} at Position {} \n'.format(input_[0], input_[1], result,sender.memory, str((idx0, idx1))))
                     #logger.info(sender.memory)
                 else:
-                    logger.info('OR_N : ~{} | {} = {}'.format(input_[0], input_[1], result))
-                    logger4.info('organism computed OR_N : {} at {} \n'.format(sender.memory, str((idx0, idx1))))
+                    #logger.info('OR_N : ~{} | {} = {}'.format(input_[0], input_[1], result))
+                    logger4.info('organism computed OR_N : ~{} | {} = {} and {} Position at {} \n'.format(input_[0], input_[1], result,sender.memory, str((idx0, idx1))))
                     #logger.info(sender.memory)
                 # Notify us about what happened
                 #print("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED OR_N\nINPUT: " + str(input_) + "\nOUTPUT:  " + str(result))
@@ -560,23 +585,23 @@ class World(Mediator):
                 if sender.fun_or_n == False:
                     sender.fun_or_n = True
                     sender.child_rate *= 4
-                    
+                    self.rates[idx0][idx1] *= 4
                     # Slow down with those mutations now
                     # It takes a while to slow down to stable 0.002500
                     if self.cm_prob > 0.002500:
-                        self.cm_prob*= 0.99
+                        self.cm_prob*=1.
                 
                 # If yes, ignore
                 else:
                     pass
                 
             # If an OR was computed
-            elif result == self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1]:
+            elif result == self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] and sender.fun_or == False:
                 
                 input_ = self.inputs[idx0][idx1]
 
-                logger.info('OR : {} | {} = {}'.format(input_[0], input_[1], result))
-                logger4.info("organism computed OR: {} at {} \n".format(sender.memory, str((idx0, idx1))))
+                #logger.info('OR : {} | {} = {}'.format(input_[0], input_[1], result))
+                logger4.info("organism computed OR: {} | {} = {} and {} at Position {} \n".format(input_[0], input_[1], result,sender.memory, str((idx0, idx1))))
                 #logger.info(sender.memory)
                 # Notify us about what happened
                 #print("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED OR\nINPUT: " + str(input_) + "\nOUTPUT:  " + str(result))
@@ -586,29 +611,29 @@ class World(Mediator):
                 if sender.fun_or == False:
                     sender.fun_or = True
                     sender.child_rate *= 8
-
+                    self.rates[idx0][idx1] *= 8
                     
                     # Slow down with those mutations now
                     # It takes a while to slow down to stable 0.002500
                     if self.cm_prob > 0.002500:
-                        self.cm_prob*= 0.99
+                        self.cm_prob*=1.
                 
                 # If yes, ignore
                 else:
                     pass
                 
             # If an AND_N was computed
-            elif result == self.inputs[idx0][idx1][0] & ~self.inputs[idx0][idx1][1] or result == ~self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1]:
+            elif result == self.inputs[idx0][idx1][0] & ~self.inputs[idx0][idx1][1] or result == ~self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1] and sender.fun_and_n == False:
                 
                 input_ = self.inputs[idx0][idx1]
 
                 if result == self.inputs[idx0][idx1][0] & ~self.inputs[idx0][idx1][1]:
-                    logger.info('AND_N : {} & ~{} = {}'.format(input_[0], input_[1], result))
-                    logger4.info("organism computed AND_N: {} at {} \n {} \n".format(sender.memory, str((idx0, idx1)),self.max_rate()))
+                    #logger.info('AND_N : {} & ~{} = {}'.format(input_[0], input_[1], result))
+                    logger4.info("organism computed AND_N: {} & ~{} = {} and {} at Position {} \n {} \n".format(input_[0], input_[1], result,sender.memory, str((idx0, idx1)),self.max_rate()))
                     #logger.info(sender.memory)
                 else:
-                    logger.info('AND_N : ~{} & {} = {}'.format(input_[0], input_[1], result))
-                    logger4.info("organism computed AND_N: {} at {} \n {} \n".format(sender.memory, str((idx0, idx1)), self.max_rate()))
+                    #logger.info('AND_N : ~{} & {} = {}'.format(input_[0], input_[1], result))
+                    logger4.info("organism computed AND_N: ~{} & {} = {} and {} at Position {} \n {} \n".format(input_[0], input_[1], result,sender.memory, str((idx0, idx1)), self.max_rate()))
                     #logger.info(sender.memory)
                 # Notify us about what happened
                 #print("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED AND_N\nINPUT: " + str(input_) + "\nOUTPUT:  " + str(result))
@@ -618,23 +643,23 @@ class World(Mediator):
                 if sender.fun_and_n == False:
                     sender.fun_and_n = True
                     sender.child_rate *= 8
-
+                    self.rates[idx0][idx1] *= 8
                     # Slow down with those mutations now
                     # It takes a while to slow down to stable 0.002500
                     if self.cm_prob > 0.002500:
-                        self.cm_prob*= 0.99
+                        self.cm_prob*=1.
                 
                 # If yes, ignore
                 else:
                     pass
                 
             # If a NOR was computed
-            elif result == ~(self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1]):
+            elif result == ~(self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1]) and sender.fun_nor == False:
                 
                 input_ = self.inputs[idx0][idx1]
 
-                logger.info('NOR : ~{} & ~{} = {}'.format(input_[0], input_[1], result))
-                logger4.info("organism computed NOR: {} at {} \n".format(sender.memory, str((idx0, idx1))))
+                #logger.info('NOR : ~{} & ~{} = {}'.format(input_[0], input_[1], result))
+                logger4.info("organism computed NOR: ~{} & ~{} = {} and {} at Position {} \n".format(input_[0], input_[1], result,sender.memory, str((idx0, idx1))))
                 #logger.info(sender.memory)
                 # Notify us about what happened
                 #print("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED NOR\nINPUT: " + str(input_) + "\nOUTPUT:  " + str(result))
@@ -644,11 +669,11 @@ class World(Mediator):
                 if sender.fun_nor == False:
                     sender.fun_nor = True
                     sender.child_rate *= 16
-                    
+                    self.rates[idx0][idx1] *= 16
                     # Slow down with those mutations now
                     # It takes a while to slow down to stable 0.002500
                     if self.cm_prob > 0.002500:
-                        self.cm_prob*= 0.99
+                        self.cm_prob*=1.
                 
                 # If yes, ignore
                 else:
@@ -659,8 +684,8 @@ class World(Mediator):
                 
                 # Save input, result and the organism that computed it
                 input_ = self.inputs[idx0][idx1]
-                logger.info('XOR : {} & ~{} or ~{} & {} = {}'.format(input_[0], input_[1], (input_[0]), input_[1], result))
-                logger4.info("organism computed XOR: {} at {} \n".format(sender.memory, str((idx0, idx1))))
+                #logger.info('XOR : {} & ~{} | ~{} & {} = {}'.format(input_[0], input_[1], (input_[0]), input_[1], result))
+                logger4.info("organism computed XOR: {} & ~{} | ~{} & {} = {} and {} at Position {} \n".format(input_[0], input_[1], (input_[0]), input_[1], result,sender.memory, str((idx0, idx1))))
                 #logger.info(sender.memory)
                 # Notify us about what happened
                 #print("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED XOR\nINPUT: " + str(input_) + "\nOUTPUT: " + str(result))
@@ -670,11 +695,11 @@ class World(Mediator):
                 if sender.fun_xor == False:
                     sender.fun_xor = True
                     sender.child_rate *= 16
-                    
+                    self.rates[idx0][idx1] *= 16
                     # Slow down with those mutations now
                     # It takes a while to slow down to stable 0.002500
                     if self.cm_prob > 0.002500:
-                        self.cm_prob*= 0.99
+                        self.cm_prob*=1.
                 
                 # If yes, ignore
                 else:
@@ -685,8 +710,8 @@ class World(Mediator):
                 
                 # Save input, result and the organism that computed it
                 input_ = self.inputs[idx0][idx1]
-                logger.critical('EQU : {} & {} or ~{} & ~{} = {}'.format(input_[0], input_[1], input_[0], input_[1], result))
-                logger4.info("organism computed EQU: {} at {} \n".format(sender.memory, str((idx0,idx1))))
+                #logger.critical('EQU : {} & {} | ~{} & ~{} = {}'.format(input_[0], input_[1], input_[0], input_[1], result))
+                logger4.info("organism computed EQU: {} & {} | ~{} & ~{} = {} and {} at Position {} \n".format(input_[0], input_[1], input_[0], input_[1], result,sender.memory, str((idx0,idx1))))
                 logger2.critical(sender.memory)
                 # Notify us about what happened
                 #print("\nEMULATOR AT POSITION " + str((idx0,idx1)) + " COMPUTED EQU\nINPUT: " + str(input_) + "\nOUTPUT: " + str(result))
@@ -696,11 +721,11 @@ class World(Mediator):
                 if sender.fun_equ == False:
                     sender.fun_equ = True
                     sender.child_rate *= 32
-                    
+                    self.rates[idx0][idx1] *= 32
                     # Slow down with those mutations now
                     # It takes a while to slow down to stable 0.002500
                     if self.cm_prob > 0.002500:
-                        self.cm_prob*= 0.99
+                        self.cm_prob*=1.
                 
                 # If yes, ignore
                 else:
@@ -791,8 +816,13 @@ class World(Mediator):
             
             for i in range(self.pool.shape[0]):
                 for j in range(self.pool.shape[1]):
-                    self.place_def_io((i,j))
-                    
+                    if i== 15 and j == 16:
+                        self.place_def_io((i,j))
+                    elif( i==16 and j ==26):
+                        self.place_default_15((i,j))
+                    else:
+                        self.place_default((i,j))
+            #self.place_def_io((17,13))
         elif organism_type == "default":
             
             for i in range(self.pool.shape[0]):
@@ -849,7 +879,7 @@ def equ(a,b):
 # First argument is world size
 # cm_prob is copy mutation probability
 # ins_prob and del_prob are insertion and deletion probabilities
-world = World(60,replacement_strategy="neighborhood",cm_prob = 0.05, ins_prob = 0.01, del_prob = 0.01)
+world = World(60,replacement_strategy="neighborhood",cm_prob = 0.025, ins_prob = 0.01, del_prob = 0.01)
 
 # Filling the world with the default organisms instantiated with two IOs
 world.fill()
