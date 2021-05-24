@@ -5,10 +5,20 @@ from queue import LifoQueue
 from queue import Queue
 from Mediator import Mediator
 
+import numpy as np
+
 # For the probability of random mutations
 from scipy.stats import bernoulli
 from random import randrange
-import random
+from numpy import random
+
+#%%
+
+# We get overflow errors sometimes but for our purposes this is absolutely fine
+# We care about the binary representation, not the actual int32 value
+# Therefore, ignore overflow warnings
+np.warnings.filterwarnings('ignore', 'overflow')
+
 
 # %% The Program
 
@@ -35,22 +45,18 @@ class Program:
 class Register:
 
     def __init__(self,value = 0):
-        assert isinstance(value,int)
         self.content = value
 
     def write(self,value):
-        assert isinstance(value,int)
         self.content = value
 
     def read(self):
         return self.content
 
     def increment(self, a = 1):
-        assert isinstance(a,int)
         self.content += a
 
     def decrement(self, b = 1):
-        assert isinstance(b,int)
         self.content -= b
 
 # %% The Heads
@@ -70,7 +76,6 @@ class InstructionPointer:
         return self.value + 1
 
     def set(self,a):
-        assert isinstance(a,int)
         self.value = a
 
 class ReadHead:
@@ -85,7 +90,6 @@ class ReadHead:
         return self.value
 
     def set(self,a):
-        assert isinstance(a,int)
         self.value = a
 
 class WriteHead:
@@ -100,7 +104,6 @@ class WriteHead:
         return self.value
 
     def set(self,a):
-        assert isinstance(a,int)
         self.value = a
 
 class FlowControlHead:
@@ -116,7 +119,6 @@ class FlowControlHead:
 
     def set(self,a):
         self.value = a
-
 
 # %% The Memory
 
@@ -368,13 +370,13 @@ class InstructionRightShift:
         next_ = self.emulator.instruction_memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.instruction_memory.size())
 
         if isinstance(next_, InstructionNopA):
-            self.machine.reg_a.write(self.machine.reg_a.read() >> 1)
+            self.machine.reg_a.write(int(self.machine.reg_a.read()) >> 1)
 
         elif isinstance(next_, InstructionNopC):
-            self.machine.reg_c.write(self.machine.reg_c.read() >> 1)
+            self.machine.reg_c.write(int(self.machine.reg_c.read()) >> 1)
 
         else:
-            self.machine.reg_b.write(self.machine.reg_b.read() >> 1)
+            self.machine.reg_b.write(int(self.machine.reg_b.read()) >> 1)
 
 class InstructionLeftShift:
 
@@ -388,13 +390,13 @@ class InstructionLeftShift:
         next_ = self.emulator.instruction_memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.instruction_memory.size())
 
         if isinstance(next_, InstructionNopA):
-            self.machine.reg_a.write(self.machine.reg_a.read() << 1)
+            self.machine.reg_a.write(int(self.machine.reg_a.read()) << 1)
 
         elif isinstance(next_, InstructionNopC):
-            self.machine.reg_c.write(self.machine.reg_c.read() << 1)
+            self.machine.reg_c.write(int(self.machine.reg_c.read()) << 1)
 
         else:
-            self.machine.reg_b.write(self.machine.reg_b.read() << 1)
+            self.machine.reg_b.write(int(self.machine.reg_b.read()) << 1)
 
 class InstructionInc:
 
@@ -484,7 +486,7 @@ class InstructionNand:
 
         next_ = self.emulator.instruction_memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.instruction_memory.size())
 
-        nand = ~(self.machine.reg_b.read() & self.machine.reg_c.read())
+        nand = ~(np.int(self.machine.reg_b.read()) & np.int(self.machine.reg_c.read()))
 
         if isinstance(next_, InstructionNopA):
             self.machine.reg_a.write(nand)
@@ -566,21 +568,31 @@ class InstructionHDivide:
                     chance = bernoulli.rvs(self.emulator.ins_prob, size=1)
 
                     if chance == 1:
+
                         result.insert(random.randint(0, len(result)), randrange(26))
                     else:
                         pass
-
+                    # TODO : -> change this
+                    # TODO COME UP WITH A BETTER WAY FOR MUTATING!
                     # Deletion mutations
-
                     chance = bernoulli.rvs(self.emulator.del_prob, size=1)
 
                     if chance == 1:
                         del result[random.randint(0, len(result))]
                     else:
                         pass
+                    
+                    # Save old child rate to reset to after division
+                    old_rate = self.emulator.child_rate
+                    
+                    # Update the child rate s.t. it's proportional to its genome length
+                    self.emulator.child_rate *= len(result)
 
                     # Notify the world about the division
                     self.emulator.mediator.notify(sender = self.emulator, event = "division", result = result)
+                    
+                    # Restore child_rate to old_rate
+                    self.emulator.child_rate = old_rate
 
                     # Memory is no longer allocated
                     self.emulator.allocated = False
@@ -588,7 +600,6 @@ class InstructionHDivide:
             # Otherwise, division is ignored
 
             else:
-
                 pass
 
         else:
@@ -980,7 +991,8 @@ class CPUEmulator:
         if not isinstance(p, Program):
             raise NotImplementedError
             print("In Machine.read_program(p), p is not an instance of Program")
-
+        
+        # Instantiate memory, original_memory and instruction_memory
         self.memory = p.instructions.copy()
         self.original_memory = p.instructions.copy()
 

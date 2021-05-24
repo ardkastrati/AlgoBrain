@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="106b4751-9274-4d5b-a34f-ccc09c9c8612" name="Default Changelist" comment="Cells can move around">
-      <change afterPath="$PROJECT_DIR$/src/com/company/logging.config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/company/DigitalOrganism.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/company/DigitalOrganism.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/company/environment.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/company/environment.py" afterDir="false" />
-    </list>
+    <list default="true" id="106b4751-9274-4d5b-a34f-ccc09c9c8612" name="Default Changelist" comment="Cells can move around" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -76,7 +71,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Downloads/AlgoBrain-Framework (1)" />
     <property name="settings.editor.selected.configurable" value="configurable.group.editor" />
   </component>
   <component name="RunManager" selected="Python.environment">
@@ -231,6 +226,7 @@
       <workItem from="1620141245253" duration="2945000" />
       <workItem from="1620203632053" duration="1714000" />
       <workItem from="1620368676454" duration="29416000" />
+      <workItem from="1620501373994" duration="28000" />
     </task>
     <task id="LOCAL-00001" summary="operations work now">
       <created>1620380933288</created>
