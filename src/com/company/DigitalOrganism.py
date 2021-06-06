@@ -4,7 +4,7 @@
 from queue import LifoQueue
 from queue import Queue
 from Mediator import Mediator
-
+import sys
 import numpy as np
 
 # For the probability of random mutations
@@ -162,6 +162,7 @@ class CPU:
 
         self.input_buffer = Queue()
         self.output_buffer = Queue()
+        self.fitness = 100
 
     def clear(self):
 
@@ -586,7 +587,7 @@ class InstructionHDivide:
                     old_rate = self.emulator.child_rate
                     
                     # Update the child rate s.t. it's proportional to its genome length
-                    self.emulator.child_rate *= len(result)
+                    #self.emulator.child_rate *= len(result)
 
                     # Notify the world about the division
                     self.emulator.mediator.notify(sender = self.emulator, event = "division", result = result)
@@ -920,9 +921,12 @@ class InstructionIfLabel:
 class CPUEmulator:
 
     def __init__(self, a = 0, b = 0, c = 0, mutation_prob = 0, ins_prob = 0, del_prob = 0):
-
+        self.kill = False
+        self.deathloop = []
+        self.deathcounter = 0
+        self.death = [0,0,0]
         self.cpu = CPU(a,b,c)
-
+        #multiprocessing.Process(target=CPUEmulator)
         # self.instruction_memory contains the instructions as objects
         self.instruction_memory = Memory()
 
@@ -969,6 +973,15 @@ class CPUEmulator:
         self.fun_nor = False
         self.fun_xor = False
         self.fun_equ = False
+        self.fun_not_2 = False
+        self.fun_nand_2 = False
+        self.fun_and_2 = False
+        self.fun_or_n_2 = False
+        self.fun_or_2 = False
+        self.fun_and_n_2 = False
+        self.fun_nor_2 = False
+        self.fun_xor_2 = False
+        self.fun_equ_2 = False
 
     def clear(self):
 
@@ -1079,15 +1092,60 @@ class CPUEmulator:
     def execute_instruction(self):
 
         self.instr_pointer.set(self.instr_pointer.get() % self.instruction_memory.size())
-
+        #print("instr_pointer",self.instr_pointer.get())
+        #print("size",self.instruction_memory.size())
         ip = self.instr_pointer.get()
 
         self.instruction_memory.get(ip).execute()
 
         self.age += 1
+        if self.age > 40000:
+            self.mediator.notify(sender=self, event="death", result=None)
+
+        #    self.kill = True
+        if(self.age >= 14*self.instruction_memory.size()):
+            if(self.age<=self.instruction_memory.size()+5):
+                self.deathloop.append(self.instr_pointer.get())
+            if(len(self.deathloop)>0):
+                if(self.instr_pointer.get()==0):
+                    pass
+                elif (self.instr_pointer.get() == 1):
+                    pass
+                elif (self.instr_pointer.get() == 2):
+                    pass
+                else:
+                    if(self.age > self.instruction_memory.size()+6):
+                        if(self.deathloop[0]==self.instr_pointer.get()) and self.death[1]==0 & self.death[2]==0:
+                            self.death[0]=1
+                        else:
+                            self.death[0]=0
+                        if(self.death[0]==1):
+                            if (self.deathloop[1] == self.instr_pointer.get()):
+                                self.death[1]=1
+                            else:
+                                self.death[0]=0
+                                self.death[1]=0
+                        if (self.death[1] == 1):
+                            if (self.deathloop[2] == self.instr_pointer.get()):
+                                self.death[2] = 1
+                                self.deathcounter+=1
+                            else:
+                                self.death[0] = 0
+                                self.death[1] = 0
+                                self.death[2] = 0
+                        if self.deathcounter >5:
+                            self.kill = True
+                            #print('killed cell that was in death_loop with age',self.age)
+                            #print("killed endless loop organism")
+                            self.mediator.notify(sender=self, event="death",result = None)
+                #if (self.deathloop[2] == self.instr_pointer.get()):
+                #if (self.deathloop[3] == self.instr_pointer.get()):
 
         if self.instr_pointer.get() == ip:
             self.instr_pointer.increment()
+
+        #print('instr.pointer', self.instr_pointer.get())
+        #print("cpu_position",self.cpu.position)
 
     # Obsolete
     def execute_program(self):
