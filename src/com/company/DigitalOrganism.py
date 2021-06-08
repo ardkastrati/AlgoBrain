@@ -915,16 +915,83 @@ class InstructionIfLabel:
             else:
 
                 self.emulator.instr_pointer.set((temp + len(to_match) + 2) % self.emulator.instruction_memory.size())
+"""
+# %%
+class MoveUp:
+
+    def __init__(self, emulator):
+        self.emulator = emulator
+
+    def execute(self):
+        if self.emulator.cpu.status != 0:
+            pass
+
+        else:
+            self.emulator.mediator.notify(sender=self.emulator, event="Moving", result='up')
+
+
+class MoveLeft:
+
+    def __init__(self, emulator):
+        self.emulator = emulator
+
+    def execute(self):
+        if self.emulator.cpu.status != 0:
+            self.emulator.cpu.partner = 1
+            pass
+        if self.emulator.cpu.partner == 1:
+            pass
+        else:
+            self.emulator.mediator.notify(sender=self.emulator, event="Moving", result='left')
+
+
+class MoveRight:
+    def __init__(self, emulator):
+        self.emulator = emulator
+
+        if self.emulator.cpu.status != 0:
+            self.emulator.cpu.partner = 1
+            pass
+        if self.emulator.cpu.partner == 1:
+            pass
+        else:
+            self.emulator.mediator.notify(sender=self.emulator, event="Moving", result='right')
+
+
+class MoveDown:
+    def __init__(self, emulator):
+        self.emulator = emulator
+
+        if self.emulator.cpu.status != 0:
+            self.emulator.cpu.partner = 1
+            pass
+        if self.emulator.cpu.partner == 1:
+            pass
+        else:
+            self.emulator.mediator.notify(sender=self.emulator, event="Moving", result='down')
+
 
 # %%
 
+class MeetPartner:
+
+    def __init__(self, emulator):
+        self.emulator = emulator
+
+    def execute(self):
+        # self.mediator.notify(sender=self.emualor, event="Partner", result=np.nan)
+        if self.emulator.cpu.partner == 1:
+            self.emulator.mediator.notify(sender=self.emulator, event="Meeting", result="child")
+        else:
+            pass
+            """
 class CPUEmulator:
 
     def __init__(self, a = 0, b = 0, c = 0, mutation_prob = 0, ins_prob = 0, del_prob = 0):
         self.kill = False
         self.deathloop = []
         self.deathcounter = 0
-        self.death = [0,0,0]
+        self.death = [0,0,0,0,0]
         self.cpu = CPU(a,b,c)
         #multiprocessing.Process(target=CPUEmulator)
         # self.instruction_memory contains the instructions as objects
@@ -1092,8 +1159,7 @@ class CPUEmulator:
     def execute_instruction(self):
 
         self.instr_pointer.set(self.instr_pointer.get() % self.instruction_memory.size())
-        #print("instr_pointer",self.instr_pointer.get())
-        #print("size",self.instruction_memory.size())
+
         ip = self.instr_pointer.get()
 
         self.instruction_memory.get(ip).execute()
@@ -1101,8 +1167,10 @@ class CPUEmulator:
         self.age += 1
         if self.age > 40000:
             self.mediator.notify(sender=self, event="death", result=None)
+        # We have many organsims that try to abuse the system by having an endless loop at the end to gain
+        # metabolic rate, when they can't ever reach the replication part again. Therefore we stop them
+        # by killing them, when they start to loop around the same part endlessly
 
-        #    self.kill = True
         if(self.age >= 14*self.instruction_memory.size()):
             if(self.age<=self.instruction_memory.size()+5):
                 self.deathloop.append(self.instr_pointer.get())
@@ -1128,15 +1196,33 @@ class CPUEmulator:
                         if (self.death[1] == 1):
                             if (self.deathloop[2] == self.instr_pointer.get()):
                                 self.death[2] = 1
+                                #self.deathcounter+=1
+                            else:
+                                self.death[0] = 0
+                                self.death[1] = 0
+                                self.death[2] = 0
+                        if (self.death[2] == 1):
+                            if (self.deathloop[3] == self.instr_pointer.get()):
+                                self.death[3] = 1
+                                #self.deathcounter+=1
+                            else:
+                                self.death[0] = 0
+                                self.death[1] = 0
+                                self.death[2] = 0
+                                self.death[3] = 0
+                        if (self.death[3] == 1):
+                            if (self.deathloop[4] == self.instr_pointer.get()):
+                                self.death[4] = 1
                                 self.deathcounter+=1
                             else:
                                 self.death[0] = 0
                                 self.death[1] = 0
                                 self.death[2] = 0
-                        if self.deathcounter >5:
+                                self.death[3] = 0
+                                self.death[4] = 0
+                        if self.deathcounter >20:
                             self.kill = True
-                            #print('killed cell that was in death_loop with age',self.age)
-                            #print("killed endless loop organism")
+
                             self.mediator.notify(sender=self, event="death",result = None)
                 #if (self.deathloop[2] == self.instr_pointer.get()):
                 #if (self.deathloop[3] == self.instr_pointer.get()):
