@@ -242,7 +242,7 @@ class World(Mediator):
         # equal to its memory length
         
         #self.rates[position] = emulator.instruction_memory.size()
-        self.rates[position] = 1#len(program)
+        self.rates[position] = len(program)
         # Pull out the age of the organism
         
         self.ages[position] = emulator.age
@@ -453,9 +453,12 @@ class World(Mediator):
                 #print('nofreespot')
                 for i in range(max(idx0-1, 0), min(idx0+2, width)):
                         for j in range(max(idx1-1, 0), min(idx1+2, height)):
-                            if self.ages[i][j] >= oldest:
-                                    oldest = self.ages[i][j]
-                                    position = (i,j)
+                            if self.ages[i][j]/self.rates[i][j]>oldest:
+                                oldest = self.ages[i][j]/self.rates[i][j]
+                                position = (i,j)
+                            #if self.ages[i][j] >= oldest:
+                            #        oldest = self.ages[i][j]
+                            #        position = (i,j)
 
         # Define kill_oldest replacement strategy as:
         # If there is a free spot in the pool, put child there
@@ -483,15 +486,16 @@ class World(Mediator):
         
         # Update rates
 
-        self.pool.get()[position].fun_not = sender.fun_not_2
-        self.pool.get()[position].fun_nand = sender.fun_nand_2
-        self.pool.get()[position].fun_and = sender.fun_and_2
-        self.pool.get()[position].fun_nor = sender.fun_nor_2
-        self.pool.get()[position].fun_xor = sender.fun_xor_2
-        self.pool.get()[position].fun_equ = sender.fun_equ_2
-        self.pool.get()[position].fun_and_n = sender.fun_and_n_2
-        self.pool.get()[position].fun_or = sender.fun_or_2
-        self.pool.get()[position].fun_or_n = sender.fun_or_n_2
+        self.pool.get()[position].fun_not_2 = sender.fun_not
+        self.pool.get()[position].fun_nand_2 = sender.fun_nand
+        self.pool.get()[position].fun_and_2 = sender.fun_and
+        self.pool.get()[position].fun_nor_2 = sender.fun_nor
+        self.pool.get()[position].fun_xor_2 = sender.fun_xor
+        self.pool.get()[position].fun_equ_2 = sender.fun_equ
+        self.pool.get()[position].fun_and_n_2 = sender.fun_and_n
+        self.pool.get()[position].fun_or_2 = sender.fun_or
+        self.pool.get()[position].fun_or_n_2 = sender.fun_or_n
+        """
         if sender.fun_not != sender.fun_not_2:
             sender.child_rate = sender.child_rate/2
         if sender.fun_nand != sender.fun_nand_2:
@@ -510,6 +514,7 @@ class World(Mediator):
             sender.child_rate = sender.child_rate / 8
         if sender.fun_or_n != sender.fun_or_n_2:
             sender.child_rate = sender.child_rate / 4
+            """
         self.rates[position] = sender.child_rate
         # Set input to none
         self.inputs[position] = (0,0)
@@ -556,11 +561,12 @@ class World(Mediator):
         elif self.inputs[idx0][idx1][0] != 0 and self.inputs[idx0][idx1][1] == 0:
             
             if self.inputs[idx0][idx1][0] == ~result:
-                sender.fun_not_2 = True
+
                 if sender.fun_not == False:
                     sender.fun_not = True
                     sender.child_rate *= 2
-                    self.rates[idx0][idx1] *= 2
+                    if not sender.fun_not_2:
+                        self.rates[idx0][idx1] *= 2
                     # Save input, result and the organism that computed it
                     input_ = self.inputs[idx0][idx1][0]
                     #logger.info('Not on input 1: ~{} = {}'.format(input_, result))
@@ -588,11 +594,12 @@ class World(Mediator):
             # If a NOT was computed
             
             if result == ~self.inputs[idx0][idx1][0]:
-                sender.fun_not_2 = True
+
                 if sender.fun_not == False:
                     sender.fun_not = True
                     sender.child_rate *= 2
-                    self.rates[idx0][idx1] *= 2
+                    if not sender.fun_not_2:
+                        self.rates[idx0][idx1] *= 2
                     # Save input, result and the organism that computed it
                     input_ = self.inputs[idx0][idx1]
                     #logger.info('Not on input 2: ~{} = {}'.format(input_[1], result))
@@ -617,11 +624,12 @@ class World(Mediator):
             
             # If a NAND was computed
             elif result == ~(self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1]) :
-                sender.fun_nand_2 = True
+
                 if sender.fun_nand == False:
                     sender.fun_nand = True
                     sender.child_rate *= 2
-                    self.rates[idx0][idx1] *= 2
+                    if not sender.fun_nand_2:
+                        self.rates[idx0][idx1] *= 2
                     # Save input, result and the organism that computed it
                     input_ = self.inputs[idx0][idx1]
                     #logger.info('NAND : ~({} & {}) = {}'.format(input_[0], input_[1], result))
@@ -645,11 +653,12 @@ class World(Mediator):
                 
             # If an AND was computed
             elif result == self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1] and sender.fun_and == False:
-                sender.fun_and_2 = True
+
                 if sender.fun_and == False:
                     sender.fun_and = True
                     sender.child_rate *= 4
-                    self.rates[idx0][idx1] *= 4
+                    if not sender.fun_and_2:
+                        self.rates[idx0][idx1] *= 4
                     # Save input, result and the organism that computed it
                     input_ = self.inputs[idx0][idx1]
                     #logger.info('AND : {} & {} = {}'.format(input_[0], input_[1], result))
@@ -672,11 +681,12 @@ class World(Mediator):
                 
             # If an OR_N was computed
             elif result == self.inputs[idx0][idx1][0] | ~self.inputs[idx0][idx1][1] or result == ~self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] :
-                sender.fun_or_n_2 = True
+
                 if sender.fun_or_n == False:
                     sender.fun_or_n = True
                     sender.child_rate *= 4
-                    self.rates[idx0][idx1] *= 4
+                    if not sender.fun_or_n_2:
+                        self.rates[idx0][idx1] *= 4
                     input_ = self.inputs[idx0][idx1]
                     if (result == self.inputs[idx0][idx1][0] | ~self.inputs[idx0][idx1][1]):
                         #logger.info('OR_N : {} | ~{} = {}'.format(input_[0], input_[1], result))
@@ -705,11 +715,12 @@ class World(Mediator):
                 
             # If an OR was computed
             elif result == self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] and sender.fun_or == False:
-                sender.fun_or_2 = True
+
                 if sender.fun_or == False:
                     sender.fun_or = True
                     sender.child_rate *= 8
-                    self.rates[idx0][idx1] *= 8
+                    if not sender.fun_or_2:
+                        self.rates[idx0][idx1] *= 8
 
                     input_ = self.inputs[idx0][idx1]
 
@@ -733,11 +744,12 @@ class World(Mediator):
                 
             # If an AND_N was computed
             elif result == self.inputs[idx0][idx1][0] & ~self.inputs[idx0][idx1][1] or result == ~self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1]:
-                sender.fun_and_n_2 = True
+
                 if sender.fun_and_n == False:
                     sender.fun_and_n = True
                     sender.child_rate *= 8
-                    self.rates[idx0][idx1] *= 8
+                    if not  sender.fun_and_n_2:
+                        self.rates[idx0][idx1] *= 8
                     input_ = self.inputs[idx0][idx1]
                     if result == self.inputs[idx0][idx1][0] & ~self.inputs[idx0][idx1][1]:
                         #logger.info('AND_N : {} & ~{} = {}'.format(input_[0], input_[1], result))
@@ -763,11 +775,12 @@ class World(Mediator):
                 
             # If a NOR was computed
             elif result == ~(self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1]):
-                sender.fun_nor_2 = True
+
                 if sender.fun_nor == False:
                     sender.fun_nor = True
                     sender.child_rate *= 16
-                    self.rates[idx0][idx1] *= 16
+                    if sender.fun_nor_2 != True:
+                        self.rates[idx0][idx1] *= 16
                     input_ = self.inputs[idx0][idx1]
 
                     #logger.info('NOR : ~{} & ~{} = {}'.format(input_[0], input_[1], result))
@@ -791,11 +804,12 @@ class World(Mediator):
                 
             # If an XOR was computed:
             elif result == self.inputs[idx0][idx1][0] ^ self.inputs[idx0][idx1][1]:
-                sender.fun_xor_2 = True
+
                 if sender.fun_xor == False:
                     sender.fun_xor = True
                     sender.child_rate *= 16
-                    self.rates[idx0][idx1] *= 16
+                    if not sender.fun_xor_2:
+                        self.rates[idx0][idx1] *= 16
                     # Save input, result and the organism that computed it
                 input_ = self.inputs[idx0][idx1]
                 #logger.info('XOR : {} & ~{} | ~{} & {} = {}'.format(input_[0], input_[1], (input_[0]), input_[1], result))
@@ -818,11 +832,11 @@ class World(Mediator):
                 
             # If EQU was computed:
             elif result == equ(self.inputs[idx0][idx1][0], self.inputs[idx0][idx1][1]):
-                sender.fun_equ_2 = True
                 if sender.fun_equ == False:
                     sender.fun_equ = True
                     sender.child_rate *= 32
-                    self.rates[idx0][idx1] *= 32
+                    if not sender.fun_equ_2:
+                        self.rates[idx0][idx1] *= 32
                 # Save input, result and the organism that computed it
                 input_ = self.inputs[idx0][idx1]
                 #logger.critical('EQU : {} & {} | ~{} & ~{} = {}'.format(input_[0], input_[1], input_[0], input_[1], result))
@@ -944,7 +958,7 @@ class World(Mediator):
                     else:
 
                         self.place_default((i,j))
-                        self.rates[i][j]=1
+                        #self.rates[i][j]= (self.pool.get()[i][j].instruction_memory.size())
             #self.place_def_io((17,13))
         elif organism_type == "default":
             

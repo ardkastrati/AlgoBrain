@@ -587,7 +587,7 @@ class InstructionHDivide:
                     old_rate = self.emulator.child_rate
                     
                     # Update the child rate s.t. it's proportional to its genome length
-                    #self.emulator.child_rate *= len(result)
+                    self.emulator.child_rate *= len(result)
 
                     # Notify the world about the division
                     self.emulator.mediator.notify(sender = self.emulator, event = "division", result = result)
