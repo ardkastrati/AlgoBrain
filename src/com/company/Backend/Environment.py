@@ -619,6 +619,15 @@ class World(Mediator):
                 # If yes, ignore
                 else:
                     pass
+                
+                # Notify the experiment about this event, if the current world is linked to one
+                if self.experiment != None and not self.output:
+                    #print("Notifying experiment of NOT")
+                    self.experiment.notify(sender = sender, event = "not", result = sender.original_memory)
+                    
+                if self.output:
+                    print("Notifying experiment of function_IO")
+                    self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
         
         # If the two most recent inputs aren't none, check whether a function of the two most recent inputs was computed
         elif self.inputs[idx0][idx1][0] != 0 and self.inputs[idx0][idx1][1] != 0:
@@ -644,6 +653,15 @@ class World(Mediator):
                 # If yes, ignore
                 else:
                     pass
+                
+                # Notify the experiment about this event, if the current world is linked to one
+                if self.experiment != None and not self.output:
+                    #print("Notifying experiment of NOT")
+                    self.experiment.notify(sender = sender, event = "not", result = sender.original_memory)
+                    
+                if self.output:
+                    print("Notifying experiment of function_IO")
+                    self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
             
             # If a NAND was computed
             elif result == ~(self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1]):
@@ -667,7 +685,7 @@ class World(Mediator):
                 
                 # Notify the experiment about this event, if the current world is linked to one
                 if self.experiment != None and not self.output:
-                    print("Notifying experiment of NAND")
+                    #print("Notifying experiment of NAND")
                     self.experiment.notify(sender = sender, event = "nand", result = sender.original_memory)
                     
                 if self.output:
@@ -693,6 +711,15 @@ class World(Mediator):
                 # If yes, ignore
                 else:
                     pass
+                
+                # Notify the experiment about this event, if the current world is linked to one
+                if self.experiment != None and not self.output:
+                    #print("Notifying experiment of AND")
+                    self.experiment.notify(sender = sender, event = "and", result = sender.original_memory)
+                    
+                if self.output:
+                    print("Notifying experiment of function_IO")
+                    self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
                 
             # If an OR_N was computed
             elif result == self.inputs[idx0][idx1][0] | ~self.inputs[idx0][idx1][1] or result == ~self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1]:
@@ -733,6 +760,15 @@ class World(Mediator):
                 else:
                     pass
                 
+                # Notify the experiment about this event, if the current world is linked to one
+                if self.experiment != None and not self.output:
+                    #print("Notifying experiment of OR")
+                    self.experiment.notify(sender = sender, event = "or", result = sender.original_memory)
+                    
+                if self.output:
+                    print("Notifying experiment of function_IO")
+                    self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
+                
             # If an AND_N was computed
             elif result == np.uintc(self.inputs[idx0][idx1][0] & ~self.inputs[idx0][idx1][1]) or result == np.uintc(~self.inputs[idx0][idx1][1] & self.inputs[idx0][idx1][0]):
                 
@@ -751,6 +787,15 @@ class World(Mediator):
                 # If yes, ignore
                 else:
                     pass
+                
+                # Notify the experiment about this event, if the current world is linked to one
+                if self.experiment != None and not self.output:
+                    print("Notifying experiment of AND_N")
+                    self.experiment.notify(sender = sender, event = "and_n", result = sender.original_memory)
+                    
+                if self.output:
+                    print("Notifying experiment of function_IO")
+                    self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
                 
             # If a NOR was computed
             elif result == ~(self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1]):
@@ -966,6 +1011,11 @@ class World(Mediator):
             for i in range(self.pool.shape[0]):
                 for j in range(self.pool.shape[1]):
                     self.place_default((i,j))
+                    
+        elif type(organism_type) == list:
+            for i in range(self.pool.shape[0]):
+                for j in range(self.pool.shape[1]):
+                    self.place_custom(organism_type,(i,j))
     
     # Find the minimum genome length present in the pool
     def shortest_genome(self):
