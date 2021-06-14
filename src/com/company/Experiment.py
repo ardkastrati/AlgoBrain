@@ -2,7 +2,7 @@
     
 # Add Backend to path
 import sys
-sys.path.append('C:/Users/Aleksandar/Documents/GitHub/AlgoBrain/src/com/company/Backend')
+sys.path.append('C:/Users/eeveetza/Documents/GitHub/AlgoBrain/src/com/company/Backend')
 
 from Environment import World
 from Mediator import Mediator
@@ -10,7 +10,7 @@ from Mediator import Mediator
 #%%
 class Experiment(Mediator):
     
-    def __init__(self, start_organism = "default", target_function = "nand", N=30, notify_ = False):
+    def __init__(self, start_organism = "default", target_function = "nand", N=30,cm_prob = 0.05, ins_prob = 0.05, del_prob = 0.05, notify_ = False):
         
         # Define the organism that we start with
         self.start_organism = start_organism
@@ -22,7 +22,7 @@ class Experiment(Mediator):
         self.first_specimen = None
         
         # The World in which everything happens
-        self.world = World(N, cm_prob = 0.05, notify_= notify_)
+        self.world = World(N, cm_prob = cm_prob, ins_prob = ins_prob, del_prob = del_prob, notify_= notify_)
         
         # Set self as the world's linked experiment
         self.world.experiment = self
@@ -53,6 +53,9 @@ class Experiment(Mediator):
             
         elif self.start_organism == "and_n":
             self.world.fill([10, 20, 2, 0, 21, 2, 13, 9, 13, 7, 13, 3, 23, 17, 7, 3, 7, 15, 20, 17, 22, 9, 18, 2, 0, 14, 2, 1, 18, 15, 15, 16, 0, 13, 7, 9, 2, 18, 17, 20, 3, 1, 19, 25, 2, 0, 17, 21, 0, 1])
+            
+        elif self.start_organism == "nor":
+            self.world.fill([10, 20, 2, 0, 21, 2, 13, 9, 13, 7, 13, 3, 23, 17, 7, 3, 7, 15, 20, 17, 22, 9, 18, 2, 12, 14, 2, 1, 18, 15, 11, 16, 0, 13, 7, 9, 2, 18, 17, 20, 3, 19, 19, 25, 2, 0, 17, 21, 0, 1])
             
     # Experiment, just like World, implements the mediator interface
     # In this case, the mediator is used so that the world can notify the
@@ -200,6 +203,46 @@ class Experiment(Mediator):
                 print(i0,i1,out)
             
                 if out == i0 & ~i1 or out == ~i0 & i1:
+                    self.counter += 1
+                    print("Test passed")
+                
+                else:
+                    self.first_specimen = None
+                    self.flagged = sender.original_memory
+                    self.counter = 0
+                    print("Test failed")
+                    
+            elif self.target_function == "nor":
+                
+                print("Reacting on IO")
+            
+                i0 = result[0]
+                i1 = result[1]
+                out = result[2]
+            
+                print(i0,i1,out)
+            
+                if out == ~i0 & ~i1:
+                    self.counter += 1
+                    print("Test passed")
+                
+                else:
+                    self.first_specimen = None
+                    self.flagged = sender.original_memory
+                    self.counter = 0
+                    print("Test failed")
+                    
+            elif self.target_function == "xor":
+                
+                print("Reacting on IO")
+            
+                i0 = result[0]
+                i1 = result[1]
+                out = result[2]
+            
+                print(i0,i1,out)
+            
+                if out == (~i0 & i1) | (i0 & ~i1):
                     self.counter += 1
                     print("Test passed")
                 

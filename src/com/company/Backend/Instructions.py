@@ -399,7 +399,11 @@ class InstructionHDivide:
                 # Parent or offspring remain with fewer than 10 instructions
                 # <70% of the parent was executed
                 # <70% of the memory allocated for the child was copied into
-                if len(original) < 10 or len(result) < 10 or (self.emulator.instr_pointer.get() % self.emulator.instruction_memory.size())/self.emulator.instruction_memory.size() < 0.7 or len(result) < 0.7 * self.emulator.instruction_memory.size():
+                # The resulting organism wouldn't be able to divide
+                if len(original) < 10 or len(result) < 10 or\
+                    (self.emulator.instr_pointer.get() % self.emulator.instruction_memory.size())/self.emulator.instruction_memory.size() < 0.7 or\
+                    len(result) < 0.7 * self.emulator.instruction_memory.size() or\
+                        not 17 in result:
                     
                     pass
 

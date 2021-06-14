@@ -520,8 +520,10 @@ class World(Mediator):
         # Link self as the new emulator's mediator
         emulator.mediator = self
         
-        # Set the copy mutation probability as defined in the world
+        # Set the mutation probabilities as defined in the world
         emulator.mutation_prob = self.cm_prob
+        emulator.ins_prob = self.ins_prob
+        emulator.del_prob = self.del_prob
         
         # Default replacement strategy
         # Look for free spots in the 1-hop neighborhood of the parent
@@ -790,7 +792,7 @@ class World(Mediator):
                 
                 # Notify the experiment about this event, if the current world is linked to one
                 if self.experiment != None and not self.output:
-                    print("Notifying experiment of AND_N")
+                    #print("Notifying experiment of AND_N")
                     self.experiment.notify(sender = sender, event = "and_n", result = sender.original_memory)
                     
                 if self.output:
@@ -816,6 +818,15 @@ class World(Mediator):
                 else:
                     pass
                 
+                # Notify the experiment about this event, if the current world is linked to one
+                if self.experiment != None and not self.output:
+                    #print("Notifying experiment of NOR")
+                    self.experiment.notify(sender = sender, event = "nor", result = sender.original_memory)
+                    
+                if self.output:
+                    print("Notifying experiment of function_IO")
+                    self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
+                
             # If an XOR was computed:
             #elif result == self.inputs[idx0][idx1][0] ^ self.inputs[idx0][idx1][1]:
             elif result == ((self.inputs[idx0][idx1][0] & ~self.inputs[idx0][idx1][1]) | (~self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1])):
@@ -836,6 +847,15 @@ class World(Mediator):
                 # If yes, ignore
                 else:
                     pass
+                
+                # Notify the experiment about this event, if the current world is linked to one
+                if self.experiment != None and not self.output:
+                    print("Notifying experiment of XOR")
+                    self.experiment.notify(sender = sender, event = "xor", result = sender.original_memory)
+                    
+                if self.output:
+                    print("Notifying experiment of function_IO")
+                    self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
                 
             # If EQU was computed:
             elif result == equ(self.inputs[idx0][idx1][0], self.inputs[idx0][idx1][1]):
