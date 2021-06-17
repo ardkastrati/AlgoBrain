@@ -98,7 +98,7 @@ class Experiment(Mediator):
             print("Scheduled test world")
             test_world.schedule(5000)
             
-            if self.flagged == sender.original_memory or self.counter < 5:
+            if self.flagged == sender.original_memory or self.counter < 4:
                 self.first_specimen = None
             else:
                 self.first_specimen = sender.original_memory
@@ -122,20 +122,17 @@ class Experiment(Mediator):
                 out = result[2]
             
                 print(i0,i1,out)
-            
-            
+
                 if out == ~(i0 & i1):
+                    self.counter += 1
                     print("Test passed")
-                    if self.first_specimen == None:
-                        self.first_specimen = sender.original_memory
-                    else:
-                        pass
                 
                 # If an organism that reported NAND failed even a single one of these tests the sender gets flagged
                 # and isn't allowed to be tested any longer
                 else:
                     self.first_specimen = None
                     self.flagged = sender.original_memory
+                    self.counter = 0
                     print("Test failed")
                     
             elif self.target_function == "not":
@@ -304,6 +301,7 @@ class Experiment(Mediator):
                 print("Min Length: " + str(self.min_len()))
                 print("Max Length: " + str(self.max_len()))
                 print("Mean Length: " + str(self.mean_len()))
+                print(self.world.rates)
                 i = 0
                 
             

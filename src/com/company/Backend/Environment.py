@@ -71,10 +71,9 @@ class World(Mediator):
     
     # Ages keeps track of the ages of the organisms in the corresponding location
     
-    
     # Default copy mutation probability is 0.0025
     
-    def __init__(self, N, replacement_strategy = "neighborhood", cm_prob = 0.0025, ins_prob = 0.05, del_prob = 0.05, notify_ = False, log_division = False, log_functions = False):
+    def __init__(self, N, replacement_strategy = "ratio", cm_prob = 0.0025, ins_prob = 0.05, del_prob = 0.05, notify_ = False, log_division = False, log_functions = False):
 
         # Pool() will contain the set of CPUEmulators.
         self.pool = Pool(N)
@@ -496,103 +495,182 @@ class World(Mediator):
     
     def react_on_division(self, sender, result):
         
-        # Find out where the sender is at
-        idx0 = np.where(self.pool.get() == sender)[0][0]
-        idx1 = np.where(self.pool.get() == sender)[1][0]
+        # No division allowed in a 1x1 size pool
+        if self.pool.shape == (1,1):
+            pass
         
-        # Log the division:
-        """
-        if self.log_division:
-            self.divisionLogger.info('\n Parent: {} \n Child: \n {}'.format(sender.original_memory, result))
-        """
+        else:
         
-        #divLog.info('{}\n{}\n'.format(sender.original_memory, result))
-        # The organism, upon valid division, notifies the world of it using
-        # self.mediator.notify(sender = self, event = "division", result = result)
+            # Find out where the sender is at
+            idx0 = np.where(self.pool.get() == sender)[0][0]
+            idx1 = np.where(self.pool.get() == sender)[1][0]
+        
+            # Log the division:
+            """
+                if self.log_division:
+                self.divisionLogger.info('\n Parent: {} \n Child: \n {}'.format(sender.original_memory, result))
+            """
+        
+            #divLog.info('{}\n{}\n'.format(sender.original_memory, result))
+            # The organism, upon valid division, notifies the world of it using
+            # self.mediator.notify(sender = self, event = "division", result = result)
 
-        # Create a program from the result passed from the organism which underwent division
-        program = DO.Program(result)
+            # Create a program from the result passed from the organism which underwent division
+            program = DO.Program(result)
         
-        # Create a new emulator and load the resulting program in it
-        emulator = DO.CPUEmulator()
-        emulator.load_program(program)
+            # Create a new emulator and load the resulting program in it
+            emulator = DO.CPUEmulator()
+            emulator.load_program(program)
         
-        # Link self as the new emulator's mediator
-        emulator.mediator = self
+            # Link self as the new emulator's mediator
+            emulator.mediator = self
         
-        # Set the mutation probabilities as defined in the world
-        emulator.mutation_prob = self.cm_prob
-        emulator.ins_prob = self.ins_prob
-        emulator.del_prob = self.del_prob
+            # Set the mutation probabilities as defined in the world
+            emulator.mutation_prob = self.cm_prob
+            emulator.ins_prob = self.ins_prob
+            emulator.del_prob = self.del_prob
         
-        # The child inherits the ancestor from its parent
-        emulator.ancestor = sender.ancestor.copy()
+            # The child inherits the ancestor from its parent
+            emulator.ancestor = sender.ancestor.copy()
         
-        # The mutations which resulted in the child:
-        emulator.mutations = sender.mutations + sender.child_mutations
-        
-        # Default replacement strategy
-        # Look for free spots in the 1-hop neighborhood of the parent
-        # If there is a free spot, put the offspring into any such spot
-        # If not, kill the oldest organism in the neighborhood and put offspring there
-        # Note that the oldest organism in the neighborhood may be the parent itself
-        if self.replacement_strategy == "neighborhood":
+            # The mutations which resulted in the child:
+            emulator.mutations = sender.mutations + sender.child_mutations
             
-            width = self.pool.shape[0]
-            height = self.pool.shape[1]
+            # Default replacement strategy
+            # Look for free spots in the 1-hop neighborhood of the parent
+            # If there is a free spot, put the offspring into any such spot
+            # If not, kill the oldest organism in the neighborhood and put offspring there
+            # Note that the oldest organism in the neighborhood may be the parent itself
+            if self.replacement_strategy == "neighborhood":
             
-            # The neighborhood of the cell:
-            # Iterate over rows max(idx0-1,0) idx0, min(idx0+1, pool height - 1)
-            # Iterate over columns max(idx1-1,0), idx1, min(idx1 + 1, pool width - 1)
+                width = self.pool.shape[0]
+                height = self.pool.shape[1]
             
-            # Breaking out of nested loops: 
-            # https://stackoverflow.com/questions/653509/breaking-out-of-nested-loops
+                # The neighborhood of the cell:
+                # Iterate over rows max(idx0-1,0) idx0, min(idx0+1, pool height - 1)
+                # Iterate over columns max(idx1-1,0), idx1, min(idx1 + 1, pool width - 1)
             
-            position = None
-            oldest = 0
+                # Breaking out of nested loops: 
+                # https://stackoverflow.com/questions/653509/breaking-out-of-nested-loops
             
-            # Looking for a free position and simultaneously checking which organism
-            # in the neighborhood is the oldest one
-            try:
-                for i in range(max(idx0-1, 0), min(idx0+2, width)):
-                    for j in range(max(idx1-1, 0), min(idx1+2, height)):
-                        if self.pool.get()[i][j] == 0:
-                            position = (i,j)
-                            raise BreakIt
-                        if self.ages[i][j] >= oldest:
-                                    oldest = self.ages[i][j]
+                position = None
+                oldest = 0
+            
+                # Looking for a free position and simultaneously checking which organism
+                # in the neighborhood is the oldest one
+                try:
+                    for i in range(max(idx0-1, 0), min(idx0+2, width)):
+                        for j in range(max(idx1-1, 0), min(idx1+2, height)):
+                            # No suicides!
+                            if i == idx0 and j == idx1:
+                                pass
+                            else:
+                                if self.pool.get()[i][j] == 0:
                                     position = (i,j)
-            except BreakIt:
-                pass
+                                    raise BreakIt
+                                elif self.ages[i][j] >= oldest:
+                                    oldest = self.ages[i][j]
+                                    position = (i,j)                          
+                except BreakIt:
+                    pass
 
-        # Define kill_oldest replacement strategy as:
-        # If there is a free spot in the pool, put child there
-        # Otherwise, kill oldest organism in the pool and put child there
+            # Define kill_oldest replacement strategy as:
+            # If there is a free spot in the pool, put child there
+            # Otherwise, kill oldest organism in the pool and put child there
         
-        elif self.replacement_strategy == "kill_oldest":
+            elif self.replacement_strategy == "kill_oldest":
             
-            # If there is a free spot put the cell there
-            if 0 in self.pool.get():
+                # If there is a free spot put the cell there
+                if 0 in self.pool.get():
             
-                i0 = np.where(self.pool.get() == 0)[0][0]
-                i1 = np.where(self.pool.get() == 0)[1][0]
-                position = (i0, i1)
+                    i0 = np.where(self.pool.get() == 0)[0][0]
+                    i1 = np.where(self.pool.get() == 0)[1][0]
+                    position = (i0, i1)
         
-            else:
+                else:
             
-                position = self.oldest_position()               
+                    position = self.oldest_position()      
+                
+            # This replacement strategy kills the neighboring organism with the lowest rate        
+            elif self.replacement_strategy == "rates":
             
-        # Put the created emulator in the found position
-        self.pool.put(emulator, position)
+                width = self.pool.shape[0]
+                height = self.pool.shape[1]
+            
+                # The neighborhood of the cell:
+                # Iterate over rows max(idx0-1,0) idx0, min(idx0+1, pool height - 1)
+                # Iterate over columns max(idx1-1,0), idx1, min(idx1 + 1, pool width - 1)
+            
+                # Breaking out of nested loops: 
+                # https://stackoverflow.com/questions/653509/breaking-out-of-nested-loops
+            
+                position = None
+                weakest = np.max(self.rates)
+            
+                # Looking for a free position and simultaneously checking which organism
+                # in the neighborhood is the weakest one
+                try:
+                    for i in range(max(idx0-1, 0), min(idx0+2, width)):
+                        for j in range(max(idx1-1, 0), min(idx1+2, height)):
+                            # No suicides!
+                            if i == idx0 and j == idx1:
+                                pass
+                            else:
+                                if self.pool.get()[i][j] == 0:
+                                    position = (i,j)
+                                    raise BreakIt
+                                elif self.rates[i][j] <= weakest:
+                                    weakest = self.rates[i][j]
+                                    position = (i,j)                          
+                except BreakIt:
+                    pass
+                
+            # This replacement strategy kills the neighboring organism with the
+            # highest age/rate ratio
+            elif self.replacement_strategy == "ratio":
+            
+                width = self.pool.shape[0]
+                height = self.pool.shape[1]
+            
+                # The neighborhood of the cell:
+                # Iterate over rows max(idx0-1,0) idx0, min(idx0+1, pool height - 1)
+                # Iterate over columns max(idx1-1,0), idx1, min(idx1 + 1, pool width - 1)
+            
+                # Breaking out of nested loops: 
+                # https://stackoverflow.com/questions/653509/breaking-out-of-nested-loops
+            
+                position = None
+                weakest = 0
+            
+                # Looking for a free position and simultaneously checking which organism
+                # in the neighborhood is the weakest one
+                try:
+                    for i in range(max(idx0-1, 0), min(idx0+2, width)):
+                        for j in range(max(idx1-1, 0), min(idx1+2, height)):
+                            # No suicides!
+                            if i == idx0 and j == idx1:
+                                pass
+                            else:
+                                if self.pool.get()[i][j] == 0:
+                                    position = (i,j)
+                                    raise BreakIt
+                                elif self.ages[i][j]/self.rates[i][j] >= weakest:
+                                    weakest = self.ages[i][j]/(1.5*self.rates[i][j])
+                                    position = (i,j)                          
+                except BreakIt:
+                    pass
+            
+            # Put the created emulator in the found position
+            self.pool.put(emulator, position)
         
-        # Put age 0 in the correct position
-        self.ages[position] = 0
+            # Put age 0 in the correct position
+            self.ages[position] = 0
         
-        # Update rates
-        self.rates[position] = sender.child_rate
+            # Update rates
+            self.rates[position] = sender.child_rate
         
-        # Set input to none
-        self.inputs[position] = (0,0)
+            # Set input to none
+            self.inputs[position] = (0,0)
 
     # Here how the world reacts upon an IO operation        
 
@@ -973,7 +1051,7 @@ class World(Mediator):
         # equal to its memory length
         
         #self.rates[position] = len(emulator.original_memory)
-        self.rates[position] = (len(emulator.original_memory)/10)**3
+        self.rates[position] = len(emulator.original_memory)
         
         # Pull out the age of the organism
         

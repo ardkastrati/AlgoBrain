@@ -390,7 +390,7 @@ class InstructionHDivide:
                 # The resulting organism wouldn't be able to divide
                 if len(original) < 10 or len(result) < 10 or\
                     (self.emulator.instr_pointer.get() % self.emulator.instruction_memory.size())/self.emulator.instruction_memory.size() < 0.7 or\
-                    len(result) < 0.85 * len(original):
+                    len(result) < len(original):
                         # or not 17 in result or 17 not in original:
                     
                     pass
@@ -435,7 +435,7 @@ class InstructionHDivide:
                     
                     # Update the child rate s.t. it's proportional to its genome length
                     #self.emulator.child_rate *= len(result)
-                    self.emulator.child_rate *= (len(result)/10)**3
+                    self.emulator.child_rate *= len(result)
 
                     # Notify the world about the division
                     self.emulator.mediator.notify(sender = self.emulator, event = "division", result = result)
