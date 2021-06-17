@@ -7,6 +7,25 @@ import numpy as np
 
 from Instructions import *
 from Hardware import *
+
+# %% The Program Class
+
+class Program:
+
+    # A class for AVIDA programs
+    # A list of any size, the only restriction is that the elements must be integers in {0,1,...,25}
+
+    def check_validity(self, instr_list):
+
+        for instruction in instr_list:
+            assert instruction in range(31)
+
+    def __init__(self, instr_list):
+
+        self.check_validity(instr_list)
+
+        self.instructions = instr_list
+        
 #%%
 
 # We get overflow errors sometimes but for our purposes this is absolutely fine
@@ -59,7 +78,8 @@ class CPUEmulator:
         self.del_prob = del_prob
 
         self.child_rate = 1
-
+        
+        # Indicators for which boolean functions the organism can compute
         self.fun_not = False
         self.fun_nand = False
         self.fun_and = False
@@ -79,6 +99,15 @@ class CPUEmulator:
                                 InstructionHCopy(self),InstructionHSearch(self),InstructionMovHead(self),InstructionJmpHead(self),\
                                 InstructionGetHead(self),InstructionSetFlow(self),InstructionIfLabel(self),InstructionConsume(self),\
                                 InstructionMoveUp(self),InstructionMoveDown(self),InstructionMoveLeft(self),InstructionMoveRight(self)]
+            
+        # Helper attributes for tracking the lineage of an organism
+        self.ancestor = None
+        
+        # The cumulated mutations which resulted in the current organism, starting from the ancestor
+        self.mutations = []
+        
+        # The mutations which, when applied on current program, result in the child
+        self.child_mutations = []
 
     def clear(self):
 
@@ -98,9 +127,11 @@ class CPUEmulator:
         self.clear()
 
         # Check if what we're trying to read is an instance od type "Program"
+        """
         if not isinstance(p, Program):
             raise NotImplementedError
             print("In Machine.read_program(p), p is not an instance of Program")
+        """
         
         # Instantiate memory, original_memory and instruction_memory
         self.memory = p.instructions.copy()
@@ -121,25 +152,9 @@ class CPUEmulator:
 
         self.age += 1
         
-        """
+
         if self.instr_pointer.get() == ip:
                 self.instr_pointer.increment()
-            
-        """
-        
-        if self.instr_pointer.get() == ip:
-            
-            memsize =  len(self.memory)
-            
-            start = (ip + 1) % memsize
-            for i in range(len(self.memory)):
-                
-                instr = self.memory[(start + i) % memsize]
-                
-                if instr > 2:
-                    self.instr_pointer.set((start + i) % memsize)
-                    break
-
 
     # Obsolete
     def execute_program(self):

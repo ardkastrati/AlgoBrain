@@ -388,10 +388,10 @@ class InstructionHDivide:
                 # <70% of the parent was executed
                 # <70% of the memory allocated for the child was copied into
                 # The resulting organism wouldn't be able to divide
-                if len(original) < 10 or len(result) < 10 or\
+                if len(original) < 10 or len(result) < 40 or\
                     (self.emulator.instr_pointer.get() % self.emulator.instruction_memory.size())/self.emulator.instruction_memory.size() < 0.7 or\
-                    len(result) < 0.7 * self.emulator.instruction_memory.size() or\
-                        not 17 in result or 17 not in original:
+                    len(result) < 0.7 * self.emulator.instruction_memory.size():
+                        # or not 17 in result or 17 not in original:
                     
                     pass
 
@@ -405,20 +405,28 @@ class InstructionHDivide:
 
                     # Fully reset the state of the emulator (except age)
                     self.emulator.load_program(Program(original))
+                    
+                    mutated = False
 
                     # Insertion mutations
                     chance = bernoulli.rvs(self.emulator.ins_prob, size=1)
 
                     if chance == 1:
-                        result.insert(random.randint(0, len(result)), randrange(26))
+                        location = random.randint(0, len(result))
+                        insertion =  randrange(26)
+                        result.insert(location, insertion)
+                        self.emulator.child_mutations.append(["I",location,insertion])
+                        mutated = True
                     else:
                         pass
 
                     # Deletion mutations
                     chance = bernoulli.rvs(self.emulator.del_prob, size=1)
 
-                    if chance == 1:
-                        del result[random.randint(0, len(result))]
+                    if chance == 1 and not mutated:
+                        location = random.randint(0, len(result))
+                        self.emulator.child_mutations.append(["D", location])
+                        del result[location]
                     else:
                         pass
                     
@@ -436,6 +444,9 @@ class InstructionHDivide:
 
                     # Memory is no longer allocated
                     self.emulator.allocated = False
+                    
+                    # Reset child_mutations to an empty list
+                    self.child_mutations = []
 
             # Otherwise, division is ignored
 
@@ -493,6 +504,7 @@ class InstructionHCopy:
         self.emulator = emulator
 
     def execute(self):
+ 
         # To even start copying, we need to make sure that memory was allocated
         # and that the read and write heads aren't pointing to some random invalid positions
         if not self.emulator.allocated:
@@ -510,11 +522,13 @@ class InstructionHCopy:
             rh = self.emulator.read_head.get()
 
             if rh < len(self.emulator.original_memory) and wh < len(self.emulator.memory) and wh >= 0 and rh >= 0:
-
+                
                 chance = bernoulli.rvs(self.emulator.mutation_prob, size=1)
 
                 if chance == 1:
+                    location = self.emulator.read_head.get()
                     temp = randrange(26)
+                    self.emulator.child_mutations.append(["C", location, temp])
                 else:
                     temp = self.emulator.original_memory[self.emulator.read_head.get()]
 
@@ -541,7 +555,7 @@ class InstructionHSearch:
         self.emulator = emulator
 
     def execute(self):
-        
+
         # We will search in the circular memory until the position where the instruction is at.
         end_search_index = self.emulator.instr_pointer.get() % self.emulator.instruction_memory.size()
 

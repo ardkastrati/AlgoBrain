@@ -8,12 +8,12 @@ import numpy as np
 import DigitalOrganism as DO
 from Mediator import Mediator
 
-divLog = logging.getLogger("Division Logger")
-divLog.setLevel(logging.DEBUG)
-divForm = logging.Formatter('%(message)s')
-divHandler = logging.FileHandler("divlog2.log")
-divHandler.setFormatter(divForm)
-divLog.addHandler(divHandler)
+#divLog = logging.getLogger("Division Logger")
+#divLog.setLevel(logging.DEBUG)
+#divForm = logging.Formatter('%(message)s')
+#divHandler = logging.FileHandler("divlog2.log")
+#divHandler.setFormatter(divForm)
+#divLog.addHandler(divHandler)
 
 #%%
 
@@ -506,7 +506,7 @@ class World(Mediator):
             self.divisionLogger.info('\n Parent: {} \n Child: \n {}'.format(sender.original_memory, result))
         """
         
-        divLog.info('{}\n{}\n'.format(sender.original_memory, result))
+        #divLog.info('{}\n{}\n'.format(sender.original_memory, result))
         # The organism, upon valid division, notifies the world of it using
         # self.mediator.notify(sender = self, event = "division", result = result)
 
@@ -524,6 +524,12 @@ class World(Mediator):
         emulator.mutation_prob = self.cm_prob
         emulator.ins_prob = self.ins_prob
         emulator.del_prob = self.del_prob
+        
+        # The child inherits the ancestor from its parent
+        emulator.ancestor = sender.ancestor.copy()
+        
+        # The mutations which resulted in the child:
+        emulator.mutations = sender.mutations + sender.child_mutations
         
         # Default replacement strategy
         # Look for free spots in the 1-hop neighborhood of the parent
@@ -932,6 +938,10 @@ class World(Mediator):
         
         # Load self as the emulator's mediator
         emulator.mediator = self
+        
+        # Initialize the ancestor. It is the organism itself. All of its children
+        # will inherit this attribute
+        emulator.ancestor = program
         
         # Set the copy mutation probability as defined in the world
         emulator.mutation_prob = self.cm_prob
