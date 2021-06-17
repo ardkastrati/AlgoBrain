@@ -57,6 +57,9 @@ class Experiment(Mediator):
         elif self.start_organism == "nor":
             self.world.fill([10, 20, 2, 0, 21, 2, 13, 9, 13, 7, 13, 3, 23, 17, 7, 3, 7, 15, 20, 17, 22, 9, 18, 2, 12, 14, 2, 1, 18, 15, 11, 16, 0, 13, 7, 9, 2, 18, 17, 20, 3, 19, 19, 25, 2, 0, 17, 21, 0, 1])
             
+        elif type(self.start_organism) == list:
+            self.world.fill(start_organism)
+            
     # Experiment, just like World, implements the mediator interface
     # In this case, the mediator is used so that the world can notify the
     # current experiment of any important results
@@ -91,7 +94,8 @@ class Experiment(Mediator):
         
             test_world.experiment = self
             test_world.output = True
-        
+            
+            print("Scheduled test world")
             test_world.schedule(5000)
             
             if self.flagged == sender.original_memory or self.counter < 5:
@@ -145,11 +149,13 @@ class Experiment(Mediator):
                 print(i0,i1,out)
             
                 if out == ~i0:
+                    self.counter += 1
                     print("Test passed")
                 
                 else:
                     self.first_specimen = None
                     self.flagged = sender.original_memory
+                    self.counter = 0
                     print("Test failed")
                     
             elif self.target_function == "and":
@@ -304,6 +310,7 @@ class Experiment(Mediator):
     def min_len(self):
     
         len_ = 100000
+        position = None
     
         for i in range(self.world.pool.shape[0]):
             for j in range(self.world.pool.shape[1]):
@@ -312,12 +319,14 @@ class Experiment(Mediator):
                 else:
                     if len(self.world.pool.get((i,j)).original_memory) < len_:
                         len_ = len(self.world.pool.get((i,j)).original_memory)
+                        position = (i,j)
                         
-        return len_
+        return len_, position
     
     def max_len(self):
     
         len_ = -1
+        position = None
     
         for i in range(self.world.pool.shape[0]):
             for j in range(self.world.pool.shape[1]):
@@ -326,8 +335,9 @@ class Experiment(Mediator):
                 else:
                     if len(self.world.pool.get((i,j)).original_memory) > len_:
                         len_ = len(self.world.pool.get((i,j)).original_memory)
+                        position = (i,j)
                         
-        return len_
+        return len_, position
     
     def mean_len(self):
     

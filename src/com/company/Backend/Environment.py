@@ -941,7 +941,7 @@ class World(Mediator):
         
         # Initialize the ancestor. It is the organism itself. All of its children
         # will inherit this attribute
-        emulator.ancestor = program
+        emulator.ancestor = program.copy()
         
         # Set the copy mutation probability as defined in the world
         emulator.mutation_prob = self.cm_prob
@@ -972,7 +972,8 @@ class World(Mediator):
         # Per default, upon any organism instantiation, the metabolic rate is
         # equal to its memory length
         
-        self.rates[position] = len(emulator.original_memory)
+        #self.rates[position] = len(emulator.original_memory)
+        self.rates[position] = (len(emulator.original_memory)/10)**3
         
         # Pull out the age of the organism
         
