@@ -22,9 +22,6 @@ class Program:
         self.check_validity(instr_list)
 
         self.instructions = instr_list
-
-
-
 # %% The Vanilla Instructions
 
 # An implementation of the default AVIDA instruction set
@@ -379,21 +376,12 @@ class InstructionHDivide:
             wh = self.emulator.write_head.get()
 
             if rh < wh:
+            
+                #result = self.emulator.memory[rh:wh]
+                result = self.emulator.copied
 
-                """
-                result = []
-                
-                iterator = self.emulator.read_head.get()
-
-                
-                while iterator < min(len(self.emulator.program),self.emulator.write_head.get()):
-                    result.append(self.emulator.program[iterator])
-                    iterator += 1
-                """
-
-                result = self.emulator.memory[rh:wh]
-
-                original = self.emulator.memory[:rh]
+                #original = self.emulator.memory[:rh]
+                original = self.emulator.original_memory
 
                 # Conditions under which H-Divide fails:
                 # Parent or offspring remain with fewer than 10 instructions
@@ -403,14 +391,14 @@ class InstructionHDivide:
                 if len(original) < 10 or len(result) < 10 or\
                     (self.emulator.instr_pointer.get() % self.emulator.instruction_memory.size())/self.emulator.instruction_memory.size() < 0.7 or\
                     len(result) < 0.7 * self.emulator.instruction_memory.size() or\
-                        not 17 in result:
+                        not 17 in result or 17 not in original:
                     
                     pass
 
                 else:
                     
                     # Check whether program length has changed
-                    if len(original) != len(self.emulator.memory):
+                    if len(original) != len(self.emulator.original_memory):
                         
                         # If it has, notify World about this such that the rate is adjusted accordingly
                         self.emulator.mediator.notify(sender = self.emulator, event = "len_change", result = len(original))

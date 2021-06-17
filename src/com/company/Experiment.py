@@ -251,6 +251,26 @@ class Experiment(Mediator):
                     self.flagged = sender.original_memory
                     self.counter = 0
                     print("Test failed")
+                    
+            elif self.target_function == "equ":
+                
+                print("Reacting on IO")
+            
+                i0 = result[0]
+                i1 = result[1]
+                out = result[2]
+            
+                print(i0,i1,out)
+            
+                if out == (i0 & i1) | (~i0 & ~i1):
+                    self.counter += 1
+                    print("Test passed")
+                
+                else:
+                    self.first_specimen = None
+                    self.flagged = sender.original_memory
+                    self.counter = 0
+                    print("Test failed")
                 
                     
     def test(self, n = 3000):
@@ -269,5 +289,57 @@ class Experiment(Mediator):
     # If we have correctly evolved such a function, the first_specimen attribute will no longer be None
     def run(self):
         
+        i = 0
         while self.first_specimen == None:
             self.world.schedule(1)
+            i += 1
+            
+            if i == 1000:
+                print("Min Length: " + str(self.min_len()))
+                print("Max Length: " + str(self.max_len()))
+                print("Mean Length: " + str(self.mean_len()))
+                i = 0
+                
+            
+    def min_len(self):
+    
+        len_ = 100000
+    
+        for i in range(self.world.pool.shape[0]):
+            for j in range(self.world.pool.shape[1]):
+                if self.world.pool.get((i,j)) == 0:
+                    pass
+                else:
+                    if len(self.world.pool.get((i,j)).original_memory) < len_:
+                        len_ = len(self.world.pool.get((i,j)).original_memory)
+                        
+        return len_
+    
+    def max_len(self):
+    
+        len_ = -1
+    
+        for i in range(self.world.pool.shape[0]):
+            for j in range(self.world.pool.shape[1]):
+                if self.world.pool.get((i,j)) == 0:
+                    pass
+                else:
+                    if len(self.world.pool.get((i,j)).original_memory) > len_:
+                        len_ = len(self.world.pool.get((i,j)).original_memory)
+                        
+        return len_
+    
+    def mean_len(self):
+    
+        sum_ = 0
+        count = 0
+    
+        for i in range(self.world.pool.shape[0]):
+            for j in range(self.world.pool.shape[1]):
+                if self.world.pool.get((i,j)) == 0:
+                    pass
+                else:
+                    sum_ += len(self.world.pool.get((i,j)).original_memory)
+                    count += 1
+                        
+        return sum_/count
