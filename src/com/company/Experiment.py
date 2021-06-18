@@ -1,5 +1,7 @@
 #%% Imports:
     
+import numpy as np
+    
 # Add Backend to path
 import sys
 sys.path.append('C:/Users/eeveetza/Documents/GitHub/AlgoBrain/src/com/company/Backend')
@@ -318,6 +320,11 @@ class Experiment(Mediator):
                 print("Min Length: " + str(self.min_len()))
                 print("Max Length: " + str(self.max_len()))
                 print("Mean Length: " + str(self.mean_len()))
+                print("Min Rate: " + str(np.min(self.world.rates)))
+                print("Max Rate: " + str(np.max(self.world.rates)))
+                print("Mean Rate: " + str(np.mean(self.world.rates)))
+                print("Max Age: " + str(np.max(self.world.ages)))
+                print("Mean Age: " + str(np.mean(self.world.ages)))
                 print(self.world.rates)
                 i = 0
                 

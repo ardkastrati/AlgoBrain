@@ -73,7 +73,7 @@ class World(Mediator):
     
     # Default copy mutation probability is 0.0025
     
-    def __init__(self, N, replacement_strategy = "rates", cm_prob = 0.0025, ins_prob = 0.05, del_prob = 0.05, notify_ = False, log_division = False, log_functions = False):
+    def __init__(self, N, replacement_strategy = "ratio", cm_prob = 0.0025, ins_prob = 0.05, del_prob = 0.05, notify_ = False, log_division = False, log_functions = False):
 
         # Pool() will contain the set of CPUEmulators.
         self.pool = Pool(N)
@@ -451,7 +451,6 @@ class World(Mediator):
         
             # Take its memory content
             prey_memory = prey.memory
-            
         
             # Take the predator's memory content and its IP
             predator = self.pool.get((idx0,idx1))
@@ -655,7 +654,7 @@ class World(Mediator):
                                     position = (i,j)
                                     raise BreakIt
                                 elif self.ages[i][j]/self.rates[i][j] >= weakest:
-                                    weakest = self.ages[i][j]/(2*self.rates[i][j])
+                                    weakest = self.ages[i][j]/(self.rates[i][j])
                                     position = (i,j)                          
                 except BreakIt:
                     pass
