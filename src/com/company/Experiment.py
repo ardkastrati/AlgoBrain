@@ -98,7 +98,9 @@ class Experiment(Mediator):
             print("Scheduled test world")
             test_world.schedule(5000)
             
-            if self.flagged == sender.original_memory or self.counter < 4:
+            # If the target function was output less than 5 times in 5000 cycles,
+            # ignore the organism
+            if self.counter < 5:
                 self.first_specimen = None
             else:
                 self.first_specimen = sender.original_memory
@@ -127,6 +129,7 @@ class Experiment(Mediator):
                     self.counter += 1
                     print("Test passed")
                 
+                """
                 # If an organism that reported NAND failed even a single one of these tests the sender gets flagged
                 # and isn't allowed to be tested any longer
                 else:
@@ -134,6 +137,7 @@ class Experiment(Mediator):
                     self.flagged = sender.original_memory
                     self.counter = 0
                     print("Test failed")
+                """
                     
             elif self.target_function == "not":
                 
@@ -149,11 +153,13 @@ class Experiment(Mediator):
                     self.counter += 1
                     print("Test passed")
                 
+                """
                 else:
                     self.first_specimen = None
                     self.flagged = sender.original_memory
                     self.counter = 0
                     print("Test failed")
+                """
                     
             elif self.target_function == "and":
                 
@@ -168,12 +174,14 @@ class Experiment(Mediator):
                 if out == i0 & i1:
                     self.counter += 1
                     print("Test passed")
-                
+                    
+                """
                 else:
                     self.first_specimen = None
                     self.flagged = sender.original_memory
                     self.counter = 0
                     print("Test failed")
+                """
                     
             elif self.target_function == "or":
                 
@@ -189,12 +197,14 @@ class Experiment(Mediator):
                     self.counter += 1
                     print("Test passed")
                 
+                """
                 else:
                     self.first_specimen = None
                     self.flagged = sender.original_memory
                     self.counter = 0
                     print("Test failed")
-                    
+                """
+                
             elif self.target_function == "and_n":
                 
                 print("Reacting on IO")
@@ -209,12 +219,14 @@ class Experiment(Mediator):
                     self.counter += 1
                     print("Test passed")
                 
+                """
                 else:
                     self.first_specimen = None
                     self.flagged = sender.original_memory
                     self.counter = 0
                     print("Test failed")
-                    
+                """
+                
             elif self.target_function == "nor":
                 
                 print("Reacting on IO")
@@ -229,12 +241,14 @@ class Experiment(Mediator):
                     self.counter += 1
                     print("Test passed")
                 
+                """
                 else:
                     self.first_specimen = None
                     self.flagged = sender.original_memory
                     self.counter = 0
                     print("Test failed")
-                    
+                """
+                
             elif self.target_function == "xor":
                 
                 print("Reacting on IO")
@@ -249,11 +263,13 @@ class Experiment(Mediator):
                     self.counter += 1
                     print("Test passed")
                 
+                """
                 else:
                     self.first_specimen = None
                     self.flagged = sender.original_memory
                     self.counter = 0
                     print("Test failed")
+                """
                     
             elif self.target_function == "equ":
                 
@@ -269,12 +285,13 @@ class Experiment(Mediator):
                     self.counter += 1
                     print("Test passed")
                 
+                """
                 else:
                     self.first_specimen = None
                     self.flagged = sender.original_memory
                     self.counter = 0
                     print("Test failed")
-                
+                """
                     
     def test(self, n = 3000):
         
