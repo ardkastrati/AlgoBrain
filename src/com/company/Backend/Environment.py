@@ -73,7 +73,7 @@ class World(Mediator):
     
     # Default copy mutation probability is 0.0025
     
-    def __init__(self, N, replacement_strategy = "ratio", cm_prob = 0.0025, ins_prob = 0.05, del_prob = 0.05, notify_ = False, log_division = False, log_functions = False):
+    def __init__(self, N, replacement_strategy = "rates", cm_prob = 0.0025, ins_prob = 0.05, del_prob = 0.05, notify_ = False, log_division = False, log_functions = False):
 
         # Pool() will contain the set of CPUEmulators.
         self.pool = Pool(N)
@@ -511,7 +511,7 @@ class World(Mediator):
                 self.divisionLogger.info('\n Parent: {} \n Child: \n {}'.format(sender.original_memory, result))
             """
         
-            #divLog.info('{}\n{}\n'.format(sender.original_memory, result))
+            # divLog.info('{}\n{}\n'.format(sender.original_memory, result))
             # The organism, upon valid division, notifies the world of it using
             # self.mediator.notify(sender = self, event = "division", result = result)
 
@@ -655,7 +655,7 @@ class World(Mediator):
                                     position = (i,j)
                                     raise BreakIt
                                 elif self.ages[i][j]/self.rates[i][j] >= weakest:
-                                    weakest = self.ages[i][j]/(1.5*self.rates[i][j])
+                                    weakest = self.ages[i][j]/(2*self.rates[i][j])
                                     position = (i,j)                          
                 except BreakIt:
                     pass
@@ -682,6 +682,34 @@ class World(Mediator):
         
         # If the most recent input is none, do nothing
         if self.inputs[idx0][idx1][0] == 0:
+            pass
+        
+        # Filtering outputs
+        elif -7 < result < 7:
+            pass
+        elif self.inputs[idx0][idx1][0] == ~self.inputs[idx0][idx1][1]:
+            pass
+        elif ~self.inputs[idx0][idx1][0] == self.inputs[idx0][idx1][1]:
+            pass
+        elif self.inputs[idx0][idx1][0] & ~self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][0]:
+            pass
+        elif (~self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1]) == self.inputs[idx0][idx1][1]:
+            pass
+        elif self.inputs[idx0][idx1][0] & ~self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][1]:
+            pass
+        elif ~self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1] ==self.inputs[idx0][idx1][0]:
+            pass
+        elif self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][0]:
+            pass
+        elif self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] ==    self.inputs[idx0][idx1][1]:
+            pass
+        elif self.inputs[idx0][idx1][0] | ~self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][0]:
+            pass
+        elif self.inputs[idx0][idx1][0] | ~self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][1]:
+            pass
+        elif ~self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][0]:
+            pass
+        elif ~self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][1]:
             pass
         
         # If the most recent input isn't none, but the second most recent is, check if not was computed
