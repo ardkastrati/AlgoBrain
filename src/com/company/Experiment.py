@@ -85,24 +85,16 @@ class Experiment(Mediator):
         
         else:
             print("Reacting on " + str(self.target_function))
-        
-            # Check whether the sender truly did compute NAND by letting it run for a certain (large) amount of cycles
-            # and checking whether it outputs NAND
-        
-            # How we check this:
-            # The organism needs to compute NAND once in the test world in 2000 cycles
-        
-            # The sender is the organism itself, the result is its memory content
-        
-            test_world = World(1,cm_prob = 0, ins_prob = 0, del_prob = 0)
-        
-            test_world.place_custom(result)
-        
-            test_world.experiment = self
-            test_world.output = True
             
-            print("Scheduled test world")
-            test_world.schedule(5000)
+            for i in range(5):
+                test_world = World(1,cm_prob = 0, ins_prob = 0, del_prob = 0)
+        
+                test_world.place_custom(result)
+        
+                test_world.experiment = self
+                test_world.output = True
+            
+                test_world.schedule(1000)
             
             # If the target function was output less than 5 times in 5000 cycles,
             # ignore the organism
@@ -115,8 +107,9 @@ class Experiment(Mediator):
         
     def react_on_function_io(self,sender,result):
         
+        # Obsolete
         if self.flagged == sender.original_memory:
-            print("Flagged ass bitch")
+            print("Flagged")
             pass
         
         else:
