@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 #%%
 class Experiment(Mediator):
     
-    def __init__(self, start_organism = "default", target_function = "nand", N=30,cm_prob = 0.05, ins_prob = 0.05, del_prob = 0.05, notify_ = False, stat_cycles = 200):
+    def __init__(self, start_organism = "default", target_function = "equ", N=30,cm_prob = 0.05, ins_prob = 0.05, del_prob = 0.05, notify_ = False, stat_cycles = 200):
         
         # Define the organism that we start with
         self.start_organism = start_organism
@@ -318,6 +318,7 @@ class Experiment(Mediator):
         i = 0
         while self.first_specimen == None:
             self.world.schedule(1)
+            
             i += 1
             
             if i == self.stat_cycles:

@@ -675,8 +675,7 @@ class World(Mediator):
                 weakest = 0
             
                 # Looking for a free position and simultaneously checking which organism
-                # in the neighborhood is the weakest one
-                
+                # in the neighborhood is the weakest one                
                 
                 try:
                     for i in range(max(idx0-1, 0), min(idx0+2, width)):
