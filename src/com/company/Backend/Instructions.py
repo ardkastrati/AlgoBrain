@@ -404,10 +404,17 @@ class InstructionHDivide:
 
                     # Insertion mutations
                     chance = bernoulli.rvs(self.emulator.ins_prob, size=1)
+                    
+                    # Check which instruction set is being used
+                    
+                    if self.emulator.mediator.instruction_set == "default":
+                        max_instr = 26
+                    else:
+                        max_instr = 27
 
                     if chance == 1:
                         location = random.randint(0, len(result))
-                        insertion =  randrange(26)
+                        insertion =  randrange(max_instr)
                         result.insert(location, insertion)
                         self.emulator.child_mutations.append(["I",location,insertion, self.emulator.generation])
                         mutated = True
@@ -518,11 +525,17 @@ class InstructionHCopy:
 
             if rh < len(self.emulator.original_memory) and wh < len(self.emulator.memory) and wh >= 0 and rh >= 0:
                 
+                # Mutations
                 chance = bernoulli.rvs(self.emulator.mutation_prob, size=1)
+                
+                if self.emulator.mediator.instruction_set == "default":
+                    max_instr = 26
+                else:
+                    max_instr = 27
 
                 if chance == 1:
                     location = self.emulator.read_head.get()
-                    temp = randrange(26)
+                    temp = randrange(max_instr)
                     self.emulator.child_mutations.append(["C", location, temp, self.emulator.generation])
                 else:
                     temp = self.emulator.original_memory[self.emulator.read_head.get()]
@@ -785,6 +798,24 @@ class InstructionSymbiosis:
             This needs to be done since organisms themselves have no notion of where they are in the world
             nor what their neighbors are, the world keeps track of this.
 """
+
+class InstructionMove:
+    
+    def __init__(self,emulator):
+        self.emulator = emulator
+        
+    def execute(self):
+        
+        dice = randrange(4)
+        
+        if dice == 0:
+            self.emulator.mediator.notify(sender = self.emulator, event = "mov_up", result = None)
+        elif dice == 1:
+            self.emulator.mediator.notify(sender = self.emulator, event = "mov_down", result = None)
+        elif dice == 2:
+            self.emulator.mediator.notify(sender = self.emulator, event = "mov_left", result = None)
+        elif dice == 3:
+            self.emulator.mediator.notify(sender = self.emulator, event = "mov_right", result = None)
 
 class InstructionMoveUp:
     

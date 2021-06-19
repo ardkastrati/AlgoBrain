@@ -103,8 +103,8 @@ class CPUEmulator:
                                 InstructionInc(self), InstructionDec(self),InstructionAdd(self),InstructionSub(self),\
                                 InstructionNand(self),InstructionHAlloc(self),InstructionHDivide(self),InstructionIO(self),\
                                 InstructionHCopy(self),InstructionHSearch(self),InstructionMovHead(self),InstructionJmpHead(self),\
-                                InstructionGetHead(self),InstructionSetFlow(self),InstructionIfLabel(self),InstructionConsume(self),\
-                                InstructionMoveUp(self),InstructionMoveDown(self),InstructionMoveLeft(self),InstructionMoveRight(self)]
+                                InstructionGetHead(self),InstructionSetFlow(self),InstructionIfLabel(self), InstructionMove(self),\
+                                InstructionConsume(self)]
             
         # Helper attributes for tracking the lineage of an organism
         self.ancestor = None
@@ -120,6 +120,10 @@ class CPUEmulator:
         # generation(child) = 1 + generation(parent)
         # This gets initialized by the environment
         self.generation = None        
+        
+        # The instruction set of the organism
+        # This information was propagated from all the way up at the experiment level
+        self.instruction_set = "default"
 
     def clear(self):
 

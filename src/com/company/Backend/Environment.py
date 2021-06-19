@@ -109,6 +109,10 @@ class World(Mediator):
         # Helper, used in react_on_IO
         self.notify_ = notify_
         
+        # As per default the instruction set is initialized to the default one.
+        # Can be changed to "custom" when defining an experiment
+        self.instruction_set = "default"
+        
         """
         # See whether we want to log divisions
         self.log_division = log_division

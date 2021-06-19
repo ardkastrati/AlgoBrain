@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 #%%
 class Experiment(Mediator):
     
-    def __init__(self, start_organism = "default", target_function = "equ", N=30,cm_prob = 0.05, ins_prob = 0.05, del_prob = 0.05, notify_ = False, stat_cycles = 200):
+    def __init__(self, start_organism = "default", target_function = "equ", N=30,cm_prob = 0.05, ins_prob = 0.05, del_prob = 0.05, notify_ = False, stat_cycles = 200,\
+                 instruction_set = "default"):
         
         # Define the organism that we start with
         self.start_organism = start_organism
@@ -31,6 +32,10 @@ class Experiment(Mediator):
         
         # Set self as the world's linked experiment
         self.world.experiment = self
+        
+        # Set the world's instruction set. This information is to propagate further to the organisms.
+        # Defines the range of instructions which an organism may acquire upon a mutation
+        self.world.instruction_set = instruction_set
         
         # A helper attribute, to flag organisms which reported a function but can't actually solve it
         self.flagged = None
