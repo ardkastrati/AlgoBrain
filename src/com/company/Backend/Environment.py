@@ -196,9 +196,9 @@ class World(Mediator):
         else:
                                 
             for i_loops in range(n_loops):
-            
+                
                 baseline_rate = self.baseline_rate()
-            
+                
                 for i in range(self.pool.shape[0]):
                     for j in range(self.pool.shape[1]):
                     
@@ -211,6 +211,12 @@ class World(Mediator):
                                 current_emulator = self.pool.get()[i][j]
                                 current_emulator.execute_instruction()
                                 self.ages[i][j] = current_emulator.age
+                                
+                                # If the emulator is 20 times older than the average emulator age,
+                                # it's time to go old man
+
+                            if self.ages[i][j] > 10000 and self.ages[i][j] > 10*np.mean(self.ages):
+                                self.kill((i,j))
 
     # The following method defines which functions are to be called when world is notified 
     # of various events
@@ -472,14 +478,12 @@ class World(Mediator):
                 predator_memory.insert(iterator+i,prey_memory[i])
             
             # Kill prey
-        
             self.pool.kill(position)
             self.inputs[position] = (0,0)
             self.rates[position] = 0
             self.ages[position] = 0
         
             # Create new Organism with predator_memory at sender position
-        
             self.place_custom(predator_memory,(idx0,idx1))
             
             # Modify IP such that execution continues right where we left off
@@ -1178,7 +1182,15 @@ class World(Mediator):
                     longest = length
                     
         return longest
-            
+    
+    # Kills the emulator at the given position
+    def kill(self, position):
+        
+        self.pool.kill(position)
+        self.rates[position] = 0
+        self.inputs[position] = (0,0)
+        self.ages[position] = 0
+    
     # A string representation of the world pool
 
     def __str__(self):

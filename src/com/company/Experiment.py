@@ -316,7 +316,7 @@ class Experiment(Mediator):
             self.world.schedule(1)
             i += 1
             
-            if i == 100:
+            if i == 500:
                 print("Min Length: " + str(self.min_len()))
                 print("Max Length: " + str(self.max_len()))
                 print("Mean Length: " + str(self.mean_len()))
@@ -325,7 +325,9 @@ class Experiment(Mediator):
                 print("Mean Rate: " + str(np.mean(self.world.rates)))
                 print("Max Age: " + str(np.max(self.world.ages)))
                 print("Mean Age: " + str(np.mean(self.world.ages)))
+                print("Rates: ")
                 print(self.world.rates)
+                print("\n")
                 i = 0
                 
             

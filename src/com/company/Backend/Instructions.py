@@ -447,7 +447,7 @@ class InstructionHDivide:
                     self.emulator.allocated = False
                     
                     # Reset child_mutations to an empty list
-                    self.child_mutations = []
+                    self.emulator.child_mutations = []
 
             # Otherwise, division is ignored
 
