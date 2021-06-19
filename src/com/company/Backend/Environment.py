@@ -7,6 +7,8 @@ import logging
 import numpy as np
 import DigitalOrganism as DO
 from Mediator import Mediator
+import numpy as np
+from scipy.stats import bernoulli
 
 #divLog = logging.getLogger("Division Logger")
 #divLog.setLevel(logging.DEBUG)
@@ -203,19 +205,40 @@ class World(Mediator):
                     for j in range(self.pool.shape[1]):
                     
                         if isinstance(self.pool.get()[i][j], DO.CPUEmulator):
-                        
-                            n_cycles = int(self.rates[i][j] / baseline_rate)
-                        
+                            
+                            # n_cycles is capped at 32.
+                            # Imagine the following scenario:
+                            # A world of size two, one organism has rate R, other organism has rate 64*R
+                            # Then, the one with the larger rate will run 32 instructions
+                            # The one with the smaller rate has a 32/64 chance of running a single instruction
+                            # This works for any generalization of 64 to N >= 32
+                            
+                            rate = self.rates[i][j]
+                            
+                            n_cycles = min(int(rate / baseline_rate), 32)
+                            
+                            if np.max(self.rates) / rate >= 32:
+                            
+                                chance = bernoulli.rvs((32*rate) / np.max(self.rates), size=1)[0]
+                                
+                                if chance == 1:
+                                    n_cycles = 1
+                                else:
+                                    n_cycles = 0
+                                
                             for i_cycles in range(n_cycles):
                             
                                 current_emulator = self.pool.get()[i][j]
                                 current_emulator.execute_instruction()
                                 self.ages[i][j] = current_emulator.age
                                 
-                                # If the emulator is 20 times older than the average emulator age,
-                                # it's time to go old man
-
-                            if self.ages[i][j] > 10000 and self.ages[i][j] > 10*np.mean(self.ages):
+                            # If the emulator is 100 times older than the average emulator age,
+                            # it's time to go old man
+                            # I hope that this is an extreme case. This should be well regulated
+                            # with the 32 instructions cap above
+                            
+                            if self.ages[i][j] > 10000 and self.ages[i][j] > 100*np.mean(self.ages):
+                                print("Killed organism with rate " + str(self.rates[i][j]))
                                 self.kill((i,j))
 
     # The following method defines which functions are to be called when world is notified 
@@ -542,6 +565,9 @@ class World(Mediator):
             # The mutations which resulted in the child:
             emulator.mutations = sender.mutations + sender.child_mutations
             
+            # Set the child's initial rate as its parent's child rate
+            # emulator.initial_rate = sender.child_rate/len(result)
+            
             # Default replacement strategy
             # Look for free spots in the 1-hop neighborhood of the parent
             # If there is a free spot, put the offspring into any such spot
@@ -650,6 +676,8 @@ class World(Mediator):
             
                 # Looking for a free position and simultaneously checking which organism
                 # in the neighborhood is the weakest one
+                
+                
                 try:
                     for i in range(max(idx0-1, 0), min(idx0+2, width)):
                         for j in range(max(idx1-1, 0), min(idx1+2, height)):
@@ -672,9 +700,25 @@ class World(Mediator):
             # Put age 0 in the correct position
             self.ages[position] = 0
         
-            # Update rates
+            # Update rate of the child
             self.rates[position] = sender.child_rate
-        
+            
+            """
+            # Update the rate of the parent iff the parent wasn't rewarded already
+            if not sender.rewarded:
+                    
+                # If the organism ends up being weaker than its parent
+                # I won't take its rewards away, it's already rewarded enough
+                if (sender.child_rate/(len(result))) / sender.initial_rate <= 1:
+                    sender.rewarded = True
+                    pass
+                
+                else:
+                    temp = self.rates[idx0,idx1] * sender.child_rate/(len(result)) / sender.initial_rate
+                    self.rates[idx0,idx1] = temp
+                    sender.rewarded = True
+            """
+
             # Set input to none
             self.inputs[position] = (0,0)
 

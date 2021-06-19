@@ -76,8 +76,14 @@ class CPUEmulator:
         # Probabilities of random insertion/deletion upon division
         self.ins_prob = ins_prob
         self.del_prob = del_prob
-
+        
+        # The rate to be passed onto the child
         self.child_rate = 1
+        
+        # The rate to be used as a basis for the reward for the organism itself
+        # Upon initial placement of organism into the pool, this is set to 1
+        # When an organism divides, this is set to its parent's child rate
+        self.initial_rate = 1
         
         # Indicators for which boolean functions the organism can compute
         self.fun_not = False
@@ -113,7 +119,7 @@ class CPUEmulator:
         # With this we can compute the distance of good organism from basic parent
         # generation(child) = 1 + generation(parent)
         # This gets initialized by the environment
-        self.generation = None
+        self.generation = None        
 
     def clear(self):
 
@@ -145,6 +151,8 @@ class CPUEmulator:
         
         for instruction in self.original_memory:
             self.instruction_memory.append(self.instruction_list[instruction])
+            
+        self.rate = len(self.original_memory)
                             
     def execute_instruction(self):
         
@@ -158,7 +166,6 @@ class CPUEmulator:
 
         self.age += 1
         
-
         if self.instr_pointer.get() == ip:
                 self.instr_pointer.increment()
 

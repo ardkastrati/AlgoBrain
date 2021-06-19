@@ -397,12 +397,6 @@ class InstructionHDivide:
 
                 else:
                     
-                    # Check whether program length has changed
-                    if len(original) != len(self.emulator.original_memory):
-                        
-                        # If it has, notify World about this such that the rate is adjusted accordingly
-                        self.emulator.mediator.notify(sender = self.emulator, event = "len_change", result = len(original))
-
                     # Fully reset the state of the emulator (except age)
                     self.emulator.load_program(Program(original))
                     

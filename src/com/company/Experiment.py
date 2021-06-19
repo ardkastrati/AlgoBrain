@@ -4,15 +4,18 @@ import numpy as np
     
 # Add Backend to path
 import sys
-sys.path.append('C:/Users/eeveetza/Documents/GitHub/AlgoBrain/src/com/company/Backend')
+#sys.path.append('C:/Users/eeveetza/Documents/GitHub/AlgoBrain/src/com/company/Backend')
+sys.path.append('C:/Users/eeveetza/Documents/GitHub/AlgoBrain_local/Backend')
 
 from Environment import World
 from Mediator import Mediator
 
+import matplotlib.pyplot as plt
+
 #%%
 class Experiment(Mediator):
     
-    def __init__(self, start_organism = "default", target_function = "nand", N=30,cm_prob = 0.05, ins_prob = 0.05, del_prob = 0.05, notify_ = False):
+    def __init__(self, start_organism = "default", target_function = "nand", N=30,cm_prob = 0.05, ins_prob = 0.05, del_prob = 0.05, notify_ = False, stat_cycles = 200):
         
         # Define the organism that we start with
         self.start_organism = start_organism
@@ -32,8 +35,9 @@ class Experiment(Mediator):
         # A helper attribute, to flag organisms which reported a function but can't actually solve it
         self.flagged = None
         
-        # A helper attribute
+        # Helper attributes
         self.counter = 0
+        self.stat_cycles = stat_cycles
         
         if self.start_organism == "default":
             self.world.fill("default")
@@ -310,25 +314,24 @@ class Experiment(Mediator):
     # We run the experiment until we have evolved the function that we wanted to evolve
     # If we have correctly evolved such a function, the first_specimen attribute will no longer be None
     def run(self):
-        
+
         i = 0
         while self.first_specimen == None:
             self.world.schedule(1)
             i += 1
             
-            if i == 500:
-                print("Min Length: " + str(self.min_len()))
-                print("Max Length: " + str(self.max_len()))
-                print("Mean Length: " + str(self.mean_len()))
-                print("Min Rate: " + str(np.min(self.world.rates)))
-                print("Max Rate: " + str(np.max(self.world.rates)))
-                print("Mean Rate: " + str(np.mean(self.world.rates)))
-                print("Max Age: " + str(np.max(self.world.ages)))
-                print("Mean Age: " + str(np.mean(self.world.ages)))
-                print("Rates: ")
-                print(self.world.rates)
+            if i == self.stat_cycles:
+                
                 print("\n")
+                self.display_statistics()
+                
+                #print(self.world.rates)
+                
+                #plt.imshow(self.world.rates)
+                #plt.colorbar()
+                #plt.show()
                 i = 0
+
                 
             
     def min_len(self):
@@ -377,3 +380,138 @@ class Experiment(Mediator):
                     count += 1
                         
         return sum_/count
+    
+    def count_functions(self):
+        
+        # Returns the number of organisms reported to be able to compute different
+        # boolean functions
+        
+        count_not = 0
+        count_nand = 0
+        count_and = 0
+        count_or_n = 0
+        count_or = 0
+        count_and_n = 0
+        count_nor = 0
+        count_xor = 0
+        count_equ = 0
+        
+        for i in range(self.world.pool.shape[0]):
+            for j in range(self.world.pool.shape[1]):
+                if self.world.pool.get((i,j)).fun_not:
+                    count_not += 1
+                if self.world.pool.get((i,j)).fun_nand:
+                    count_nand += 1
+                if self.world.pool.get((i,j)).fun_and:
+                    count_and += 1
+                if self.world.pool.get((i,j)).fun_or_n:
+                    count_or_n += 1
+                if self.world.pool.get((i,j)).fun_or:
+                    count_or += 1
+                if self.world.pool.get((i,j)).fun_and_n:
+                    count_and_n += 1
+                if self.world.pool.get((i,j)).fun_nor:
+                    count_nor += 1
+                if self.world.pool.get((i,j)).fun_xor:
+                    count_xor += 1
+                if self.world.pool.get((i,j)).fun_equ:
+                    count_equ += 1
+        
+        print("NOT: " + str(count_not))
+        print("NAND: " + str(count_nand))
+        print("AND: " + str(count_and))
+        print("OR_N: " + str(count_or_n))
+        print("OR: " + str(count_or))
+        print("AND_N: " + str(count_and_n))
+        print("NOR: " + str(count_nor))
+        print("XOR: " + str(count_xor))
+        print("EQU: " + str(count_equ))
+        
+    def display_statistics(self):
+        
+        """
+        Merges all of the above pool statistics functions into one
+        
+        Efficiency
+        """
+        
+        min_len = 100000
+        position_min = None
+        
+        max_len = -1
+        position_max = None
+        
+        sum_ = 0
+        count = 0
+        
+        count_not = 0
+        count_nand = 0
+        count_and = 0
+        count_or_n = 0
+        count_or = 0
+        count_and_n = 0
+        count_nor = 0
+        count_xor = 0
+        count_equ = 0
+    
+        for i in range(self.world.pool.shape[0]):
+            for j in range(self.world.pool.shape[1]):
+                if self.world.pool.get((i,j)) == 0:
+                    pass
+                else:
+                    
+                    # Computed functions
+                    if self.world.pool.get((i,j)).fun_not:
+                        count_not += 1
+                    if self.world.pool.get((i,j)).fun_nand:
+                        count_nand += 1
+                    if self.world.pool.get((i,j)).fun_and:
+                        count_and += 1
+                    if self.world.pool.get((i,j)).fun_or_n:
+                        count_or_n += 1
+                    if self.world.pool.get((i,j)).fun_or:
+                        count_or += 1
+                    if self.world.pool.get((i,j)).fun_and_n:
+                        count_and_n += 1
+                    if self.world.pool.get((i,j)).fun_nor:
+                        count_nor += 1
+                    if self.world.pool.get((i,j)).fun_xor:
+                        count_xor += 1
+                    if self.world.pool.get((i,j)).fun_equ:
+                        count_equ += 1
+                        
+                    # Minimum length and its position
+                    if len(self.world.pool.get((i,j)).original_memory) < min_len:
+                        min_len = len(self.world.pool.get((i,j)).original_memory)
+                        position_min = (i,j)
+                        
+                    # Max length and its position
+                    if len(self.world.pool.get((i,j)).original_memory) > max_len:
+                        max_len = len(self.world.pool.get((i,j)).original_memory)
+                        position_max = (i,j)
+                        
+                    # Mean length calculation
+                    sum_ += len(self.world.pool.get((i,j)).original_memory)
+                    count += 1
+                
+        mean_len = sum_/count
+
+        print("Min Length: " + str((min_len,position_min)))
+        print("Max Length: " + str((max_len,position_max)))
+        print("Mean Length: " + str(mean_len))
+        print("Min Rate: " + str(np.min(self.world.rates)))
+        print("Max Rate: " + str(np.max(self.world.rates)))
+        print("Mean Rate: " + str(np.mean(self.world.rates)))
+        print("Max Age: " + str(np.max(self.world.ages)))
+        print("Mean Age: " + str(np.mean(self.world.ages)))
+        print("NOT: " + str(count_not))
+        print("NAND: " + str(count_nand))
+        print("AND: " + str(count_and))
+        print("OR_N: " + str(count_or_n))
+        print("OR: " + str(count_or))
+        print("AND_N: " + str(count_and_n))
+        print("NOR: " + str(count_nor))
+        print("XOR: " + str(count_xor))
+        print("EQU: " + str(count_equ))
+        
+        
