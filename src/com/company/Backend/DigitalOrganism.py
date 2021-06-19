@@ -108,6 +108,12 @@ class CPUEmulator:
         
         # The mutations which, when applied on current program, result in the child
         self.child_mutations = []
+        
+        # Again useful for mutations. Indicates organism generation.
+        # With this we can compute the distance of good organism from basic parent
+        # generation(child) = 1 + generation(parent)
+        # This gets initialized by the environment
+        self.generation = None
 
     def clear(self):
 

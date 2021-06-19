@@ -532,6 +532,9 @@ class World(Mediator):
             emulator.mutation_prob = self.cm_prob
             emulator.ins_prob = self.ins_prob
             emulator.del_prob = self.del_prob
+            
+            # The child's generation is 1 + the parent's generation
+            emulator.generation = sender.generation + 1
         
             # The child inherits the ancestor from its parent
             emulator.ancestor = sender.ancestor.copy()
@@ -1044,6 +1047,9 @@ class World(Mediator):
         
         # Create a new emulator
         emulator = DO.CPUEmulator()
+        
+        # Initialize its generation
+        emulator.generation = 0
         
         # Load self as the emulator's mediator
         emulator.mediator = self

@@ -415,7 +415,7 @@ class InstructionHDivide:
                         location = random.randint(0, len(result))
                         insertion =  randrange(26)
                         result.insert(location, insertion)
-                        self.emulator.child_mutations.append(["I",location,insertion])
+                        self.emulator.child_mutations.append(["I",location,insertion, self.emulator.generation])
                         mutated = True
                     else:
                         pass
@@ -425,7 +425,7 @@ class InstructionHDivide:
 
                     if chance == 1 and not mutated:
                         location = random.randint(0, len(result))
-                        self.emulator.child_mutations.append(["D", location])
+                        self.emulator.child_mutations.append(["D", location, self.emulator.generation])
                         del result[location]
                     else:
                         pass
@@ -529,7 +529,7 @@ class InstructionHCopy:
                 if chance == 1:
                     location = self.emulator.read_head.get()
                     temp = randrange(26)
-                    self.emulator.child_mutations.append(["C", location, temp])
+                    self.emulator.child_mutations.append(["C", location, temp, self.emulator.generation])
                 else:
                     temp = self.emulator.original_memory[self.emulator.read_head.get()]
 
