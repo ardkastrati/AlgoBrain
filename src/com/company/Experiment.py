@@ -47,6 +47,9 @@ class Experiment(Mediator):
         if self.start_organism == "default":
             self.world.fill("default")
             
+        elif self.start_organism == "default_long":
+            self.world.fill([16, 20, 2, 0, 21] + [2]*56 + [20, 19, 25, 2, 0, 17, 21, 0, 1])
+            
         elif self.start_organism == "nand":
             self.world.fill([23, 20, 2, 0, 21, 2, 6, 1, 19, 13, 18, 2, 25, 9, 2, 18, 16, 15, 15, 2, 2, 2, 18, 7, 2, 2, 2, 18, 2, 20, 10, 8, 18, 6, 4, 19, 8, 8, 17, 2, 6, 20, 19, 25, 2, 0, 17, 21, 0, 1])
         
