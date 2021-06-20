@@ -68,9 +68,13 @@ class Experiment(Mediator):
         elif self.start_organism == "nor":
             self.world.fill([10, 20, 2, 0, 21, 2, 13, 9, 13, 7, 13, 3, 23, 17, 7, 3, 7, 15, 20, 17, 22, 9, 18, 2, 12, 14, 2, 1, 18, 15, 11, 16, 0, 13, 7, 9, 2, 18, 17, 20, 3, 19, 19, 25, 2, 0, 17, 21, 0, 1])
             
+        elif self.start_organism == "xor":
+            self.world.fill([16, 20, 2, 0, 21] + [2] + [18, 0, 18, 2, 7, 0, 7, 2, 8, 14, 2, 12, 2, 7, 0, 6, 1, 6, 0, 15,2, 6, 1, 7, 2, 8, 6, 0, 6, 2, 14, 2, 12, 2, 7, 0, 6, 1, 6, 0, 15, 2, 8, 6, 1, 15, 0, 18, 0]\
+                            + [6, 0, 6, 1, 6, 2] + [20, 19, 25, 2, 0, 17, 21, 0, 1])
+            
         elif type(self.start_organism) == list:
             self.world.fill(start_organism)
-            
+
     # Experiment, just like World, implements the mediator interface
     # In this case, the mediator is used so that the world can notify the
     # current experiment of any important results

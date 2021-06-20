@@ -241,9 +241,11 @@ class World(Mediator):
                             # I hope that this is an extreme case. This should be well regulated
                             # with the 32 instructions cap above
                             
+                            """
                             if self.ages[i][j] > 10000 and self.ages[i][j] > 100*np.mean(self.ages):
                                 print("Killed organism with rate " + str(self.rates[i][j]))
                                 self.kill((i,j))
+                            """
 
     # The following method defines which functions are to be called when world is notified 
     # of various events
@@ -1015,7 +1017,7 @@ class World(Mediator):
                 
                 # Notify the experiment about this event, if the current world is linked to one
                 if self.experiment != None and not self.output:
-                    print("Notifying experiment of XOR")
+                    #print("Notifying experiment of XOR")
                     self.experiment.notify(sender = sender, event = "xor", result = sender.original_memory)
                     
                 if self.output:
@@ -1041,6 +1043,15 @@ class World(Mediator):
                 # If yes, ignore
                 else:
                     pass
+                
+                # Notify the experiment about this event, if the current world is linked to one
+                if self.experiment != None and not self.output:
+                    #print("Notifying experiment of EQU")
+                    self.experiment.notify(sender = sender, event = "equ", result = sender.original_memory)
+                    
+                if self.output:
+                    print("Notifying experiment of function_IO")
+                    self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
      
         # A random 32-bit number
         #to_input = np.random.randint(low = 0, high = 4294967295, dtype = np.uintc)
