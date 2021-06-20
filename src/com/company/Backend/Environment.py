@@ -190,15 +190,29 @@ class World(Mediator):
                     
                          if isinstance(self.pool.get()[i][j], DO.CPUEmulator):
                              
+                             
                              # Each emulator gets a certain number of cycles assigned to it,
                              # depending on its rate
-                             n_cycles = int(self.rates[i][j] / baseline_rate)
-                        
-                             for i_cycles in range(n_cycles):
+                             rate = self.rates[i][j]
                             
-                                 current_emulator = self.pool.get()[i][j]
+                             n_cycles = min(int(rate / baseline_rate), 32)
+                            
+                             if np.max(self.rates) / rate >= 32:
+                                                             
+                                 chance = bernoulli.rvs((32*rate) / np.max(self.rates), size=1)[0]
+                                
+                                 if chance == 1:
+                                     n_cycles = 1
+                                 else:
+                                     n_cycles = 0
+                                    
+                             current_emulator = self.pool.get()[i][j]
+                                                            
+                             for i_cycles in range(n_cycles):
+                                
                                  current_emulator.execute_instruction()
-                                 self.ages[i][j] = current_emulator.age
+                                 self.ages[self.pool.get() == current_emulator] = current_emulator.age
+        
         else:
                                 
             for i_loops in range(n_loops):
@@ -207,9 +221,10 @@ class World(Mediator):
                 
                 for i in range(self.pool.shape[0]):
                     for j in range(self.pool.shape[1]):
+                        
                     
                         if isinstance(self.pool.get()[i][j], DO.CPUEmulator):
-                            
+
                             # n_cycles is capped at 32.
                             # Imagine the following scenario:
                             # A world of size two, one organism has rate R, other organism has rate 64*R
@@ -229,12 +244,14 @@ class World(Mediator):
                                     n_cycles = 1
                                 else:
                                     n_cycles = 0
+                                    
+                            current_emulator = self.pool.get()[i][j]
+                            
                                 
                             for i_cycles in range(n_cycles):
-                            
-                                current_emulator = self.pool.get()[i][j]
+                                
                                 current_emulator.execute_instruction()
-                                self.ages[i][j] = current_emulator.age
+                                self.ages[self.pool.get() == current_emulator] = current_emulator.age
                                 
                             # If the emulator is 100 times older than the average emulator age,
                             # it's time to go old man
