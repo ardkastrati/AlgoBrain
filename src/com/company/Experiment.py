@@ -6,6 +6,7 @@ import numpy as np
 import sys
 #sys.path.append('C:/Users/eeveetza/Documents/GitHub/AlgoBrain/src/com/company/Backend')
 sys.path.append('C:/Users/eeveetza/Documents/GitHub/AlgoBrain_local/Backend')
+#sys.path.append('C:/Users/Tbuob/OneDrive/Dokumente/GitHub/AlgoBrain/src/com/company/Backend')
 
 from Environment import World
 from Mediator import Mediator

@@ -590,7 +590,6 @@ class World(Mediator):
             # Set the child's initial rate as its parent's child rate
             emulator.initial_rate = sender.child_rate
             
-            # Default replacement strategy
             # Look for free spots in the 1-hop neighborhood of the parent
             # If there is a free spot, put the offspring into any such spot
             # If not, kill the oldest organism in the neighborhood and put offspring there
@@ -678,9 +677,10 @@ class World(Mediator):
                                     position = (i,j)                          
                 except BreakIt:
                     pass
-                
+            
+            # Default replacement strategy
             # This replacement strategy kills the neighboring organism with the
-            # highest age/rate ratio
+            # highest age/rate ratio in the neighborhood
             elif self.replacement_strategy == "ratio":
             
                 width = self.pool.shape[0]
