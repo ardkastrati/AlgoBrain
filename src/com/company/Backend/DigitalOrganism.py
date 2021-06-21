@@ -80,11 +80,6 @@ class CPUEmulator:
         # The rate to be passed onto the child
         self.child_rate = 1
         
-        # The rate to be used as a basis for the reward for the organism itself
-        # Upon initial placement of organism into the pool, this is set to 1
-        # When an organism divides, this is set to its parent's child rate
-        self.initial_rate = 1
-        
         # Indicators for which boolean functions the organism can compute
         self.fun_not = False
         self.fun_nand = False
@@ -121,9 +116,16 @@ class CPUEmulator:
         # This gets initialized by the environment
         self.generation = None        
         
-        # The instruction set of the organism
-        # This information was propagated from all the way up at the experiment level
-        self.instruction_set = "default"
+        # Check whether an organism has been rewarded yet for its own computation
+        # Organism can only be rewarded upon division.
+        # It is only rewarded if its own multiplicative factor for the rate
+        # exceeds that it inherited from its parent
+        self.rewarded = False
+        
+        # The rate to be used as a base for the reward for the organism itself
+        # Upon initial placement of organism into the pool, this is set to 1
+        # When an organism divides, this is set to its parent's child rate
+        self.initial_rate = 1
 
     def clear(self):
 
@@ -172,9 +174,7 @@ class CPUEmulator:
         
         if self.instr_pointer.get() == ip:
                 self.instr_pointer.increment()
-        #if self.age > 6000:
-        #    self.mediator.notify(sender=self,event='death',result = None)
-            
+
     # Obsolete
     def execute_program(self):
 

@@ -390,7 +390,7 @@ class InstructionHDivide:
                 # The resulting organism wouldn't be able to divide
                 if len(original) < 10 or len(result) < 10 or\
                     (self.emulator.instr_pointer.get() % self.emulator.instruction_memory.size())/self.emulator.instruction_memory.size() < 0.7 or\
-                    len(result) < len(original):
+                    len(result) < 0.95 * len(original):
                         # or not 17 in result or 17 not in original:
                     
                     pass
@@ -431,27 +431,29 @@ class InstructionHDivide:
                     else:
                         pass
                     
-                    # Save old child rate to reset to after division
-                    old_rate = self.emulator.child_rate
+                    ## Save old child rate to reset to after division
+                    #old_rate = self.emulator.child_rate
                     
                     # Update the child rate s.t. it's proportional to its genome length
                     #self.emulator.child_rate *= len(result)
-                    self.emulator.child_rate *= len(result)
+                    #self.emulator.child_rate *= len(result)
 
                     # Notify the world about the division
                     self.emulator.mediator.notify(sender = self.emulator, event = "division", result = result)
                     
                     # Restore child_rate to old_rate
-                    self.emulator.child_rate = old_rate
+                    #self.emulator.child_rate = old_rate
 
                     # Memory is no longer allocated
                     self.emulator.allocated = False
                     
                     # Reset child_mutations to an empty list
                     self.emulator.child_mutations = []
+                    
+                    # Note: rewarding the sender if necessary is fully delegated 
+                    # to the mediator
 
             # Otherwise, division is ignored
-
             else:
                 pass
 

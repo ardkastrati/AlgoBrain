@@ -209,9 +209,7 @@ class World(Mediator):
                              current_emulator = self.pool.get()[i][j]
                                                             
                              for i_cycles in range(n_cycles):
-                                 if(self.ages[i][j]>(self.rates[i][j]/self.baseline_rate()*len(self.get((i,j)).memory))):
-                                        self.react_on_death(self.get((i,j)))
-                                 #       
+                                
                                  current_emulator.execute_instruction()
                                  self.ages[self.pool.get() == current_emulator] = current_emulator.age
         
@@ -223,8 +221,7 @@ class World(Mediator):
                 
                 for i in range(self.pool.shape[0]):
                     for j in range(self.pool.shape[1]):
-                        
-                    
+                                            
                         if isinstance(self.pool.get()[i][j], DO.CPUEmulator):
 
                             # n_cycles is capped at 32.
@@ -294,21 +291,10 @@ class World(Mediator):
             
         if event == "mov_right":
             self.react_on_mov_right(sender,result)
-        if event == "death":
-            self.react_on_death(sender)
     """
     The methods below define how the world reacts to different notifications
     """
-    def react_on_death(sender):
-        idx0 = np.where(self.pool.get() == sender)[0][0]
-        idx1 = np.where(self.pool.get() == sender)[1][0]
-        
-        sender_pos = (idx0,idx1)
-        self.pool.put(0,sender_pos)
-        self.rates[sender_pos]=0
-        self.ages[sender_pos]=0
-        self.inputs[idx0][idx1]=0
-        
+    
     def react_on_mov_right(self,sender,result):
         
         # Find out where the sender is at
@@ -602,9 +588,9 @@ class World(Mediator):
             emulator.mutations = sender.mutations + sender.child_mutations
             
             # Set the child's initial rate as its parent's child rate
-            # emulator.initial_rate = sender.child_rate/len(result)
+            emulator.initial_rate = sender.child_rate
             
-            #  replacement strategy
+            # Default replacement strategy
             # Look for free spots in the 1-hop neighborhood of the parent
             # If there is a free spot, put the offspring into any such spot
             # If not, kill the oldest organism in the neighborhood and put offspring there
@@ -736,7 +722,7 @@ class World(Mediator):
             self.ages[position] = 0
         
             # Update rate of the child
-            self.rates[position] = sender.child_rate
+            self.rates[position] = sender.child_rate*len(result)
             
             """
             # Update the rate of the parent iff the parent wasn't rewarded already
@@ -756,6 +742,12 @@ class World(Mediator):
 
             # Set input to none
             self.inputs[position] = (0,0)
+            
+            # Consider the sender
+            if not sender.rewarded:
+                sender.rewarded = True
+                if sender.child_rate > sender.initial_rate:
+                    self.rates[idx0,idx1] *= sender.child_rate / sender.initial_rate
 
     # Here how the world reacts upon an IO operation        
 
@@ -786,7 +778,7 @@ class World(Mediator):
             pass
         elif self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][0]:
             pass
-        elif self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] ==    self.inputs[idx0][idx1][1]:
+        elif self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][1]:
             pass
         elif self.inputs[idx0][idx1][0] | ~self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][0]:
             pass
@@ -1039,7 +1031,7 @@ class World(Mediator):
                 # If not, reward.
                 if sender.fun_xor == False:
                     sender.fun_xor = True
-                    sender.child_rate *= 16
+                    sender.child_rate *= 32
 
                 # If yes, ignore
                 else:
@@ -1068,7 +1060,7 @@ class World(Mediator):
                 # If not, reward.
                 if sender.fun_equ == False:
                     sender.fun_equ = True
-                    sender.child_rate *= 32
+                    sender.child_rate *= 64
                 
                 # If yes, ignore
                 else:
