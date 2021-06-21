@@ -520,5 +520,3 @@ class Experiment(Mediator):
         print("NOR: " + str(count_nor))
         print("XOR: " + str(count_xor))
         print("EQU: " + str(count_equ))
-        
-        

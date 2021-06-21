@@ -9,6 +9,7 @@ import DigitalOrganism as DO
 from Mediator import Mediator
 import numpy as np
 from scipy.stats import bernoulli
+from random import randrange
 
 #divLog = logging.getLogger("Division Logger")
 #divLog.setLevel(logging.DEBUG)
@@ -35,12 +36,10 @@ class Pool:
     def __init__(self, N, dtype = None):
         
         if dtype == None:
-
             self.pool = np.zeros((N,N), dtype = DO.CPUEmulator)
             self.shape = (N,N)
             
         else:
-            
             self.pool = np.zeros((N,N), dtype = dtype)
             self.shape = (N,N)
 
@@ -291,9 +290,111 @@ class World(Mediator):
             
         if event == "mov_right":
             self.react_on_mov_right(sender,result)
+            
+        if event == "feeling_frisky":
+            self.react_on_sex(sender, result)
     """
     The methods below define how the world reacts to different notifications
     """
+    
+    def react_on_sex(self,sender,result):
+        
+        # Find out where the sender is at
+        idx0 = np.where(self.pool.get() == sender)[0][0]
+        idx1 = np.where(self.pool.get() == sender)[1][0]
+        
+        # Look for a mate in the neighborhood.
+        # The mate will be the fittest organism in the neighborhood
+        
+        width = self.pool.shape[0]
+        height = self.pool.shape[1]
+            
+        # The neighborhood of the cell:
+        # Iterate over rows max(idx0-1,0) idx0, min(idx0+1, pool height - 1)
+        # Iterate over columns max(idx1-1,0), idx1, min(idx1 + 1, pool width - 1)
+            
+        # Breaking out of nested loops: 
+        # https://stackoverflow.com/questions/653509/breaking-out-of-nested-loops
+            
+        position = None
+        fittest = np.min(self.rates)
+            
+        # Finding the fittest organism in the neighborhood
+        for i in range(max(idx0-1, 0), min(idx0+2, width)):
+            for j in range(max(idx1-1, 0), min(idx1+2, height)):
+                if i == idx0 and j == idx1 or self.pool.get()[i][j] == 0:
+                    pass
+                else:
+                    if self.rates[i][j] >= fittest:
+                        fittest = self.rates[i][j]
+                        position = (i,j)                          
+        
+        # If no suitable mate found, ignore instruction
+        if position == None:
+            pass
+        
+        else:
+            
+            mate = self.pool.get(position)
+            
+            # Choose a random position in the sender's original memory
+            index_0 = randrange(len(sender.original_memory))
+            
+            # Choose half of the sender starting at this position above
+            len_0 = int(len(sender.original_memory)/2)
+            
+            # Find the sender's half
+            genome0 = []
+            for i in range(len_0):
+                genome0.append(sender.original_memory[(index_0 + i) % len(sender.original_memory)])
+                
+            # Do the same for the fittest organism from the neighborhood
+            index_1 = randrange(len(mate.original_memory))
+            
+            len_1 = int(len(mate.original_memory)/2)
+            
+            genome1 = []
+            
+            for i in range(len_1):
+                genome1.append(sender.original_memory[(index_1 + i) % len(mate.original_memory)])
+                
+            # Flip a coin to see which genome comes first            
+            coin = randrange(2)
+            if coin == 0:                
+                result_genome = genome0 + genome1
+            else:
+                result_genome = genome1 + genome0
+                
+            # Place the resulting organism at the weakest position in the neighborhood
+            # which is neither the sender nor the mate
+            
+            result_position = None
+            weakest = np.max(self.rates)
+            
+            # Looking for a free position and simultaneously checking which organism
+            # in the neighborhood is the weakestone
+            try:
+                for i in range(max(idx0-1, 0), min(idx0+2, width)):
+                    for j in range(max(idx1-1, 0), min(idx1+2, height)):
+                        # No suicides!
+                        if i == idx0 and j == idx1 or (i,j) == position:
+                                pass
+                        else:
+                            if self.pool.get()[i][j] == 0:
+                                result_position = (i,j)
+                                raise BreakIt
+                            elif self.rates[i][j] <= weakest:
+                                weakest = self.rates[i][j]
+                                result_position = (i,j)                          
+            except BreakIt:
+                pass
+            
+            self.place_custom(result_genome,result_position)
+            
+            # TODO: Inform the organism that it is the result of sexual reproduction
+            # TODO: Log its lineage
+    
+        
     
     def react_on_mov_right(self,sender,result):
         
@@ -749,8 +850,7 @@ class World(Mediator):
                 if sender.child_rate > sender.initial_rate:
                     self.rates[idx0,idx1] *= sender.child_rate / sender.initial_rate
 
-    # Here how the world reacts upon an IO operation        
-
+    # Here how the world reacts upon an IO operation
     def react_on_IO(self, sender, result):
         
         # Find the position in the pool where the sender is at:
@@ -761,7 +861,7 @@ class World(Mediator):
         if self.inputs[idx0][idx1][0] == 0:
             pass
         
-        # Filtering outputs
+         # Filtering outputs
         elif -7 < result < 7:
             pass
         elif self.inputs[idx0][idx1][0] == ~self.inputs[idx0][idx1][1]:
@@ -788,7 +888,7 @@ class World(Mediator):
             pass
         elif ~self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][1]:
             pass
-        
+                
         # If the most recent input isn't none, but the second most recent is, check if not was computed
         elif self.inputs[idx0][idx1][0] != 0 and self.inputs[idx0][idx1][1] == 0:
             
@@ -1031,7 +1131,7 @@ class World(Mediator):
                 # If not, reward.
                 if sender.fun_xor == False:
                     sender.fun_xor = True
-                    sender.child_rate *= 32
+                    sender.child_rate *= 16
 
                 # If yes, ignore
                 else:
@@ -1060,7 +1160,7 @@ class World(Mediator):
                 # If not, reward.
                 if sender.fun_equ == False:
                     sender.fun_equ = True
-                    sender.child_rate *= 64
+                    sender.child_rate *= 32
                 
                 # If yes, ignore
                 else:

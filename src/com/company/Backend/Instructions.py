@@ -819,54 +819,13 @@ class InstructionMove:
         elif dice == 3:
             self.emulator.mediator.notify(sender = self.emulator, event = "mov_right", result = None)
 
-class InstructionMoveUp:
+
+class InstructionSexualReproduction:
     
     def __init__(self,emulator):
         self.emulator = emulator
         
     def execute(self):
-
-        """
-        The organism moves one position upwards in the pool, unless it's already all the way at the top
-        """
         
-        self.emulator.mediator.notify(sender = self.emulator, event = "mov_up", result = None)
-        
-class InstructionMoveDown:
-    
-    def __init__(self,emulator):
-        self.emulator = emulator
-        
-    def execute(self):
-
-        """
-        The organism moves one position downwards in the pool, unless it's already all the way down
-        """
-        
-        self.emulator.mediator.notify(sender = self.emulator, event = "mov_down", result = None)
-        
-class InstructionMoveLeft:
-    
-    def __init__(self,emulator):
-        self.emulator = emulator
-        
-    def execute(self):
-
-        """
-        The organism moves one position leftwards in the pool, unless it's already all the way left
-        """
-        
-        self.emulator.mediator.notify(sender = self.emulator, event = "mov_left", result = None)
-        
-class InstructionMoveRight:
-    
-    def __init__(self,emulator):
-        self.emulator = emulator
-        
-    def execute(self):
-
-        """
-        The organism moves one position to the right in the pool, unless it's already all the way to the right
-        """
-        
-        self.emulator.mediator.notify(sender = self.emulator, event = "mov_right", result = None)
+        # The instruction is relegated to the world in which the organism lives
+        self.emulator.mediator.notify(sender = self.emulator, event = "feeling_frisky", result = None)
