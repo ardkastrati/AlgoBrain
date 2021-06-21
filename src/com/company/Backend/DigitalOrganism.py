@@ -172,7 +172,9 @@ class CPUEmulator:
         
         if self.instr_pointer.get() == ip:
                 self.instr_pointer.increment()
-
+        #if self.age > 6000:
+        #    self.mediator.notify(sender=self,event='death',result = None)
+            
     # Obsolete
     def execute_program(self):
 

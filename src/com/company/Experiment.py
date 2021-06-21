@@ -5,8 +5,8 @@ import numpy as np
 # Add Backend to path
 import sys
 #sys.path.append('C:/Users/eeveetza/Documents/GitHub/AlgoBrain/src/com/company/Backend')
-sys.path.append('C:/Users/eeveetza/Documents/GitHub/AlgoBrain_local/Backend')
-
+#sys.path.append('C:/Users/eeveetza/Documents/GitHub/AlgoBrain_local/Backend')
+sys.path.append('C:/Users/Tbuob/OneDrive/Dokumente/GitHub/AlgoBrain/src/com/company/Backend')
 from Environment import World
 from Mediator import Mediator
 
@@ -48,7 +48,7 @@ class Experiment(Mediator):
             self.world.fill("default")
             
         elif self.start_organism == "default_long":
-            self.world.fill([16, 20, 2, 0, 21] + [2]*56 + [20, 19, 25, 2, 0, 17, 21, 0, 1])
+            self.world.fill([16, 20, 2, 0, 21] + [2]*85 + [20, 19, 25, 2, 0, 17, 21, 0, 1])
             
         elif self.start_organism == "nand":
             self.world.fill([23, 20, 2, 0, 21, 2, 6, 1, 19, 13, 18, 2, 25, 9, 2, 18, 16, 15, 15, 2, 2, 2, 18, 7, 2, 2, 2, 18, 2, 20, 10, 8, 18, 6, 4, 19, 8, 8, 17, 2, 6, 20, 19, 25, 2, 0, 17, 21, 0, 1])

@@ -209,7 +209,9 @@ class World(Mediator):
                              current_emulator = self.pool.get()[i][j]
                                                             
                              for i_cycles in range(n_cycles):
-                                
+                                 if(self.ages[i][j]>(self.rates[i][j]/self.baseline_rate()*len(self.get((i,j)).memory))):
+                                        self.react_on_death(self.get((i,j)))
+                                 #       
                                  current_emulator.execute_instruction()
                                  self.ages[self.pool.get() == current_emulator] = current_emulator.age
         
@@ -292,10 +294,21 @@ class World(Mediator):
             
         if event == "mov_right":
             self.react_on_mov_right(sender,result)
+        if event == "death":
+            self.react_on_death(sender)
     """
     The methods below define how the world reacts to different notifications
     """
-    
+    def react_on_death(sender):
+        idx0 = np.where(self.pool.get() == sender)[0][0]
+        idx1 = np.where(self.pool.get() == sender)[1][0]
+        
+        sender_pos = (idx0,idx1)
+        self.pool.put(0,sender_pos)
+        self.rates[sender_pos]=0
+        self.ages[sender_pos]=0
+        self.inputs[idx0][idx1]=0
+        
     def react_on_mov_right(self,sender,result):
         
         # Find out where the sender is at
