@@ -21,10 +21,10 @@ class Register:
         return self.content
 
     def increment(self, a = 1):
-        self.content += a
+        self.content = np.uintc(self.content + a)
 
     def decrement(self, b = 1):
-        self.content -= b
+        self.content = np.uintc(self.content - b)
 
 # %% The Heads
 

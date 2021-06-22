@@ -142,7 +142,6 @@ class InstructionPop:
         self.machine = emulator.cpu
         self.emulator = emulator
 
-
     def execute(self):
 
         next_ = self.emulator.instruction_memory.get((self.emulator.instr_pointer.get() + 1) % self.emulator.instruction_memory.size())
@@ -410,7 +409,7 @@ class InstructionHDivide:
                     if self.emulator.mediator.instruction_set == "default":
                         max_instr = 26
                     else:
-                        max_instr = 27
+                        max_instr = 28
 
                     if chance == 1:
                         location = random.randint(0, len(result))
@@ -489,18 +488,20 @@ class InstructionIO:
         # Notify the world about IO
         self.emulator.mediator.notify(sender = self.emulator, event = "IO_operation", result = to_output)
 
-        # get: return value from input buffer into ?BX?
-        if isinstance(next_, InstructionNopA):
-            to_input = self.emulator.cpu.input_buffer.get()
-            self.emulator.cpu.reg_a.write(to_input)
+        # get: return value from input buffer into ?BX? IFF input buffer not empty
+        if not self.emulator.cpu.input_buffer.empty():
+            
+            if isinstance(next_, InstructionNopA):
+                to_input = self.emulator.cpu.input_buffer.get()
+                self.emulator.cpu.reg_a.write(to_input)
 
-        elif isinstance(next_, InstructionNopC):
-            to_input = self.emulator.cpu.input_buffer.get()
-            self.emulator.cpu.reg_c.write(to_input)
+            elif isinstance(next_, InstructionNopC):
+                to_input = self.emulator.cpu.input_buffer.get()
+                self.emulator.cpu.reg_c.write(to_input)
 
-        else:
-            to_input = self.emulator.cpu.input_buffer.get()
-            self.emulator.cpu.reg_b.write(to_input)
+            else:
+                to_input = self.emulator.cpu.input_buffer.get()
+                self.emulator.cpu.reg_b.write(to_input)
 
 class InstructionHCopy:
 
@@ -533,7 +534,7 @@ class InstructionHCopy:
                 if self.emulator.mediator.instruction_set == "default":
                     max_instr = 26
                 else:
-                    max_instr = 27
+                    max_instr = 28
 
                 if chance == 1:
                     location = self.emulator.read_head.get()
@@ -780,26 +781,6 @@ class InstructionConsume:
         The instructions of the smaller emulator are appended to after the consume instruction
         """
         self.emulator.mediator.notify(sender = self.emulator, event = "consume", result = None)
-        
-    
-"""
-class InstructionSymbiosis:
-    
-    def __init__(self,emulator):
-        self.emulator = emulator
-        
-    def execute(self):
-        
-        The Symbiosis instruction has the following functionality:
-            
-            Look through the neighborhood. 
-            Find the most fit organism there.
-            If all are equally fit, pick one at random and initialize symbiosis with it.
-
-            Notify World that we want to do Symbiosis.
-            This needs to be done since organisms themselves have no notion of where they are in the world
-            nor what their neighbors are, the world keeps track of this.
-"""
 
 class InstructionMove:
     
@@ -819,7 +800,6 @@ class InstructionMove:
         elif dice == 3:
             self.emulator.mediator.notify(sender = self.emulator, event = "mov_right", result = None)
 
-
 class InstructionSexualReproduction:
     
     def __init__(self,emulator):
@@ -827,5 +807,6 @@ class InstructionSexualReproduction:
         
     def execute(self):
         
-        # The instruction is relegated to the world in which the organism lives
-        self.emulator.mediator.notify(sender = self.emulator, event = "feeling_frisky", result = None)
+        # Every reproduction has a certain chance of being successful
+        if randrange(64) == 0:
+            self.emulator.mediator.notify(sender = self.emulator, event = "feeling_frisky", result = None)

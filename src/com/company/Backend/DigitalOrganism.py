@@ -99,7 +99,7 @@ class CPUEmulator:
                                 InstructionNand(self),InstructionHAlloc(self),InstructionHDivide(self),InstructionIO(self),\
                                 InstructionHCopy(self),InstructionHSearch(self),InstructionMovHead(self),InstructionJmpHead(self),\
                                 InstructionGetHead(self),InstructionSetFlow(self),InstructionIfLabel(self), InstructionMove(self),\
-                                InstructionConsume(self)]
+                                InstructionSexualReproduction(self)]
             
         # Helper attributes for tracking the lineage of an organism
         self.ancestor = None
@@ -126,6 +126,9 @@ class CPUEmulator:
         # Upon initial placement of organism into the pool, this is set to 1
         # When an organism divides, this is set to its parent's child rate
         self.initial_rate = 1
+        
+        # Determines how many inputs the emulator is eligible to receive
+        self.eligible_inputs = 2
 
     def clear(self):
 

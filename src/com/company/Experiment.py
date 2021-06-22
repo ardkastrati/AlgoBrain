@@ -120,13 +120,39 @@ class Experiment(Mediator):
         
     def react_on_function_io(self,sender,result):
         
-        # Obsolete
-        if self.flagged == sender.original_memory:
-            print("Flagged")
+        i0 = result[0]
+        i1 = result[1]
+        out = result[2]
+        
+        # Filtering outputs
+        if -7 < out < 7:
+            pass
+        elif i0 == ~i1:
+            pass
+        elif ~i0 == i1:
+            pass
+        elif i0 & ~i1 == i0:
+            pass
+        elif i0 & i1 == i1:
+            pass
+        elif i0 & ~i1 == i1:
+            pass
+        elif ~i0 & i1 == i0:
+            pass
+        elif i0 | i1 == i0:
+            pass
+        elif i0 | i1 == i1:
+            pass
+        elif i0 | ~i1 == i0:
+            pass
+        elif i0 | ~i1 == i1:
+            pass
+        elif ~i0 | i1 == i0:
+            pass
+        elif ~i0 | i1 == i1:
             pass
         
         else:
-            
             if self.target_function == "nand":
             
                 print("Reacting on IO")

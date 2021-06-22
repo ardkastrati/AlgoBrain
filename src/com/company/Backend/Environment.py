@@ -251,16 +251,14 @@ class World(Mediator):
                                 current_emulator.execute_instruction()
                                 self.ages[self.pool.get() == current_emulator] = current_emulator.age
                                 
-                            # If the emulator is 100 times older than the average emulator age,
-                            # it's time to go old man
-                            # I hope that this is an extreme case. This should be well regulated
-                            # with the 32 instructions cap above
+                            # In Vanilla Avida, organisms get killed once their age is larger than a value
+                            # proportional to their genome length
+                            if self.ages[self.pool.get() == current_emulator] > 32 * len(current_emulator.original_memory):
+                                # The organism might have moved. Need to relocate it
+                                i0 = np.where(self.pool.get() == current_emulator)[0][0]
+                                i1 = np.where(self.pool.get() == current_emulator)[1][0]
+                                self.kill((i0,i1))
                             
-                            """
-                            if self.ages[i][j] > 10000 and self.ages[i][j] > 100*np.mean(self.ages):
-                                print("Killed organism with rate " + str(self.rates[i][j]))
-                                self.kill((i,j))
-                            """
 
     # The following method defines which functions are to be called when world is notified 
     # of various events
@@ -297,7 +295,9 @@ class World(Mediator):
     The methods below define how the world reacts to different notifications
     """
     
-    def react_on_sex(self,sender,result):
+    # Sexual reproduction in which the organisms are split at random locations.
+    # I expect this to be detrimental to the performance.
+    def react_on_sex_rand(self,sender,result):
         
         # Find out where the sender is at
         idx0 = np.where(self.pool.get() == sender)[0][0]
@@ -394,8 +394,150 @@ class World(Mediator):
             # TODO: Inform the organism that it is the result of sexual reproduction
             # TODO: Log its lineage
     
-        
+    # Sexual reproduction in which the child is the result of the first half
+    # of the genome of one parent and of the second half of the genome of the other parent.
+    # The effects of this instruction could be interesting to observe
     
+    def react_on_sex(self,sender,result):
+        
+        # Find out where the sender is at
+        idx0 = np.where(self.pool.get() == sender)[0][0]
+        idx1 = np.where(self.pool.get() == sender)[1][0]
+        
+        # Look for a mate in the neighborhood.
+        # The mate will be the fittest organism in the neighborhood
+        
+        width = self.pool.shape[0]
+        height = self.pool.shape[1]
+            
+        # The neighborhood of the cell:
+        # Iterate over rows max(idx0-1,0) idx0, min(idx0+1, pool height - 1)
+        # Iterate over columns max(idx1-1,0), idx1, min(idx1 + 1, pool width - 1)
+            
+        # Breaking out of nested loops: 
+        # https://stackoverflow.com/questions/653509/breaking-out-of-nested-loops
+            
+        position = None
+        fittest = np.min(self.rates)
+            
+        # Finding the fittest organism in the neighborhood
+        for i in range(max(idx0-1, 0), min(idx0+2, width)):
+            for j in range(max(idx1-1, 0), min(idx1+2, height)):
+                if i == idx0 and j == idx1 or self.pool.get()[i][j] == 0:
+                    pass
+                else:
+                    if self.rates[i][j] >= fittest:
+                        fittest = self.rates[i][j]
+                        position = (i,j)                          
+        
+        # If no suitable mate found, ignore instruction
+        if position == None:
+            pass
+        
+        else:
+            
+            mate = self.pool.get(position)
+            
+            # Ease of use
+            send_mem = sender.original_memory.copy()
+            mate_mem = mate.original_memory.copy()
+            
+            # Flip a coin to see which parent gives the first half of its genome 
+            # and which the second
+            coin = randrange(2)
+            if coin == 0:                
+                first_half = send_mem[:int(len(send_mem)/2)]
+                second_half = mate_mem[int(len(mate_mem)/2):]
+            else:
+                first_half = send_mem[int(len(send_mem)/2):]
+                second_half = mate_mem[:int(len(mate_mem)/2)]
+            
+            result_genome = first_half + second_half
+
+            result_position = None
+            weakest = np.max(self.rates)
+            
+            # Looking for a free position and simultaneously checking which organism
+            # in the neighborhood is the weakest one
+            try:
+                for i in range(max(idx0-1, 0), min(idx0+2, width)):
+                    for j in range(max(idx1-1, 0), min(idx1+2, height)):
+                        # No suicides!
+                        if i == idx0 and j == idx1 or (i,j) == position:
+                                pass
+                        else:
+                            if self.pool.get()[i][j] == 0:
+                                result_position = (i,j)
+                                raise BreakIt
+                            elif self.rates[i][j] <= weakest:
+                                weakest = self.rates[i][j]
+                                result_position = (i,j)                          
+            except BreakIt:
+                pass
+            
+            # Placing the organism in the pool
+            # I really should have made a function for this earlier.
+            # place_custom can only be used for initializing the pool
+            
+            # Create a program from the result
+            program = DO.Program(result_genome)
+        
+            # Create a new emulator and load the resulting program in it
+            emulator = DO.CPUEmulator()
+            emulator.load_program(program)
+        
+            # Link self as the new emulator's mediator
+            emulator.mediator = self
+        
+            # Set the mutation probabilities as defined in the world
+            emulator.mutation_prob = self.cm_prob
+            emulator.ins_prob = self.ins_prob
+            emulator.del_prob = self.del_prob
+            
+            # The child's generation is 1 + the parent's generation
+            emulator.generation = sender.generation + 1
+        
+            # The child inherits the ancestor from its parent
+            emulator.ancestor = sender.ancestor.copy()
+        
+            # The mutations which resulted in the child:
+            emulator.mutations = sender.mutations + sender.child_mutations
+            
+            # Set the child's initial rate as its parent's child rate
+            emulator.initial_rate = sender.child_rate
+            
+            # Put the created emulator in the found position
+            self.pool.put(emulator, result_position)
+        
+            # Put age 0 in the correct position
+            self.ages[result_position] = 0
+        
+            # Update rate of the child.
+            # At the moment it's proportional to the average of the rates of the two parents
+            self.rates[result_position] = int((sender.child_rate + mate.child_rate)/2)*len(result_genome)
+            
+            """
+            # Update the rate of the parent iff the parent wasn't rewarded already
+            if not sender.rewarded:
+                    
+                # If the organism ends up being weaker than its parent
+                # I won't take its rewards away, it's already rewarded enough
+                if (sender.child_rate/(len(result))) / sender.initial_rate <= 1:
+                    sender.rewarded = True
+                    pass
+                
+                else:
+                    temp = self.rates[idx0,idx1] * sender.child_rate/(len(result)) / sender.initial_rate
+                    self.rates[idx0,idx1] = temp
+                    sender.rewarded = True
+            """
+
+            # Set input to none
+            self.inputs[position] = (0,0)
+            
+            # TODO: Inform the organism that it is the result of sexual reproduction
+            # TODO: Log its lineage
+
     def react_on_mov_right(self,sender,result):
         
         # Find out where the sender is at
@@ -567,7 +709,8 @@ class World(Mediator):
             self.inputs[target_pos] = inp
             self.rates[target_pos] = rate
             self.ages[target_pos] = age
-
+        
+    # NOTE: Consume is a horrible instruction and we won't be using it
     def react_on_consume(self,sender,result):
         
         # Find out where the sender is at
@@ -857,38 +1000,13 @@ class World(Mediator):
         idx0 = np.where(self.pool.get() == sender)[0][0]
         idx1 = np.where(self.pool.get() == sender)[1][0]
         
+        # A helper variable that helps us determine whether the organism computed a function
+        rate_before_io = sender.child_rate
+        
         # If the most recent input is none, do nothing
         if self.inputs[idx0][idx1][0] == 0:
             pass
-        
-         # Filtering outputs
-        elif -7 < result < 7:
-            pass
-        elif self.inputs[idx0][idx1][0] == ~self.inputs[idx0][idx1][1]:
-            pass
-        elif ~self.inputs[idx0][idx1][0] == self.inputs[idx0][idx1][1]:
-            pass
-        elif self.inputs[idx0][idx1][0] & ~self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][0]:
-            pass
-        elif (~self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1]) == self.inputs[idx0][idx1][1]:
-            pass
-        elif self.inputs[idx0][idx1][0] & ~self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][1]:
-            pass
-        elif ~self.inputs[idx0][idx1][0] & self.inputs[idx0][idx1][1] ==self.inputs[idx0][idx1][0]:
-            pass
-        elif self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][0]:
-            pass
-        elif self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][1]:
-            pass
-        elif self.inputs[idx0][idx1][0] | ~self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][0]:
-            pass
-        elif self.inputs[idx0][idx1][0] | ~self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][1]:
-            pass
-        elif ~self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][0]:
-            pass
-        elif ~self.inputs[idx0][idx1][0] | self.inputs[idx0][idx1][1] == self.inputs[idx0][idx1][1]:
-            pass
-                
+              
         # If the most recent input isn't none, but the second most recent is, check if not was computed
         elif self.inputs[idx0][idx1][0] != 0 and self.inputs[idx0][idx1][1] == 0:
             
@@ -1174,19 +1292,25 @@ class World(Mediator):
                 if self.output:
                     print("Notifying experiment of function_IO")
                     self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
-     
-        # A random 32-bit number
-        #to_input = np.random.randint(low = 0, high = 4294967295, dtype = np.uintc)
-        to_input = np.random.randint(low = 0, high = 4294967295, dtype = np.uintc)
         
-        # Put the randomly generated number into the input buffer of the emulator
-        sender.cpu.input_buffer.put(to_input)
+        # We can determine whether the organism computed anything by looking at whether its child_rate changed
+        if rate_before_io != sender.child_rate:
+            sender.eligible_inputs = 2
         
-        # Update inputs array
-        # Old newest input gets placed into position 1
-        # New input gets placed into position 0
-        self.inputs[idx0][idx1][1] = self.inputs[idx0][idx1][0]
-        self.inputs[idx0][idx1][0] = to_input
+        if sender.eligible_inputs > 0:
+            # A random 32-bit number
+            to_input = np.random.randint(low = 0, high = 4294967295, dtype = np.uintc)
+        
+            # Put the randomly generated number into the input buffer of the emulator
+            sender.cpu.input_buffer.put(to_input)
+        
+            # Update inputs array
+            # Old newest input gets placed into position 1
+            # New input gets placed into position 0
+            self.inputs[idx0][idx1][1] = self.inputs[idx0][idx1][0]
+            self.inputs[idx0][idx1][0] = to_input
+            
+            sender.eligible_inputs -= 1
         
     """
     Everything that follows doesn't compose the core functionality of World.
