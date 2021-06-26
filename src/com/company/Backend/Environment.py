@@ -112,6 +112,11 @@ class World(Mediator):
         # Can be changed to "custom" when defining an experiment
         self.instruction_set = "default"
         
+        # Tracking the number of updates. One update == On average, each organism
+        # has run 30 instructions
+        self.executions = 0
+        
+        
         """
         # See whether we want to log divisions
         self.log_division = log_division
@@ -250,6 +255,7 @@ class World(Mediator):
                                 
                                 current_emulator.execute_instruction()
                                 self.ages[self.pool.get() == current_emulator] = current_emulator.age
+                                self.executions += 1
                                 
                             # In Vanilla Avida, organisms get killed once their age is larger than a value
                             # proportional to their genome length

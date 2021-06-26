@@ -44,6 +44,8 @@ class Experiment(Mediator):
         # Helper attributes
         self.counter = 0
         self.stat_cycles = stat_cycles
+        self.update = 0
+        self.N = N
         
         if self.start_organism == "default":
             self.world.fill("default")
@@ -99,7 +101,7 @@ class Experiment(Mediator):
         else:
             print("Reacting on " + str(self.target_function))
             
-            for i in range(5):
+            for i in range(10):
                 test_world = World(1,cm_prob = 0, ins_prob = 0, del_prob = 0)
         
                 test_world.place_custom(result)
@@ -351,11 +353,17 @@ class Experiment(Mediator):
         while self.first_specimen == None:
             self.world.schedule(1)
             
+            # When on average each emulator has executed 30 instructions, increase the number of updates
+            if self.world.executions >= 30 * (self.N ** 2):
+                self.update += 1
+                self.world.executions = 0
+            
             i += 1
             
             if i == self.stat_cycles:
                 
                 print("\n")
+                print("UPDATE: " + str(self.update))
                 self.display_statistics()
                 
                 #print(self.world.rates)
