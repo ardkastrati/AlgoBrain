@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 class Experiment(Mediator):
     
     def __init__(self, start_organism = "default", target_function = "equ", N=30,cm_prob = 0.05, ins_prob = 0.05, del_prob = 0.05, notify_ = False, stat_cycles = 200,\
-                 instruction_set = "default"):
+                 instruction_set = "default", update_cycles = 5):
         
         # Define the organism that we start with
         self.start_organism = start_organism
@@ -46,6 +46,7 @@ class Experiment(Mediator):
         self.stat_cycles = stat_cycles
         self.update = 0
         self.N = N
+        self.update_cycles = update_cycles
         
         if self.start_organism == "default":
             self.world.fill("default")
@@ -348,8 +349,9 @@ class Experiment(Mediator):
     # We run the experiment until we have evolved the function that we wanted to evolve
     # If we have correctly evolved such a function, the first_specimen attribute will no longer be None
     def run(self):
-
+        
         i = 0
+
         while self.first_specimen == None:
             self.world.schedule(1)
             
@@ -357,9 +359,9 @@ class Experiment(Mediator):
             if self.world.executions >= 30 * (self.N ** 2):
                 self.update += 1
                 self.world.executions = 0
+                i += 1
             
-            i += 1
-            
+            """
             if i == self.stat_cycles:
                 
                 print("\n")
@@ -371,6 +373,13 @@ class Experiment(Mediator):
                 #plt.imshow(self.world.rates)
                 #plt.colorbar()
                 #plt.show()
+                i = 0
+            """
+            
+            if i == self.update_cycles:
+                print("UPDATE: " + str(self.update))
+                self.display_statistics()
+                print("\n")
                 i = 0
 
                 
