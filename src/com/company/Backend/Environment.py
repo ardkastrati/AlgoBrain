@@ -116,41 +116,6 @@ class World(Mediator):
         # has run 30 instructions
         self.executions = 0
         
-        
-        """
-        # See whether we want to log divisions
-        self.log_division = log_division
-        if self.log_division:
-            # Create a logger and set its level
-            # The logger will be used purely to track organism divisions
-            self.divisionLogger = logging.getLogger( __name__ )
-            self.divisionLogger.setLevel(logging.DEBUG)
-            # Create a file handler and set its level
-            f_handler_div = logging.FileHandler('divisions.log')
-            f_handler_div.setLevel(logging.DEBUG)
-            # Create a formatter and add it to the handler
-            f_format_div = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-            f_handler_div.setFormatter(f_format_div)
-            # Add handler to logger
-            self.divisionLogger.addHandler(f_handler_div)
-            
-        # See whether we want to log functions
-        self.log_functions = log_functions
-        if self.log_functions:
-            # Create a logger and set its level
-            # The logger will be used purely to track organism divisions
-            self.functionLogger = logging.getLogger( __name__ )
-            self.functionLogger.setLevel(logging.DEBUG)
-            # Create a file handler and set its level
-            f_handler_fun = logging.FileHandler('divisions.log')
-            f_handler_fun.setLevel(logging.DEBUG)
-            # Create a formatter and add it to the handler
-            f_format_fun = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-            f_handler_fun.setFormatter(f_format_fun)
-            # Add handler to logger
-            self.functionLogger.addHandler(f_handler_fun)
-        """
-        
     """
     The following methods comprise the core functionality of World
     """
@@ -297,6 +262,7 @@ class World(Mediator):
             
         if event == "feeling_frisky":
             self.react_on_sex(sender, result)
+            
     """
     The methods below define how the world reacts to different notifications
     """
@@ -396,9 +362,6 @@ class World(Mediator):
                 pass
             
             self.place_custom(result_genome,result_position)
-            
-            # TODO: Inform the organism that it is the result of sexual reproduction
-            # TODO: Log its lineage
     
     # Sexual reproduction in which the child is the result of the first half
     # of the genome of one parent and of the second half of the genome of the other parent.
@@ -521,22 +484,6 @@ class World(Mediator):
             # Update rate of the child.
             # At the moment it's proportional to the average of the rates of the two parents
             self.rates[result_position] = int((sender.child_rate + mate.child_rate)/2)*len(result_genome)
-            
-            """
-            # Update the rate of the parent iff the parent wasn't rewarded already
-            if not sender.rewarded:
-                    
-                # If the organism ends up being weaker than its parent
-                # I won't take its rewards away, it's already rewarded enough
-                if (sender.child_rate/(len(result))) / sender.initial_rate <= 1:
-                    sender.rewarded = True
-                    pass
-                
-                else:
-                    temp = self.rates[idx0,idx1] * sender.child_rate/(len(result)) / sender.initial_rate
-                    self.rates[idx0,idx1] = temp
-                    sender.rewarded = True
-            """
 
             # Set input to none
             self.inputs[position] = (0,0)
@@ -973,22 +920,6 @@ class World(Mediator):
         
             # Update rate of the child
             self.rates[position] = sender.child_rate*len(result)
-            
-            """
-            # Update the rate of the parent iff the parent wasn't rewarded already
-            if not sender.rewarded:
-                    
-                # If the organism ends up being weaker than its parent
-                # I won't take its rewards away, it's already rewarded enough
-                if (sender.child_rate/(len(result))) / sender.initial_rate <= 1:
-                    sender.rewarded = True
-                    pass
-                
-                else:
-                    temp = self.rates[idx0,idx1] * sender.child_rate/(len(result)) / sender.initial_rate
-                    self.rates[idx0,idx1] = temp
-                    sender.rewarded = True
-            """
 
             # Set input to none
             self.inputs[position] = (0,0)
@@ -998,6 +929,9 @@ class World(Mediator):
                 sender.rewarded = True
                 if sender.child_rate > sender.initial_rate:
                     self.rates[idx0,idx1] *= sender.child_rate / sender.initial_rate
+                    
+            # Inherit the point mutation attribute
+            emulator.pm = sender.pm
 
     # Here how the world reacts upon an IO operation
     def react_on_IO(self, sender, result):
@@ -1037,11 +971,9 @@ class World(Mediator):
                 
                 # Notify the experiment about this event, if the current world is linked to one
                 if self.experiment != None and not self.output:
-                    #print("Notifying experiment of NOT")
                     self.experiment.notify(sender = sender, event = "not", result = sender.original_memory)
                     
                 if self.output:
-                    print("Notifying experiment of function_IO")
                     self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
         
         # If the two most recent inputs aren't none, check whether a function of the two most recent inputs was computed
@@ -1071,11 +1003,9 @@ class World(Mediator):
                 
                 # Notify the experiment about this event, if the current world is linked to one
                 if self.experiment != None and not self.output:
-                    #print("Notifying experiment of NOT")
                     self.experiment.notify(sender = sender, event = "not", result = sender.original_memory)
                     
                 if self.output:
-                    print("Notifying experiment of function_IO")
                     self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
             
             # If a NAND was computed
@@ -1100,11 +1030,9 @@ class World(Mediator):
                 
                 # Notify the experiment about this event, if the current world is linked to one
                 if self.experiment != None and not self.output:
-                    #print("Notifying experiment of NAND")
                     self.experiment.notify(sender = sender, event = "nand", result = sender.original_memory)
                     
                 if self.output:
-                    print("Notifying experiment of function_IO")
                     self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
                 
             # If an AND was computed
@@ -1129,11 +1057,9 @@ class World(Mediator):
                 
                 # Notify the experiment about this event, if the current world is linked to one
                 if self.experiment != None and not self.output:
-                    #print("Notifying experiment of AND")
                     self.experiment.notify(sender = sender, event = "and", result = sender.original_memory)
                     
                 if self.output:
-                    print("Notifying experiment of function_IO")
                     self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
                 
             # If an OR_N was computed
@@ -1177,11 +1103,9 @@ class World(Mediator):
                 
                 # Notify the experiment about this event, if the current world is linked to one
                 if self.experiment != None and not self.output:
-                    #print("Notifying experiment of OR")
                     self.experiment.notify(sender = sender, event = "or", result = sender.original_memory)
                     
                 if self.output:
-                    print("Notifying experiment of function_IO")
                     self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
                 
             # If an AND_N was computed
@@ -1205,11 +1129,9 @@ class World(Mediator):
                 
                 # Notify the experiment about this event, if the current world is linked to one
                 if self.experiment != None and not self.output:
-                    #print("Notifying experiment of AND_N")
                     self.experiment.notify(sender = sender, event = "and_n", result = sender.original_memory)
                     
                 if self.output:
-                    print("Notifying experiment of function_IO")
                     self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
                 
             # If a NOR was computed
@@ -1233,11 +1155,9 @@ class World(Mediator):
                 
                 # Notify the experiment about this event, if the current world is linked to one
                 if self.experiment != None and not self.output:
-                    #print("Notifying experiment of NOR")
                     self.experiment.notify(sender = sender, event = "nor", result = sender.original_memory)
                     
                 if self.output:
-                    print("Notifying experiment of function_IO")
                     self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
                 
             # If an XOR was computed:
@@ -1263,11 +1183,9 @@ class World(Mediator):
                 
                 # Notify the experiment about this event, if the current world is linked to one
                 if self.experiment != None and not self.output:
-                    #print("Notifying experiment of XOR")
                     self.experiment.notify(sender = sender, event = "xor", result = sender.original_memory)
                     
                 if self.output:
-                    print("Notifying experiment of function_IO")
                     self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
                 
             # If EQU was computed:
@@ -1292,11 +1210,9 @@ class World(Mediator):
                 
                 # Notify the experiment about this event, if the current world is linked to one
                 if self.experiment != None and not self.output:
-                    #print("Notifying experiment of EQU")
                     self.experiment.notify(sender = sender, event = "equ", result = sender.original_memory)
                     
                 if self.output:
-                    print("Notifying experiment of function_IO")
                     self.experiment.notify(sender = sender, event = "function_IO", result = ((self.inputs[idx0][idx1][0],self.inputs[idx0][idx1][1],result)))
         
         # We can determine whether the organism computed anything by looking at whether its child_rate changed
@@ -1506,6 +1422,34 @@ class World(Mediator):
         self.rates[position] = 0
         self.inputs[position] = (0,0)
         self.ages[position] = 0
+        
+    # Executes point (cosmic ray) mutations, from the default instruction set for maximum effect
+    def point_mutations(self):
+        
+        for i in range(self.pool.shape[0]):
+            for j in range(self.pool.shape[1]):
+                
+                if self.pool.get((i,j)) == 0:
+                    pass
+                else:
+                    
+                    # With 10% probability a point mutation happens
+                    chance = randrange(10)
+                    
+                    if chance == 0:
+                        emulator = self.pool.get((i,j))
+                        program = emulator.original_memory.copy()
+                        
+                        location = randrange(len(program))
+                        temp = randrange(26)
+                        
+                        program[location] = temp
+                        
+                        emulator.load_program(DO.Program(program))
+                        
+                        emulator.pm += 1
+                        
+                        emulator.child_mutations.append(["C", location, temp, emulator.generation])
     
     # A string representation of the world pool
 

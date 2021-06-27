@@ -129,6 +129,9 @@ class CPUEmulator:
         
         # Determines how many inputs the emulator is eligible to receive
         self.eligible_inputs = 2
+        
+        # Indicates how many point mutations were observed in the ancestors of the organism
+        self.pm = 0
 
     def clear(self):
 

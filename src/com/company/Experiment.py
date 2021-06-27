@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 class Experiment(Mediator):
     
     def __init__(self, start_organism = "default", target_function = "equ", N=30,cm_prob = 0.05, ins_prob = 0.05, del_prob = 0.05, notify_ = False, stat_cycles = 200,\
-                 instruction_set = "default", update_cycles = 5):
+                 instruction_set = "default", update_cycles = 5, point_mutations = False, pm_updates = 100):
         
         # Define the organism that we start with
         self.start_organism = start_organism
@@ -25,7 +25,7 @@ class Experiment(Mediator):
         # Define the function that we want to evolve:
         self.target_function = target_function
         
-        # Here we will save the first organism which really computes the target function
+        # Here we will save the first genome which really computes the target function
         self.first_specimen = None
         
         # The World in which everything happens
@@ -47,6 +47,14 @@ class Experiment(Mediator):
         self.update = 0
         self.N = N
         self.update_cycles = update_cycles
+        self.emulator = None
+        
+        # Point mutations defined in the following way:
+        # Every pm_updates updates, approximately 10% of the organisms have a random instruction
+        # changed
+        
+        self.point_mutations = point_mutations
+        self.pm_updates = pm_updates
         
         if self.start_organism == "default":
             self.world.fill("default")
@@ -100,7 +108,6 @@ class Experiment(Mediator):
             pass
         
         else:
-            print("Reacting on " + str(self.target_function))
             
             for i in range(10):
                 test_world = World(1,cm_prob = 0, ins_prob = 0, del_prob = 0)
@@ -118,6 +125,7 @@ class Experiment(Mediator):
                 self.first_specimen = None
             else:
                 self.first_specimen = sender.original_memory
+                self.emulator = sender
                 
             self.counter = 0
         
@@ -158,13 +166,9 @@ class Experiment(Mediator):
         else:
             if self.target_function == "nand":
             
-                print("Reacting on IO")
-            
                 i0 = result[0]
                 i1 = result[1]
                 out = result[2]
-            
-                print(i0,i1,out)
 
                 if out == ~(i0 & i1):
                     self.counter += 1
@@ -181,8 +185,6 @@ class Experiment(Mediator):
                 """
                     
             elif self.target_function == "not":
-                
-                print("Reacting on IO")
             
                 i0 = result[0]
                 i1 = result[1]
@@ -203,8 +205,6 @@ class Experiment(Mediator):
                 """
                     
             elif self.target_function == "and":
-                
-                print("Reacting on IO")
             
                 i0 = result[0]
                 i1 = result[1]
@@ -225,8 +225,6 @@ class Experiment(Mediator):
                 """
                     
             elif self.target_function == "or":
-                
-                print("Reacting on IO")
             
                 i0 = result[0]
                 i1 = result[1]
@@ -247,8 +245,6 @@ class Experiment(Mediator):
                 """
                 
             elif self.target_function == "and_n":
-                
-                print("Reacting on IO")
             
                 i0 = result[0]
                 i1 = result[1]
@@ -269,8 +265,6 @@ class Experiment(Mediator):
                 """
                 
             elif self.target_function == "nor":
-                
-                print("Reacting on IO")
             
                 i0 = result[0]
                 i1 = result[1]
@@ -291,8 +285,6 @@ class Experiment(Mediator):
                 """
                 
             elif self.target_function == "xor":
-                
-                print("Reacting on IO")
             
                 i0 = result[0]
                 i1 = result[1]
@@ -313,8 +305,6 @@ class Experiment(Mediator):
                 """
                     
             elif self.target_function == "equ":
-                
-                print("Reacting on IO")
             
                 i0 = result[0]
                 i1 = result[1]
@@ -358,23 +348,13 @@ class Experiment(Mediator):
             # When on average each emulator has executed 30 instructions, increase the number of updates
             if self.world.executions >= 30 * (self.N ** 2):
                 self.update += 1
+                
+                if self.point_mutations and self.update % self.pm_updates == 0:
+                    print("Executing Point Mutations")
+                    self.world.point_mutations()
+                    
                 self.world.executions = 0
                 i += 1
-            
-            """
-            if i == self.stat_cycles:
-                
-                print("\n")
-                print("UPDATE: " + str(self.update))
-                self.display_statistics()
-                
-                #print(self.world.rates)
-                
-                #plt.imshow(self.world.rates)
-                #plt.colorbar()
-                #plt.show()
-                i = 0
-            """
             
             if i == self.update_cycles:
                 print("UPDATE: " + str(self.update))
@@ -382,8 +362,6 @@ class Experiment(Mediator):
                 print("\n")
                 i = 0
 
-                
-            
     def min_len(self):
     
         len_ = 100000
