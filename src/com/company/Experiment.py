@@ -190,8 +190,6 @@ class Experiment(Mediator):
                 i1 = result[1]
                 out = result[2]
             
-                print(i0,i1,out)
-            
                 if out == ~i0:
                     self.counter += 1
                     print("Test passed")
@@ -209,8 +207,6 @@ class Experiment(Mediator):
                 i0 = result[0]
                 i1 = result[1]
                 out = result[2]
-            
-                print(i0,i1,out)
             
                 if out == i0 & i1:
                     self.counter += 1
@@ -230,8 +226,6 @@ class Experiment(Mediator):
                 i1 = result[1]
                 out = result[2]
             
-                print(i0,i1,out)
-            
                 if out == i0 | i1:
                     self.counter += 1
                     print("Test passed")
@@ -249,8 +243,6 @@ class Experiment(Mediator):
                 i0 = result[0]
                 i1 = result[1]
                 out = result[2]
-            
-                print(i0,i1,out)
             
                 if out == i0 & ~i1 or out == ~i0 & i1:
                     self.counter += 1
@@ -270,8 +262,6 @@ class Experiment(Mediator):
                 i1 = result[1]
                 out = result[2]
             
-                print(i0,i1,out)
-            
                 if out == ~i0 & ~i1:
                     self.counter += 1
                     print("Test passed")
@@ -290,8 +280,6 @@ class Experiment(Mediator):
                 i1 = result[1]
                 out = result[2]
             
-                print(i0,i1,out)
-            
                 if out == (~i0 & i1) | (i0 & ~i1):
                     self.counter += 1
                     print("Test passed")
@@ -309,8 +297,6 @@ class Experiment(Mediator):
                 i0 = result[0]
                 i1 = result[1]
                 out = result[2]
-            
-                print(i0,i1,out)
             
                 if out == (i0 & i1) | (~i0 & ~i1):
                     self.counter += 1
