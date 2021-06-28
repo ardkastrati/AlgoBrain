@@ -49,6 +49,9 @@ class Experiment(Mediator):
         self.update_cycles = update_cycles
         self.emulator = None
         
+        # Logging the maximum rate in the world at each update
+        self.max_rate = []
+        
         # Point mutations defined in the following way:
         # Every pm_updates updates, approximately 10% of the organisms have a random instruction
         # changed
@@ -334,6 +337,7 @@ class Experiment(Mediator):
             # When on average each emulator has executed 30 instructions, increase the number of updates
             if self.world.executions >= 30 * (self.N ** 2):
                 self.update += 1
+                self.max_rate.append(np.max(self.world.rates))
                 
                 if self.point_mutations and self.update % self.pm_updates == 0:
                     print("Executing Point Mutations")
